@@ -56,10 +56,8 @@
 
         <!-- Alert -->
         <c:if test="${not empty error}">
-            <div class="alert-error">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <span>${fn:escapeXml(error)}</span>
-            </div>
+            <textarea id="saErrorMsgData" style="display:none">${fn:escapeXml(error)}</textarea>
+            <script>window.__conflictError = true;</script>
         </c:if>
         <c:if test="${not empty exportError}">
             <div class="alert-error">
@@ -72,7 +70,7 @@
         </c:if>
 
         <!-- ── Layout 2 cột: Form + Calendar (n panel ẩn mặc định) ── -->
-        <div id="formPanel" style="${batch != null ? '' : 'display:none;'}">
+        <div id="formPanel" style="${(batch != null || not empty error) ? '' : 'display:none;'}">
             <div class="sa-layout">
                 <!-- CỘT TRÁI: Form -->
                 <div class="sa-form-card">
@@ -556,6 +554,167 @@
     </div>
 </div>
 
+<!-- ── Modal Conflict Ca ── -->
+<style>
+.conflict-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(3px);
+}
+.conflict-modal-overlay.open { display: flex; }
+.conflict-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    animation: conflictSlideIn .22s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+}
+@keyframes conflictSlideIn {
+    from { transform: translateY(-24px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+.conflict-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid #fee2e2;
+    background: linear-gradient(135deg,#fff5f5 0%,#fff 100%);
+    flex-shrink: 0;
+}
+.conflict-modal-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: rgba(239,68,68,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #dc2626;
+    flex-shrink: 0;
+}
+.conflict-modal-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+.conflict-modal-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.conflict-modal-close {
+    margin-left: auto;
+    background: none; border: none;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+}
+.conflict-modal-close:hover { background: #f1f5f9; color: #ef4444; }
+.conflict-modal-body {
+    padding: 18px 22px;
+    overflow-y: auto;
+    flex: 1;
+}
+.conflict-intro {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+.conflict-intro strong { color: #dc2626; }
+.conflict-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.conflict-list::-webkit-scrollbar { width: 4px; }
+.conflict-list::-webkit-scrollbar-track { background: #f8fafc; }
+.conflict-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.conflict-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 13px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    font-size: 13px;
+}
+.conflict-item-icon {
+    color: #ef4444;
+    font-size: 14px;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+.conflict-item-name { font-weight: 600; color: #1e293b; }
+.conflict-item-shift {
+    font-size: 11.5px;
+    color: #64748b;
+    margin-top: 2px;
+}
+.conflict-hint {
+    margin-top: 14px;
+    padding: 10px 13px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    font-size: 12.5px;
+    color: #92400e;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+.conflict-modal-foot {
+    padding: 14px 22px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    background: #fafafa;
+}
+</style>
+
+<div class="conflict-modal-overlay" id="conflictModal">
+    <div class="conflict-modal" role="alertdialog" aria-modal="true" aria-labelledby="conflictModalTitle">
+        <div class="conflict-modal-head">
+            <div class="conflict-modal-icon">
+                <i class="fa-solid fa-users-slash"></i>
+            </div>
+            <div>
+                <div class="conflict-modal-title" id="conflictModalTitle">Xung đột ca làm việc</div>
+                <div class="conflict-modal-sub">Một số nhân viên đã được xếp ca trong khung giờ này</div>
+            </div>
+            <button class="conflict-modal-close" onclick="closeConflictModal()" aria-label="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="conflict-modal-body">
+            <p class="conflict-intro">
+                Phát hiện <strong id="conflictCount">0</strong> nhân viên bị trùng ca.
+                Vui lòng điều chỉnh lại ca hoặc danh sách nhân viên.
+            </p>
+            <div class="conflict-list" id="conflictList"></div>
+            <div class="conflict-hint">
+                <i class="fa-solid fa-lightbulb" style="color:#d97706;flex-shrink:0;margin-top:1px;"></i>
+                <span>Kiểm tra lại <b>ngày áp dụng</b>, <b>ngày trong tuần</b> hoặc bỏ chọn các nhân viên bị xung đột.</span>
+            </div>
+        </div>
+        <div class="conflict-modal-foot">
+            <button class="btn btn-primary" onclick="closeConflictModal()">
+                <i class="fa-solid fa-check"></i> Đã hiểu, chỉnh lại
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast">
     <i class="fa-solid fa-circle-check"></i>
@@ -857,6 +1016,67 @@
     function escHtml(str) {
         return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
+
+    // ── Conflict Modal ──
+    function openConflictModal(rawMsg) {
+        // Parse danh sách nhân viên từ message dạng:
+        // "Một số nhân viên...\n  • Nguyễn A [ca: Hành chính (08:00 – 17:00)]\n  • Trần B..."
+        var lines = rawMsg.split('\n');
+        var empLines = lines.filter(function(l) { return l.trim().startsWith('•'); });
+
+        document.getElementById('conflictCount').textContent = empLines.length || '?';
+
+        var listEl = document.getElementById('conflictList');
+        listEl.innerHTML = '';
+
+        if (empLines.length === 0) {
+            // Fallback: hiển thị toàn bộ message
+            listEl.innerHTML = '<div class="conflict-item"><i class="fa-solid fa-circle-exclamation conflict-item-icon"></i><div>' + escHtml(rawMsg) + '</div></div>';
+        } else {
+            empLines.forEach(function(line) {
+                var text = line.replace(/^\s*•\s*/, '').trim();
+                // Tách "Tên NV [ca: Ca X (HH:MM – HH:MM)]"
+                var caMatch = text.match(/^(.+?)\s*\[ca:\s*(.+?)\]$/);
+                var name  = caMatch ? caMatch[1].trim() : text;
+                var shift = caMatch ? caMatch[2].trim() : '';
+
+                var item = document.createElement('div');
+                item.className = 'conflict-item';
+                item.innerHTML =
+                    '<i class="fa-solid fa-user-clock conflict-item-icon"></i>' +
+                    '<div>' +
+                        '<div class="conflict-item-name">' + escHtml(name) + '</div>' +
+                        (shift ? '<div class="conflict-item-shift"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>' + escHtml(shift) + '</div>' : '') +
+                    '</div>';
+                listEl.appendChild(item);
+            });
+        }
+
+        var overlay = document.getElementById('conflictModal');
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeConflictModal() {
+        document.getElementById('conflictModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('conflictModal').addEventListener('click', function(e) {
+        if (e.target === this) closeConflictModal();
+    });
+
+    // Auto-open conflict modal nếu server trả về lỗi conflict
+    if (window.__conflictError) {
+        var msgEl = document.getElementById('saErrorMsgData');
+        var msg = msgEl ? msgEl.value : '';
+        var panel = document.getElementById('formPanel');
+        var btn   = document.getElementById('btnToggleForm');
+        if (panel) { panel.style.display = ''; }
+        if (btn)   { btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Hủy'; btn.className = 'btn btn-secondary'; }
+        openConflictModal(msg);
+    }
+
 
     // ── Toggle form panel ──
     function toggleForm() {

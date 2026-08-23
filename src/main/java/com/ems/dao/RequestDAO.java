@@ -1,6 +1,7 @@
 package com.ems.dao;
 
 import com.ems.dto.RequestDTO;
+import com.ems.dto.EmployeeBalanceDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,7 +38,8 @@ public class RequestDAO {
                     "r.CreatedByAccountId, " +
                     "u.FullName AS CreatedByName, " +
                     "r.CurrentApproverAccountId, " +
-                    "au.FullName AS ApproverName " +
+                    "au.FullName AS ApproverName, " +
+                    "r.RejectionReason " +
 
                     "FROM Requests r " +
 
@@ -132,6 +134,10 @@ public class RequestDAO {
 
         request.setCurrentApproverName(
                 rs.getString("ApproverName")
+        );
+
+        request.setRejectionReason(
+                rs.getString("RejectionReason")
         );
 
         return request;
@@ -319,16 +325,17 @@ public class RequestDAO {
         }
     }
 
-    /** Updates a pending request only when it belongs to the acting manager. */
-    public boolean updateStatusForApprover(int requestId, int approverAccountId, String status)
+    /** Updates a pending request, setting the status, recording the manager who approved/rejected it, and optionally setting the rejection reason. */
+    public boolean updateStatusForApprover(int requestId, int approverAccountId, String status, String rejectionReason)
             throws SQLException {
-        String sql = "UPDATE Requests SET Status = ? WHERE Id = ? "
-                + "AND CurrentApproverAccountId = ? AND Status = 'Pending'";
+        String sql = "UPDATE Requests SET Status = ?, CurrentApproverAccountId = ?, RejectionReason = ? WHERE Id = ? "
+                + "AND Status = 'Pending'";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, status);
-            ps.setInt(2, requestId);
-            ps.setInt(3, approverAccountId);
+            ps.setInt(2, approverAccountId);
+            ps.setString(3, rejectionReason);
+            ps.setInt(4, requestId);
             return ps.executeUpdate() > 0;
         }
     }
@@ -394,29 +401,20 @@ public class RequestDAO {
 
     /**
      * Get pending requests
-     * assigned to a specific approver
      */
-    public List<RequestDTO> getPendingRequests(
-            int approverAccountId
-    ) throws SQLException {
+    public List<RequestDTO> getPendingRequests() throws SQLException {
 
         List<RequestDTO> list = new ArrayList<>();
 
         String sql =
                 BASE_SELECT +
-                        "WHERE r.CurrentApproverAccountId = ? " +
-                        "AND r.Status = 'Pending' " +
+                        "WHERE r.Status = 'Pending' " +
                         "ORDER BY r.CreatedAt ASC";
 
         try (
                 PreparedStatement ps =
                         connection.prepareStatement(sql)
         ) {
-
-            ps.setInt(
-                    1,
-                    approverAccountId
-            );
 
             try (
                     ResultSet rs =
@@ -432,6 +430,49 @@ public class RequestDAO {
             }
         }
 
+        return list;
+    }
+
+    public List<EmployeeBalanceDTO> getEmployeeBalances() throws SQLException {
+        List<EmployeeBalanceDTO> list = new ArrayList<>();
+        String sql = "SELECT " +
+                     "  u.Id AS UserId, " +
+                     "  u.FullName AS EmployeeName, " +
+                     "  d.Name AS DepartmentName, " +
+                     "  COALESCE(lb.TotalDays, 12) AS TotalDays, " +
+                     "  COALESCE(lb.UsedDays, 0) AS UsedDays, " +
+                     "  COALESCE(lb.RemainingDays, 12) AS RemainingDays, " +
+                     "  ( " +
+                     "      SELECT COALESCE(SUM(r.Value), 0) " +
+                     "      FROM Requests r " +
+                     "      JOIN Accounts a ON r.CreatedByAccountId = a.Id " +
+                     "      WHERE a.UserId = u.Id " +
+                     "        AND r.RequestTypeId = 3 " +
+                     "        AND r.Status = 'Approved' " +
+                     "        AND MONTH(r.StartDate) = MONTH(CURDATE()) " +
+                     "        AND YEAR(r.StartDate) = YEAR(CURDATE()) " +
+                     "  ) AS AdvancedThisMonth " +
+                     "FROM Users u " +
+                     "LEFT JOIN Departments d ON u.DepartmentId = d.Id " +
+                     "LEFT JOIN Accounts acc ON u.Id = acc.UserId " +
+                     "LEFT JOIN leavebalances lb ON u.Id = lb.UserId AND lb.Year = 2026 " +
+                     "WHERE acc.Id IS NOT NULL " +
+                     "ORDER BY u.FullName ASC";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new EmployeeBalanceDTO(
+                    rs.getInt("UserId"),
+                    rs.getString("EmployeeName"),
+                    rs.getString("DepartmentName"),
+                    rs.getInt("TotalDays"),
+                    rs.getInt("UsedDays"),
+                    rs.getInt("RemainingDays"),
+                    rs.getDouble("AdvancedThisMonth")
+                ));
+            }
+        }
         return list;
     }
 }

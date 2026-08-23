@@ -20,36 +20,33 @@ public class ShiftAssignmentService {
     public void create(Shiftassignmentbatches b, List<Integer> weekdays, List<Integer> empIds, String scope) {
         validate(b, weekdays, empIds, null); // null = batch mới, chưa có id
         ShiftAssignmentDAO.createBatch(b, weekdays, empIds);
-        sendNotification("Ca làm việc", "Ca làm việc vừa được cập nhật. Vui lòng kiểm tra", empIds, scope);
+        sendNotification("Ca làm việc","Ca làm việc vừa được cập nhật. Vui lòng kiểm tra", empIds, scope);
     }
 
-    public void update(Shiftassignmentbatches b, List<Integer> weekdays, List<Integer> empIds, String scope) {
+    public void update(Shiftassignmentbatches b, List<Integer> weekdays, List<Integer> empIds,  String scope) {
         validate(b, weekdays, empIds, b.getId()); // truyền id để loại trừ chính mình khi check
         ShiftAssignmentDAO.updateBatch(b, weekdays, empIds);
-        sendNotification("Cập nhật ca làm việc", "Ca làm việc vừa được chỉnh sửa lại. Vui lòng kiểm tra", empIds,
-                scope);
+        sendNotification("Cập nhật ca làm việc", "Ca làm việc vừa được chỉnh sửa lại. Vui lòng kiểm tra", empIds, scope);
     }
 
     public void delete(int id) {
         ShiftAssignmentDAO.deleteBatch(id);
     }
 
-    private void sendNotification(String title, String message, List<Integer> empIds, String scope) {
-        if ("all".equals(scope)) {
+    private void sendNotification(String title, String message, List<Integer> empIds, String scope){
+        if("all".equals(scope)){
             NotificationDAO.notifyAllEmployee(title, message);
-        } else {
+        }else{
             NotificationDAO.notifyEmployees(title, message, empIds);
         }
     }
 
     /**
      * Validate batch trước khi lưu.
-     * 
-     * @param excludeBatchId id batch đang sửa (null khi tạo mới) — dùng để bỏ qua
-     *                       chính nó khi check conflict
+     * @param excludeBatchId id batch đang sửa (null khi tạo mới) — dùng để bỏ qua chính nó khi check conflict
      */
     private void validate(Shiftassignmentbatches b, List<Integer> weekdays,
-            List<Integer> empIds, Integer excludeBatchId) {
+                          List<Integer> empIds, Integer excludeBatchId) {
         // ── Validate cơ bản ──
         if (b.getName() == null || b.getName().isBlank())
             throw new IllegalArgumentException("Tên bảng phân ca không được để trống.");

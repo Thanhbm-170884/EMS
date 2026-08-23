@@ -1,35 +1,52 @@
 package com.ems.dao;
 
 import com.ems.model.AttendanceRecord;
-import com.ems.util.DBUtil;
+import com.ems.util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Time;
+import java.sql.*;
 import java.util.List;
 
 public class AttendanceDAO {
 
-    private static final String INSERT_SQL =
-            "INSERT INTO attendance ( Id, CheckInTime, CheckOutTime) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static final String FIND_USER_ID_SQL =
+            "SELECT Id FROM users WHERE EmployeeCode = ?";
+
+    // Dùng ON DUPLICATE KEY UPDATE vì bảng attendance có ràng buộc
+    // UNIQUE (EmployeeId, AttendanceDate) -> nếu nhân viên đã có dữ liệu
+    // chấm công ngày đó, upload lại sẽ CẬP NHẬT giờ check-in/out mới,
+    // thay vì báo lỗi trùng khóa.
+    private static final String UPSERT_SQL =
+            "INSERT INTO attendance (EmployeeId, AttendanceDate, CheckInTime, CheckOutTime) " +
+                    "VALUES (?, ?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE CheckInTime = VALUES(CheckInTime), CheckOutTime = VALUES(CheckOutTime)";
 
     /**
-     * Lưu toàn bộ danh sách vào DB trong 1 transaction.
-     * Nếu có lỗi ở bất kỳ dòng nào -> rollback toàn bộ, không lưu 1 phần.
+     * Tra cứu EmployeeId (khóa chính bảng users) từ Mã nhân viên (EmployeeCode) đọc từ Excel.
+     * Trả về null nếu không tìm thấy nhân viên tương ứng trong hệ thống.
+     */
+    public Integer findUserIdByEmployeeCode(String employeeCode) throws Exception {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(FIND_USER_ID_SQL)) {
+            ps.setString(1, employeeCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("Id") : null;
+            }
+        }
+    }
+
+    /**
+     * Lưu danh sách chấm công. Mỗi record BẮT BUỘC đã có employeeId
+     * (đã được tra cứu và gán trước đó ở ConfirmServlet).
      */
     public void saveAll(List<AttendanceRecord> records) throws Exception {
-        try (Connection conn = DBUtil.getConnection()) {
+        try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
-            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+            try (PreparedStatement ps = conn.prepareStatement(UPSERT_SQL)) {
                 for (AttendanceRecord r : records) {
-                    ps.setDate(1, r.getDate() != null ? java.sql.Date.valueOf(r.getDate()) : null);
-                    ps.setString(2, r.getEmployeeCode());
-                    ps.setString(3, r.getFullName());
-                    ps.setString(4, r.getDepartment());
-                    ps.setTime(5, r.getCheckIn() != null ? Time.valueOf(r.getCheckIn()) : null);
-                    ps.setTime(6, r.getCheckOut() != null ? Time.valueOf(r.getCheckOut()) : null);
-                    ps.setLong(7, r.getLateMinutes());
+                    ps.setInt(1, r.getEmployeeId());
+                    ps.setDate(2, java.sql.Date.valueOf(r.getDate()));
+                    ps.setTime(3, r.getCheckIn() != null ? Time.valueOf(r.getCheckIn()) : null);
+                    ps.setTime(4, r.getCheckOut() != null ? Time.valueOf(r.getCheckOut()) : null);
                     ps.addBatch();
                 }
                 ps.executeBatch();

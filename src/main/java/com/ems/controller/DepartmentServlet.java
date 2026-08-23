@@ -79,6 +79,18 @@ public class DepartmentServlet extends HttpServlet {
             }
         }
 
+        // Flash messages
+        String successMsg = (String) session.getAttribute("successMsg");
+        String errorMsg = (String) session.getAttribute("errorMsg");
+        if (successMsg != null) {
+            request.setAttribute("successMsg", successMsg);
+            session.removeAttribute("successMsg");
+        }
+        if (errorMsg != null) {
+            request.setAttribute("errorMsg", errorMsg);
+            session.removeAttribute("errorMsg");
+        }
+
         request.setAttribute("totalDepts", totalDepts);
         request.setAttribute("assignedHeadCount", assignedHeadCount);
         request.setAttribute("departmentsList", departmentsList);
@@ -132,6 +144,11 @@ public class DepartmentServlet extends HttpServlet {
                         break;
                     }
 
+                    if (departmentDAO.isNameExists(name, null)) {
+                        session.setAttribute("errorMsg", "Tên phòng ban '" + name + "' đã tồn tại trong hệ thống!");
+                        break;
+                    }
+
                     Integer headAccountId = null;
                     if (headStr != null && !headStr.trim().isEmpty()) {
                         headAccountId = Integer.parseInt(headStr);
@@ -158,6 +175,11 @@ public class DepartmentServlet extends HttpServlet {
 
                     int id = Integer.parseInt(idStr);
                     name = name.trim();
+
+                    if (departmentDAO.isNameExists(name, id)) {
+                        session.setAttribute("errorMsg", "Tên phòng ban '" + name + "' đã tồn tại trong hệ thống!");
+                        break;
+                    }
 
                     Integer headAccountId = null;
                     if (headStr != null && !headStr.trim().isEmpty()) {

@@ -27,6 +27,7 @@ import java.io.IOException;
         "/manager-payslip",
         "/manager-payslip-list.jsp",
         "/request-manager.jsp",
+        "/employee-balances.jsp",
         "/pay-periods",
         "/pay_periods",
         "/pay-period",
@@ -74,6 +75,7 @@ public class AutherFilter implements Filter {
                 || path.equals("/manager-payslips") || path.equals("/manager-payslip")
                 || path.equals("/manager-payslip-list.jsp")
                 || path.equals("/request-manager.jsp")
+                || path.equals("/employee-balances.jsp")
                 || path.equals("/pay-periods") || path.equals("/pay_periods")
                 || path.equals("/pay-period") || path.equals("/pay_period")
                 || path.equals("/pay-period-list.jsp")

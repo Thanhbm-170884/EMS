@@ -67,7 +67,7 @@ public class DepartmentDAO {
      */
     public List<Map<String, Object>> getActiveEmployeesForHead() {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT a.Id AS AccountId, u.FullName, u.EmployeeCode, d.Name AS DeptName " +
+        String sql = "SELECT a.Id AS AccountId, u.FullName, u.EmployeeCode, u.DepartmentId, d.Name AS DeptName " +
                      "FROM accounts a " +
                      "JOIN users u ON a.UserId = u.Id " +
                      "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
@@ -83,6 +83,7 @@ public class DepartmentDAO {
                 emp.put("accountId", rs.getInt("AccountId"));
                 emp.put("fullName", rs.getString("FullName"));
                 emp.put("employeeCode", rs.getString("EmployeeCode"));
+                emp.put("departmentId", rs.getObject("DepartmentId"));
                 emp.put("deptName", rs.getString("DeptName"));
                 list.add(emp);
             }
@@ -103,6 +104,32 @@ public class DepartmentDAO {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code.trim());
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cnt") > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Kiểm tra xem Tên phòng ban (Name) đã tồn tại hay chưa
+     */
+    public boolean isNameExists(String name, Integer excludeId) {
+        if (name == null || name.trim().isEmpty()) return false;
+        String sql = "SELECT COUNT(*) AS cnt FROM departments WHERE LOWER(Name) = LOWER(?)";
+        if (excludeId != null) {
+            sql += " AND Id != ?";
+        }
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name.trim());
             if (excludeId != null) {
                 ps.setInt(2, excludeId);
             }

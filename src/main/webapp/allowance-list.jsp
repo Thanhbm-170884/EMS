@@ -56,15 +56,7 @@
                                         <p>Thiết lập danh mục phụ cấp, định mức, và các quy định tính thuế TNCN, đóng
                                             BHXH</p>
                                     </div>
-                                    <button type="button" class="btn-create-allowance" onclick="openAddModal()">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                        </svg>
-                                        Thêm Phụ Cấp
-                                    </button>
+
                                 </div>
 
                                 <!-- Filter Toolbar -->
@@ -219,11 +211,11 @@
                                     <div class="modal-grid-1-2">
                                         <div class="modal-form-group">
                                             <label>Mã Phụ Cấp (Unique)</label>
-                                            <input type="text" name="code" required placeholder="VD: PC_AN_TRUA">
+                                            <input type="text" name="code" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" placeholder="VD: PC_AN_TRUA">
                                         </div>
                                         <div class="modal-form-group">
                                             <label>Tên Phụ Cấp</label>
-                                            <input type="text" name="name" required placeholder="VD: Phụ cấp ăn trưa">
+                                            <input type="text" name="name" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" placeholder="VD: Phụ cấp ăn trưa">
                                         </div>
                                     </div>
 
@@ -302,7 +294,7 @@
                                         </div>
                                         <div class="modal-form-group">
                                             <label>Tên Phụ Cấp</label>
-                                            <input type="text" name="name" id="edit_name" required>
+                                            <input type="text" name="name" id="edit_name" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng">
                                         </div>
                                     </div>
 

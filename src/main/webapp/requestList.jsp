@@ -39,6 +39,17 @@
                   .replace("\"", "&quot;")
                   .replace("'", "&#x27;");
     }
+
+    private String formatValue(double val, int typeId) {
+        if (typeId == 3) {
+            return java.text.NumberFormat.getIntegerInstance(new java.util.Locale("vi", "VN")).format(val) + " đ";
+        }
+        if (val == (long) val) {
+            return String.format("%d", (long) val);
+        } else {
+            return String.format("%s", val);
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -96,7 +107,7 @@
                 <div class="empty-state"><strong>Bạn chưa gửi yêu cầu nào.</strong><p>Tạo yêu cầu mới để bắt đầu.</p><a class="btn-create" href="request.jsp">Tạo yêu cầu</a></div>
             <% } else { %>
                 <div class="table-wrap"><table>
-                    <thead><tr><th>Tiêu đề</th><th>Loại</th><th>Thời gian</th><th>Giá trị</th><th>Người duyệt</th><th>Trạng thái</th><th></th></tr></thead>
+                    <thead><tr><th>Tiêu đề</th><th>Loại</th><th>Giá trị</th><th>Người duyệt</th><th>Trạng thái</th><th></th></tr></thead>
                     <tbody>
                     <% for (RequestDTO item : requests) {
                         String status = item.getStatus() == null ? "" : item.getStatus();
@@ -108,20 +119,26 @@
                         data-id="<%= item.getId() %>"
                         data-title="<%= escapeAttr(item.getTitle()) %>"
                         data-type="<%= escapeAttr(item.getRequestTypeName()) %>"
-                        data-time="<%= item.getStartDate() != null ? dateFormat.format(item.getStartDate()) : "-" %> đến <%= item.getEndDate() != null ? dateFormat.format(item.getEndDate()) : "-" %>"
-                        data-value="<%= item.getValue() %>"
+                        data-start-date="<%= item.getStartDate() != null ? dateFormat.format(item.getStartDate()) : "-" %>"
+                        data-end-date="<%= item.getEndDate() != null ? dateFormat.format(item.getEndDate()) : "-" %>"
+                        data-value="<%= formatValue(item.getValue(), item.getRequestTypeId()) %>"
                         data-approver="<%= escapeAttr(item.getCurrentApproverName() != null ? item.getCurrentApproverName() : "Chưa phân công") %>"
                         data-status="<%= "Approved".equalsIgnoreCase(status) ? "Đã duyệt" : "Rejected".equalsIgnoreCase(status) ? "Từ chối" : "Chờ duyệt" %>"
                         data-status-class="<%= badgeClass %>"
                         data-reason="<%= escapeAttr(item.getReason()) %>"
+                        data-rejection-reason="<%= escapeAttr(item.getRejectionReason()) %>"
                         data-image-url="<%= escapeAttr(item.getImageUrl()) %>"
                         data-created-at="<%= item.getCreatedAt() != null ? dateFormat.format(item.getCreatedAt()) : "-" %>">
-                        <td><div class="request-title"><%= item.getTitle() %></div><div class="request-reason" title="<%= item.getReason() == null ? "" : item.getReason() %>"><%= item.getReason() == null ? "" : item.getReason() %></div></td>
+                        <td><div class="request-title"><%= item.getTitle() %></div></td>
                         <td><%= item.getRequestTypeName() %></td>
-                        <td><%= item.getStartDate() != null ? dateFormat.format(item.getStartDate()) : "-" %><br><span style="color:#9ca3af; font-size:12px;">đến <%= item.getEndDate() != null ? dateFormat.format(item.getEndDate()) : "-" %></span></td>
-                        <td><%= item.getValue() %></td>
+                        <td><%= formatValue(item.getValue(), item.getRequestTypeId()) %></td>
                         <td><%= item.getCurrentApproverName() != null ? item.getCurrentApproverName() : "Chưa phân công" %></td>
-                        <td><span class="badge <%= badgeClass %>"><%= "Approved".equalsIgnoreCase(status) ? "Đã duyệt" : "Rejected".equalsIgnoreCase(status) ? "Từ chối" : "Chờ duyệt" %></span></td>
+                        <td>
+                            <span class="badge <%= badgeClass %>"><%= "Approved".equalsIgnoreCase(status) ? "Đã duyệt" : "Rejected".equalsIgnoreCase(status) ? "Từ chối" : "Chờ duyệt" %></span>
+                            <% if ("Rejected".equalsIgnoreCase(status) && item.getRejectionReason() != null && !item.getRejectionReason().isBlank()) { %>
+                                <div style="font-size: 11px; color: #dc2626; margin-top: 4px;" title="<%= escapeAttr(item.getRejectionReason()) %>">Lý do: <%= item.getRejectionReason() %></div>
+                            <% } %>
+                        </td>
                         <td onclick="event.stopPropagation();">
                             <a href="javascript:void(0)" class="btn-view" onclick="showRequestDetail(this.closest('tr'))">Xem</a>
                             <% if ("Pending".equalsIgnoreCase(status)) { %>
@@ -218,9 +235,13 @@
           <td style="padding: 10px 0; font-weight: 600; color: #475569;">Loại đơn:</td>
           <td style="padding: 10px 0; color: #1e293b;" id="detType">-</td>
         </tr>
-        <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 10px 0; font-weight: 600; color: #475569;">Thời gian:</td>
-          <td style="padding: 10px 0; color: #1e293b;" id="detTime">-</td>
+        <tr id="detStartDateRow" style="border-bottom: 1px solid #f1f5f9; display: none;">
+          <td style="padding: 10px 0; font-weight: 600; color: #475569;">Từ ngày:</td>
+          <td style="padding: 10px 0; color: #1e293b;" id="detStartDate">-</td>
+        </tr>
+        <tr id="detEndDateRow" style="border-bottom: 1px solid #f1f5f9; display: none;">
+          <td style="padding: 10px 0; font-weight: 600; color: #475569;">Đến ngày:</td>
+          <td style="padding: 10px 0; color: #1e293b;" id="detEndDate">-</td>
         </tr>
         <tr style="border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 10px 0; font-weight: 600; color: #475569;">Giá trị / Số ngày:</td>
@@ -241,6 +262,10 @@
         <tr style="border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 10px 0; font-weight: 600; color: #475569; vertical-align: top;">Lý do / Nội dung:</td>
           <td style="padding: 10px 0; color: #1e293b; white-space: pre-wrap;" id="detReason">-</td>
+        </tr>
+        <tr id="detRejectionReasonRow" style="border-bottom: 1px solid #f1f5f9; display: none;">
+          <td style="padding: 10px 0; font-weight: 600; color: #dc2626; vertical-align: top;">Lý do từ chối:</td>
+          <td style="padding: 10px 0; color: #dc2626; white-space: pre-wrap;" id="detRejectionReason">-</td>
         </tr>
         <tr id="detImageRow" style="border-bottom: 1px solid #f1f5f9; display: none;">
           <td style="padding: 10px 0; font-weight: 600; color: #475569; vertical-align: top;">Minh chứng:</td>
@@ -264,19 +289,38 @@
         var id = row.getAttribute('data-id');
         var title = row.getAttribute('data-title');
         var type = row.getAttribute('data-type');
-        var time = row.getAttribute('data-time');
+        var startDate = row.getAttribute('data-start-date');
+        var endDate = row.getAttribute('data-end-date');
         var value = row.getAttribute('data-value');
         var approver = row.getAttribute('data-approver');
         var status = row.getAttribute('data-status');
         var statusClass = row.getAttribute('data-status-class');
         var reason = row.getAttribute('data-reason');
+        var rejectionReason = row.getAttribute('data-rejection-reason');
         var imageUrl = row.getAttribute('data-image-url');
         var createdAt = row.getAttribute('data-created-at');
 
-        document.getElementById('detailModalSubtitle').textContent = 'Mã đơn #' + id + ' · Gửi lúc ' + createdAt;
+        document.getElementById('detailModalSubtitle').textContent = 'Gửi lúc ' + createdAt;
         document.getElementById('detTitle').textContent = title;
         document.getElementById('detType').textContent = type;
-        document.getElementById('detTime').textContent = time;
+        
+        var startRow = document.getElementById('detStartDateRow');
+        var endRow = document.getElementById('detEndDateRow');
+        
+        if (startDate && startDate !== '-' && startDate.trim() !== '') {
+            startRow.style.display = '';
+            document.getElementById('detStartDate').textContent = startDate;
+        } else {
+            startRow.style.display = 'none';
+        }
+
+        if (endDate && endDate !== '-' && endDate.trim() !== '') {
+            endRow.style.display = '';
+            document.getElementById('detEndDate').textContent = endDate;
+        } else {
+            endRow.style.display = 'none';
+        }
+
         document.getElementById('detValue').textContent = value;
         
         var statusBadge = document.getElementById('detStatus');
@@ -286,6 +330,14 @@
         document.getElementById('detApprover').textContent = approver;
         document.getElementById('detCreatedAt').textContent = createdAt;
         document.getElementById('detReason').textContent = reason ? reason : "Không có nội dung";
+
+        var rejRow = document.getElementById('detRejectionReasonRow');
+        if (rejectionReason && rejectionReason.trim() !== '') {
+            rejRow.style.display = '';
+            document.getElementById('detRejectionReason').textContent = rejectionReason;
+        } else {
+            rejRow.style.display = 'none';
+        }
 
         var imgRow = document.getElementById('detImageRow');
         if (imageUrl && imageUrl.trim() !== '') {

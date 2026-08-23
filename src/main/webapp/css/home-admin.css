@@ -1,49 +1,143 @@
-.user-avatar-circle {
-  width: 32px; height: 32px;
-  background: #dbeafe;
-  color: #1e40af;
-  border-radius: 50%;
-  display: flex;
-  align-items: center; justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  flex-shrink: 0;
+/* =======================================================
+   EMS - ADMIN DASHBOARD CSS (home-admin.css)
+   Clean, modern and synchronized with Admin Design System
+   ======================================================= */
+
+/* --- Dashboard Header --- */
+.dash-header {
+  margin-bottom: 24px !important;
 }
-.badge-role {
-  background: #eff6ff;
-  color: #2563eb;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 11.5px;
-  font-weight: 600;
-  text-transform: lowercase;
-  display: inline-block;
+.dash-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  margin-bottom: 4px !important;
 }
-.badge-active {
-  background: #ecfdf5;
-  color: #065f46;
-  padding: 4px 8px;
-  border-radius: 9999px;
-  font-size: 11.5px;
-  font-weight: 500;
-  display: inline-block;
+.dash-subtitle {
+  font-size: 14px !important;
+  color: #4b5563 !important;
 }
-.badge-locked {
-  background: #fef2f2;
-  color: #991b1b;
-  padding: 4px 8px;
-  border-radius: 9999px;
-  font-size: 11.5px;
-  font-weight: 500;
-  display: inline-block;
+
+/* --- 4 Stats Cards Grid --- */
+.dash-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+  width: 100% !important;
 }
-.dashboard-table th {
-  padding: 10px 12px;
-  font-size: 10px;
-  background: #fff;
-  border-bottom: 1.5px solid #f3f4f6;
+.stat-card.stat-blue {
+  border-left: 4px solid #3b82f6 !important;
 }
-.dashboard-table td {
-  padding: 10px 12px;
-  font-size: 12.5px;
+.stat-card.stat-green {
+  border-left: 4px solid #10b981 !important;
+}
+.stat-card.stat-amber {
+  border-left: 4px solid #f59e0b !important;
+}
+.stat-card.stat-purple {
+  border-left: 4px solid #8b5cf6 !important;
+}
+
+/* --- 2 Columns Main Grid --- */
+.dash-main-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 20px !important;
+  width: 100% !important;
+}
+
+.dash-card {
+  margin-bottom: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.dash-card-body {
+  padding: 16px 20px !important;
+  flex: 1 !important;
+}
+
+/* --- Table: Recent Employees --- */
+.dash-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  text-align: left !important;
+  font-size: 13.5px !important;
+}
+.dash-table thead tr {
+  border-bottom: 1.5px solid #f3f4f6 !important;
+  color: #6b7280 !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+.dash-table th {
+  padding: 10px 0 !important;
+}
+.dash-table td {
+  padding: 12px 0 !important;
+}
+.dash-table tbody tr {
+  border-bottom: 1px solid #f3f4f6 !important;
+  transition: background 0.15s ease !important;
+}
+.dash-table tbody tr:hover {
+  background: #f9fafb !important;
+}
+.emp-name-cell {
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+.emp-dept-cell {
+  text-align: right !important;
+}
+
+/* --- Distribution Rows (Clean list without progress bar) --- */
+.dist-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 0 !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+  font-size: 13.5px !important;
+}
+.dist-row:last-child {
+  border-bottom: none !important;
+}
+.dist-label {
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+.dist-count {
+  font-weight: 700 !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+}
+
+/* --- Distribution Card Footer Summary --- */
+.dist-footer {
+  padding: 14px 20px !important;
+  border-top: 1px solid #f3f4f6 !important;
+  background: #fafafa !important;
+  border-radius: 0 0 12px 12px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+.dist-footer-val {
+  color: #0d9488 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.empty-state-text {
+  text-align: center !important;
+  color: #9ca3af !important;
+  padding: 30px 0 !important;
+  font-size: 13.5px !important;
 }

@@ -22,7 +22,7 @@ public class DBConnection {
     // ===== CẤU HÌNH - SỬA THEO MÔI TRƯỜNG CỦA BẠN =====
     private static final String URL = "jdbc:mysql://localhost:3306/hrms_db?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
     private static final String USER = "root";
-    private static final String PASSWORD = "123456";
+    private static final String PASSWORD = "a123123";
 
     // Load driver 1 lần duy nhất khi class được nạp
     static {

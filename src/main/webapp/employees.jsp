@@ -8,6 +8,8 @@
     List<Map<String, Object>> positionsList = (List<Map<String, Object>>) request.getAttribute("positionsList");
     String fullName = (String) request.getAttribute("fullName");
     String deptName = (String) request.getAttribute("deptName");
+    String successMessage = (String) request.getAttribute("successMessage");
+    String errorMessage = (String) request.getAttribute("errorMessage");
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -18,6 +20,34 @@
   <link rel="stylesheet" href="css/ems.css"/>
   <link rel="stylesheet" href="css/users.css"/>
   <link rel="stylesheet" href="css/employees.css"/>
+  <style>
+    .page-nav-btn, .page-num-btn {
+      padding: 6px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+    .page-nav-btn:hover:not(:disabled), .page-num-btn:hover:not(.active) {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+    .page-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-num-btn.active {
+      background: #0d9488;
+      color: #ffffff;
+      border-color: #0d9488;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
 
@@ -51,11 +81,23 @@
 
 <div class="main-content">
   <div class="topbar">
-    <span class="topbar-left">Quản lý nhân viên</span>
+    <span class="topbar-left">Quản trị / Thông tin nhân viên</span>
     <span class="topbar-right" id="topbar-date"></span>
   </div>
 
   <div class="page-body">
+    <% if (successMessage != null && !successMessage.isEmpty()) { %>
+      <div class="flash-alert" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span><%= successMessage %></span>
+      </div>
+    <% } %>
+    <% if (errorMessage != null && !errorMessage.isEmpty()) { %>
+      <div class="flash-alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><%= errorMessage %></span>
+      </div>
+    <% } %>
 
     <!-- Page Header -->
     <div class="emp-page-header">
@@ -178,21 +220,26 @@
                   <input type="hidden" name="userId" value="<%= emp.get("userId") %>"/>
                   <input type="hidden" name="currentStatus" value="<%= isActive %>"/>
                   <button type="submit" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:13.5px; font-weight:600; padding:0; font-family:inherit;">
-                    <%= isActive ? "Ẩn" : "Hiện" %>
+                    <%= isActive ? "Dừng" : "Hiện" %>
                   </button>
                 </form>
               </td>
             </tr>
           <%
+                }
               }
-            } else {
           %>
-            <tr>
-              <td colspan="8" class="emp-empty">Không có nhân viên nào.</td>
+            <tr id="empEmptyRow" style="display:none;">
+              <td colspan="8" class="emp-empty" style="padding: 30px; text-align: center; color: #9ca3af;">Không tìm thấy nhân viên nào phù hợp.</td>
             </tr>
-          <% } %>
           </tbody>
         </table>
+      </div>
+
+      <!-- Pagination Container -->
+      <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-top: 1px solid #f3f4f6; font-size: 13px; color: #6b7280; flex-wrap: wrap; gap: 10px;">
+        <div id="empPaginationInfo">Hiển thị 0 - 0 / 0 nhân viên</div>
+        <div id="empPaginationControls" style="display: flex; gap: 6px; align-items: center;"></div>
       </div>
     </div>
 
@@ -276,13 +323,15 @@
         </div>
         <div class="form-group">
           <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Email công ty</label>
-          <input type="email" name="email" id="editEmpEmail" class="form-input" required
+          <input type="email" name="email" id="editEmpEmail" class="form-input" required oninput="validateEditEmpForm()"
                  style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+          <div id="editEmpEmailMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Số điện thoại</label>
-          <input type="text" name="phone" id="editEmpPhone" class="form-input"
+          <input type="text" name="phone" id="editEmpPhone" class="form-input" oninput="validateEditEmpForm()"
                  style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+          <div id="editEmpPhoneMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Giới tính</label>
@@ -293,8 +342,9 @@
         </div>
         <div class="form-group">
           <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Ngày sinh (dd/MM/yyyy)</label>
-          <input type="text" name="dob" id="editEmpDob" class="form-input" placeholder="Ví dụ: 15/05/1990"
+          <input type="text" name="dob" id="editEmpDob" class="form-input" placeholder="Ví dụ: 15/05/1990" oninput="validateEditEmpForm()"
                  style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+          <div id="editEmpDobMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Phòng ban</label>
@@ -316,7 +366,7 @@
       <div style="padding:14px 22px; border-top:1px solid #f3f4f6; display:flex; justify-content:flex-end; gap:10px;">
         <button type="button" onclick="closeEditEmpModal()"
                 style="padding:9px 18px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; font-size:13.5px; cursor:pointer; color:#374151;">Hủy</button>
-        <button type="submit"
+        <button type="submit" id="editEmpSubmitBtn"
                 style="padding:9px 18px; border:none; border-radius:8px; background:#0d9488; color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;">Lưu thay đổi</button>
       </div>
     </form>
@@ -324,6 +374,23 @@
 </div>
 
 <script>
+  // Dữ liệu nhân viên hiện tại để kiểm tra thời gian thực
+  const EXISTING_EMPLOYEES = [
+    <%
+      if (employeeList != null) {
+        boolean firstE = true;
+        for (Map<String, Object> emp : employeeList) {
+          if (!firstE) out.print(",");
+          firstE = false;
+          Integer uId = (Integer) emp.get("id");
+          String em = (String) emp.get("email");
+          String ph = (String) emp.get("phone");
+          out.print("{id:" + uId + ",email:'" + (em != null ? em.replace("'", "\\'") : "") + "',phone:'" + (ph != null ? ph.replace("'", "\\'") : "") + "'}");
+        }
+      }
+    %>
+  ];
+
   (function() {
     var now = new Date();
     var p = function(n){ return String(n).padStart(2,'0'); };
@@ -331,11 +398,96 @@
       p(now.getDate())+'/'+p(now.getMonth()+1)+'/'+now.getFullYear();
   })();
 
+  function setEmpFieldStatus(inputEl, msgEl, isValid, message) {
+    if (isValid === true) {
+      inputEl.style.borderColor = "#10b981";
+      msgEl.innerHTML = '<span style="color: #059669; font-weight: 500;">✓ ' + message + '</span>';
+    } else if (isValid === false) {
+      inputEl.style.borderColor = "#dc2626";
+      msgEl.innerHTML = '<span style="color: #dc2626; font-weight: 500;">' + message + '</span>';
+    } else {
+      inputEl.style.borderColor = "#e5e7eb";
+      msgEl.innerHTML = "";
+    }
+  }
+
+  function validateEditEmpForm() {
+    var currId = parseInt(document.getElementById('editEmpUserId').value);
+    var em = (document.getElementById('editEmpEmail').value || '').trim().toLowerCase();
+    var ph = (document.getElementById('editEmpPhone').value || '').trim();
+    var dob = (document.getElementById('editEmpDob').value || '').trim();
+
+    var emInput = document.getElementById('editEmpEmail');
+    var emMsg   = document.getElementById('editEmpEmailMsg');
+    var phInput = document.getElementById('editEmpPhone');
+    var phMsg   = document.getElementById('editEmpPhoneMsg');
+    var dobInput = document.getElementById('editEmpDob');
+    var dobMsg   = document.getElementById('editEmpDobMsg');
+    var submitBtn = document.getElementById('editEmpSubmitBtn');
+
+    var hasError = false;
+
+    // 1. Validate Email
+    if (em.length > 0) {
+      var isEmDup = EXISTING_EMPLOYEES.some(function(e){ return e.id !== currId && e.email.toLowerCase() === em; });
+      if (isEmDup) {
+        setEmpFieldStatus(emInput, emMsg, false, 'Email công ty này đã được dùng bởi nhân viên khác!');
+        hasError = true;
+      } else if (!em.includes('@') || !em.includes('.')) {
+        setEmpFieldStatus(emInput, emMsg, false, 'Định dạng email chưa đúng!');
+        hasError = true;
+      } else {
+        setEmpFieldStatus(emInput, emMsg, true, 'Email hợp lệ');
+      }
+    } else {
+      setEmpFieldStatus(emInput, emMsg, null, '');
+    }
+
+    // 2. Validate Phone
+    if (ph.length > 0) {
+      var isPhDup = EXISTING_EMPLOYEES.some(function(e){ return e.id !== currId && e.phone && e.phone === ph; });
+      if (isPhDup) {
+        setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại này đã được dùng bởi nhân viên khác!');
+        hasError = true;
+      } else if (!/^[0-9]{9,11}$/.test(ph)) {
+        setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại phải từ 9 - 11 chữ số!');
+        hasError = true;
+      } else {
+        setEmpFieldStatus(phInput, phMsg, true, 'Số điện thoại hợp lệ');
+      }
+    } else {
+      setEmpFieldStatus(phInput, phMsg, null, '');
+    }
+
+    // 3. Validate Dob
+    if (dob.length > 0) {
+      var dobRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+      if (!dobRegex.test(dob)) {
+        setEmpFieldStatus(dobInput, dobMsg, false, 'Định dạng ngày sinh phải là dd/MM/yyyy (ví dụ: 15/05/1990)!');
+        hasError = true;
+      } else {
+        setEmpFieldStatus(dobInput, dobMsg, true, 'Ngày sinh hợp lệ');
+      }
+    } else {
+      setEmpFieldStatus(dobInput, dobMsg, null, '');
+    }
+
+    submitBtn.disabled = hasError;
+    submitBtn.style.opacity = hasError ? '0.5' : '1';
+    submitBtn.style.cursor = hasError ? 'not-allowed' : 'pointer';
+  }
+
+  const EMP_PAGE_SIZE = 10;
+  let currentEmpPage = 1;
+  let filteredEmpRows = [];
+
   function filterTable() {
-    var search  = document.getElementById('searchInput').value.toLowerCase().trim();
-    var dept    = document.getElementById('filterDept').value.toLowerCase().trim();
-    var status  = document.getElementById('filterStatus').value.toLowerCase().trim();
-    document.querySelectorAll('#empTableBody .emp-row').forEach(function(row) {
+    var search  = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    var dept    = (document.getElementById('filterDept').value || '').toLowerCase().trim();
+    var status  = (document.getElementById('filterStatus').value || '').toLowerCase().trim();
+
+    var allRows = Array.from(document.querySelectorAll('#empTableBody .emp-row'));
+    filteredEmpRows = allRows.filter(function(row) {
       var name = (row.dataset.name || '').toLowerCase();
       var code = (row.dataset.code || '').toLowerCase();
       var pos  = (row.dataset.pos  || '').toLowerCase();
@@ -345,8 +497,111 @@
       var matchSearch = !search || name.includes(search) || code.includes(search) || pos.includes(search);
       var matchDept   = !dept   || rowDept === dept;
       var matchStatus = !status || rowStatus === status;
-      row.style.display = (matchSearch && matchDept && matchStatus) ? '' : 'none';
+
+      return matchSearch && matchDept && matchStatus;
     });
+
+    currentEmpPage = 1;
+    renderEmpPagination();
+  }
+
+  function renderEmpPagination() {
+    var allRows = document.querySelectorAll('#empTableBody .emp-row');
+    allRows.forEach(function(r) { r.style.display = 'none'; });
+
+    var emptyRow = document.getElementById('empEmptyRow');
+    var total = filteredEmpRows.length;
+
+    if (total === 0) {
+      if (emptyRow) emptyRow.style.display = '';
+    } else {
+      if (emptyRow) emptyRow.style.display = 'none';
+    }
+
+    var totalPages = Math.ceil(total / EMP_PAGE_SIZE) || 1;
+    if (currentEmpPage > totalPages) currentEmpPage = totalPages;
+    if (currentEmpPage < 1) currentEmpPage = 1;
+
+    var startIdx = (currentEmpPage - 1) * EMP_PAGE_SIZE;
+    var endIdx   = Math.min(startIdx + EMP_PAGE_SIZE, total);
+
+    for (var i = startIdx; i < endIdx; i++) {
+      filteredEmpRows[i].style.display = '';
+    }
+
+    // Cập nhật thông tin phân trang
+    var infoEl = document.getElementById('empPaginationInfo');
+    if (infoEl) {
+      if (total === 0) {
+        infoEl.textContent = 'Không tìm thấy nhân viên nào phù hợp';
+      } else {
+        infoEl.textContent = 'Hiển thị ' + (startIdx + 1) + ' - ' + endIdx + ' trên tổng số ' + total + ' nhân viên';
+      }
+    }
+
+    // Vẽ các nút phân trang
+    var controlsEl = document.getElementById('empPaginationControls');
+    if (!controlsEl) return;
+    controlsEl.innerHTML = '';
+
+    if (totalPages <= 1) {
+      return;
+    }
+
+    // Nút Trước
+    var prevBtn = document.createElement('button');
+    prevBtn.innerHTML = '&laquo; Trước';
+    prevBtn.className = 'page-nav-btn';
+    prevBtn.type = 'button';
+    prevBtn.disabled = currentEmpPage === 1;
+    prevBtn.onclick = function() {
+      if (currentEmpPage > 1) {
+        currentEmpPage--;
+        renderEmpPagination();
+      }
+    };
+    controlsEl.appendChild(prevBtn);
+
+    // Các trang số
+    for (var p = 1; p <= totalPages; p++) {
+      if (totalPages > 7) {
+        if (p !== 1 && p !== totalPages && Math.abs(p - currentEmpPage) > 2) {
+          if (p === 2 || p === totalPages - 1) {
+            var dots = document.createElement('span');
+            dots.textContent = '...';
+            dots.style.padding = '0 4px';
+            dots.style.color = '#9ca3af';
+            controlsEl.appendChild(dots);
+          }
+          continue;
+        }
+      }
+      var pageBtn = document.createElement('button');
+      pageBtn.textContent = p;
+      pageBtn.type = 'button';
+      pageBtn.className = 'page-num-btn' + (p === currentEmpPage ? ' active' : '');
+      pageBtn.onclick = (function(page) {
+        return function() {
+          currentEmpPage = page;
+          renderEmpPagination();
+        };
+      })(p);
+      controlsEl.appendChild(pageBtn);
+    }
+
+    // Nút Tiếp
+    var nextBtn = document.createElement('button');
+    nextBtn.innerHTML = 'Tiếp &raquo;';
+    nextBtn.className = 'page-nav-btn';
+    nextBtn.type = 'button';
+    nextBtn.disabled = currentEmpPage === totalPages;
+    nextBtn.onclick = function() {
+      if (currentEmpPage < totalPages) {
+        currentEmpPage++;
+        renderEmpPagination();
+      }
+    };
+    controlsEl.appendChild(nextBtn);
   }
 
   // Tự động nhận tham số từ URL khi chuyển trang từ màn Phòng ban / Chức vụ
@@ -373,9 +628,7 @@
     if (search) {
       document.getElementById('searchInput').value = search;
     }
-    if (dept || pos || search) {
-      filterTable();
-    }
+    filterTable();
   })();
 
   function openEditEmpModal(btn) {
@@ -388,6 +641,14 @@
     document.getElementById('editEmpDob').value       = (row.dataset.dob && row.dataset.dob !== '—') ? row.dataset.dob : '';
     document.getElementById('editEmpDept').value      = row.dataset.deptId || '';
     document.getElementById('editEmpPos').value       = row.dataset.posId || '';
+
+    setEmpFieldStatus(document.getElementById('editEmpEmail'), document.getElementById('editEmpEmailMsg'), null, '');
+    setEmpFieldStatus(document.getElementById('editEmpPhone'), document.getElementById('editEmpPhoneMsg'), null, '');
+    setEmpFieldStatus(document.getElementById('editEmpDob'), document.getElementById('editEmpDobMsg'), null, '');
+    document.getElementById('editEmpSubmitBtn').disabled = false;
+    document.getElementById('editEmpSubmitBtn').style.opacity = '1';
+    document.getElementById('editEmpSubmitBtn').style.cursor = 'pointer';
+
     var modal = document.getElementById('editEmpModal');
     modal.style.display = 'flex';
   }
@@ -421,6 +682,24 @@
   function closeViewEmpModal() {
     document.getElementById('viewEmpModal').style.display = 'none';
   }
+
+  // Tự động ẩn thông báo sau đúng 2 giây
+  setTimeout(function() {
+    var alerts = document.querySelectorAll('.flash-alert');
+    alerts.forEach(function(alert) {
+      alert.style.transition = 'opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin-bottom 0.4s ease';
+      alert.style.opacity = '0';
+      alert.style.transform = 'translateY(-8px)';
+      alert.style.maxHeight = '0';
+      alert.style.marginBottom = '0';
+      alert.style.paddingTop = '0';
+      alert.style.paddingBottom = '0';
+      alert.style.overflow = 'hidden';
+      setTimeout(function() {
+        alert.remove();
+      }, 400);
+    });
+  }, 2000);
 </script>
 </body>
 </html>

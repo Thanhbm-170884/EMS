@@ -72,13 +72,23 @@ public class PositionServlet extends HttpServlet {
         if (positionsList != null) {
             for (Map<String, Object> p : positionsList) {
                 int totalEmp = (Integer) p.get("totalEmployees");
-                if (totalEmp > 0) {
-                    assignedPositions++;
-                }
+                assignedPositions += totalEmp;
             }
         }
 
         request.setAttribute("totalPositions", totalPositions);
+        // Flash messages
+        String successMsg = (String) session.getAttribute("successMsg");
+        String errorMsg = (String) session.getAttribute("errorMsg");
+        if (successMsg != null) {
+            request.setAttribute("successMsg", successMsg);
+            session.removeAttribute("successMsg");
+        }
+        if (errorMsg != null) {
+            request.setAttribute("errorMsg", errorMsg);
+            session.removeAttribute("errorMsg");
+        }
+
         request.setAttribute("assignedPositions", assignedPositions);
         request.setAttribute("positionsList", positionsList);
         request.setAttribute("posEmployeesMap", posEmployeesMap);
@@ -127,12 +137,29 @@ public class PositionServlet extends HttpServlet {
 
     private void handleCreate(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        HttpSession session = request.getSession();
         String code = request.getParameter("code");
         String name = request.getParameter("name");
         String levelStr = request.getParameter("jobLevel");
         String shiftIdStr = request.getParameter("defaultShiftId");
 
         if (code == null || code.trim().isEmpty() || name == null || name.trim().isEmpty()) {
+            session.setAttribute("errorMsg", "Vui lòng nhập đầy đủ Mã và Tên chức vụ!");
+            response.sendRedirect(request.getContextPath() + "/positions");
+            return;
+        }
+
+        code = code.trim().toUpperCase();
+        name = name.trim();
+
+        if (positionDAO.isCodeExists(code, 0)) {
+            session.setAttribute("errorMsg", "Mã chức vụ '" + code + "' đã tồn tại!");
+            response.sendRedirect(request.getContextPath() + "/positions");
+            return;
+        }
+
+        if (positionDAO.isNameExists(name, 0)) {
+            session.setAttribute("errorMsg", "Tên chức vụ '" + name + "' đã tồn tại!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
         }
@@ -151,17 +178,18 @@ public class PositionServlet extends HttpServlet {
             }
         } catch (NumberFormatException ignored) {}
 
-        if (positionDAO.isCodeExists(code, 0)) {
-            response.sendRedirect(request.getContextPath() + "/positions");
-            return;
+        boolean ok = positionDAO.addPosition(code, name, jobLevel, defaultShiftId);
+        if (ok) {
+            session.setAttribute("successMsg", "Thêm mới chức vụ thành công!");
+        } else {
+            session.setAttribute("errorMsg", "Không thể thêm chức vụ, vui lòng thử lại!");
         }
-
-        positionDAO.addPosition(code, name, jobLevel, defaultShiftId);
         response.sendRedirect(request.getContextPath() + "/positions");
     }
 
     private void handleUpdate(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        HttpSession session = request.getSession();
         String idStr = request.getParameter("id");
         String name = request.getParameter("name");
         String levelStr = request.getParameter("jobLevel");
@@ -171,11 +199,21 @@ public class PositionServlet extends HttpServlet {
         try {
             id = Integer.parseInt(idStr);
         } catch (Exception e) {
+            session.setAttribute("errorMsg", "Mã ID không hợp lệ!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
         }
 
         if (name == null || name.trim().isEmpty()) {
+            session.setAttribute("errorMsg", "Vui lòng nhập tên chức vụ!");
+            response.sendRedirect(request.getContextPath() + "/positions");
+            return;
+        }
+
+        name = name.trim();
+
+        if (positionDAO.isNameExists(name, id)) {
+            session.setAttribute("errorMsg", "Tên chức vụ '" + name + "' đã tồn tại!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
         }
@@ -194,22 +232,34 @@ public class PositionServlet extends HttpServlet {
             }
         } catch (NumberFormatException ignored) {}
 
-        positionDAO.updatePosition(id, name, jobLevel, defaultShiftId);
+        boolean ok = positionDAO.updatePosition(id, name, jobLevel, defaultShiftId);
+        if (ok) {
+            session.setAttribute("successMsg", "Cập nhật chức vụ thành công!");
+        } else {
+            session.setAttribute("errorMsg", "Không thể cập nhật chức vụ!");
+        }
         response.sendRedirect(request.getContextPath() + "/positions");
     }
 
     private void handleDelete(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        HttpSession session = request.getSession();
         String idStr = request.getParameter("id");
         int id = 0;
         try {
             id = Integer.parseInt(idStr);
         } catch (Exception e) {
+            session.setAttribute("errorMsg", "Mã ID không hợp lệ!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
         }
 
-        positionDAO.deletePosition(id);
+        boolean ok = positionDAO.deletePosition(id);
+        if (ok) {
+            session.setAttribute("successMsg", "Xóa chức vụ thành công!");
+        } else {
+            session.setAttribute("errorMsg", "Không thể xóa chức vụ này!");
+        }
         response.sendRedirect(request.getContextPath() + "/positions");
     }
 }

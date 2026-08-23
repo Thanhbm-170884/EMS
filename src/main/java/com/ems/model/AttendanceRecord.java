@@ -1,7 +1,9 @@
-package com.ems.model;
+package com.ems.model; //
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AttendanceRecord {
 
@@ -11,7 +13,33 @@ public class AttendanceRecord {
     private String department;
     private LocalTime checkIn;
     private LocalTime checkOut;
-    private long lateMinutes; // số phút đi muộn, tính từ mốc 08:00
+    private long lateMinutes;
+    private Integer employeeId; // Id thật trong bảng users, tra cứu từ employeeCode
+
+    private int rowNumber; // số dòng trong bảng, để báo lỗi rõ ràng
+    private final List<String> errors = new ArrayList<>();
+
+    public boolean isValid() {
+        return errors.isEmpty();
+    }
+
+    public void addError(String message) {
+        errors.add(message);
+    }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+
+    public void clearErrors() {
+        errors.clear();
+    }
+
+    public int getRowNumber() { return rowNumber; }
+    public void setRowNumber(int rowNumber) { this.rowNumber = rowNumber; }
+
+    public Integer getEmployeeId() { return employeeId; }
+    public void setEmployeeId(Integer employeeId) { this.employeeId = employeeId; }
 
     public AttendanceRecord() {
     }

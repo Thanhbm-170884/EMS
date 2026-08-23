@@ -106,6 +106,13 @@ public class ShiftAssignmentServlet extends HttpServlet {
             req.setAttribute("shiftOptions", ShiftManagementDAO.getAllCustomShifts());
             req.setAttribute("departments", ShiftAssignmentDAO.getAllDepartments());
             req.setAttribute("employees", ShiftAssignmentDAO.getAllEmployees());
+            // Giữ lại id nếu đang sửa (để form hiển thị đúng chế độ update)
+            String idParam = req.getParameter("id");
+            if (idParam != null && !idParam.isBlank()) {
+                try {
+                    req.setAttribute("batch", service.getById(Integer.parseInt(idParam)));
+                } catch (Exception ignored) { }
+            }
             req.getRequestDispatcher("/shift-assignment.jsp").forward(req, resp);
         }
     }

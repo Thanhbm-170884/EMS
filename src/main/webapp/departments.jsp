@@ -10,6 +10,8 @@
     Integer assignedHeadCount = (Integer) request.getAttribute("assignedHeadCount");
     if (totalDepts == null) totalDepts = departmentsList != null ? departmentsList.size() : 0;
     if (assignedHeadCount == null) assignedHeadCount = 0;
+    String successMsg = (String) request.getAttribute("successMsg");
+    String errorMsg = (String) request.getAttribute("errorMsg");
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -60,6 +62,18 @@
   </div>
 
   <div class="page-body">
+    <% if (successMsg != null && !successMsg.isEmpty()) { %>
+      <div class="flash-alert" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span><%= successMsg %></span>
+      </div>
+    <% } %>
+    <% if (errorMsg != null && !errorMsg.isEmpty()) { %>
+      <div class="flash-alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><%= errorMsg %></span>
+      </div>
+    <% } %>
 
     <!-- Page Header -->
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
@@ -179,27 +193,24 @@
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Mã phòng ban <span style="color:red;">*</span></label>
-          <input type="text" name="code" class="form-input" placeholder="Ví dụ: MKT, IT, HR, ACC..." required/>
+          <input type="text" name="code" id="addDeptCode" class="form-input" placeholder="Ví dụ: MKT, IT, HR, ACC..." required oninput="validateAddDeptForm()"/>
+          <div id="addDeptCodeMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Tên phòng ban <span style="color:red;">*</span></label>
-          <input type="text" name="name" class="form-input" placeholder="Ví dụ: Phòng Marketing, Phòng Kỹ thuật..." required/>
+          <input type="text" name="name" id="addDeptName" class="form-input" placeholder="Ví dụ: Phòng Marketing, Phòng Kỹ thuật..." required oninput="validateAddDeptForm()"/>
+          <div id="addDeptNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Bổ nhiệm Trưởng phòng</label>
-          <select name="headAccountId" class="form-input">
-            <option value="">-- Chưa bổ nhiệm --</option>
-            <% if (headCandidatesList != null) { for (Map<String, Object> emp : headCandidatesList) { %>
-              <option value="<%= emp.get("accountId") %>">
-                <%= emp.get("fullName") %> (<%= emp.get("employeeCode") %>) - <%= emp.get("deptName") != null ? emp.get("deptName") : "Chưa có PB" %>
-              </option>
-            <% }} %>
+          <select name="headAccountId" class="form-input" disabled style="background:#f3f4f6; color:#6b7280; cursor:not-allowed;">
+            <option value="">-- Chưa bổ nhiệm (Phòng ban mới chưa có nhân viên) --</option>
           </select>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" onclick="closeAddModal()">Hủy</button>
-        <button type="submit" class="btn-primary">Thêm phòng ban</button>
+        <button type="submit" id="addDeptSubmitBtn" class="btn-primary">Thêm phòng ban</button>
       </div>
     </form>
   </div>
@@ -224,23 +235,19 @@
         </div>
         <div class="form-group">
           <label class="form-label">Tên phòng ban <span style="color:red;">*</span></label>
-          <input type="text" name="name" id="editDeptName" class="form-input" required/>
+          <input type="text" name="name" id="editDeptName" class="form-input" required oninput="validateEditDeptForm()"/>
+          <div id="editDeptNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Trưởng phòng</label>
           <select name="headAccountId" id="editHeadAccountId" class="form-input">
             <option value="">-- Chưa bổ nhiệm --</option>
-            <% if (headCandidatesList != null) { for (Map<String, Object> emp : headCandidatesList) { %>
-              <option value="<%= emp.get("accountId") %>">
-                <%= emp.get("fullName") %> (<%= emp.get("employeeCode") %>) - <%= emp.get("deptName") != null ? emp.get("deptName") : "Chưa có PB" %>
-              </option>
-            <% }} %>
           </select>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" onclick="closeEditModal()">Hủy</button>
-        <button type="submit" class="btn-primary">Lưu thay đổi</button>
+        <button type="submit" id="editDeptSubmitBtn" class="btn-primary">Lưu thay đổi</button>
       </div>
     </form>
   </div>
@@ -261,7 +268,7 @@
       <div class="modal-body">
         <p id="deleteMessage" style="font-size: 14px; color: #374151; line-height: 1.5;"></p>
         <div id="deleteWarning" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 12px;">
-          ⚠️ <strong>Cảnh báo:</strong> Phòng ban này hiện đang có nhân viên trực thuộc. Bạn không thể xóa cho đến khi chuyển hết nhân sự sang phòng ban khác!
+          <strong>Cảnh báo:</strong> Phòng ban này hiện đang có nhân viên trực thuộc. Bạn không thể xóa cho đến khi chuyển hết nhân sự sang phòng ban khác!
         </div>
       </div>
       <div class="modal-footer">
@@ -273,6 +280,42 @@
 </div>
 
 <script>
+  // Dữ liệu danh sách ứng viên Trưởng phòng (kèm mã phòng ban để lọc đúng phòng ban)
+  const ALL_HEAD_CANDIDATES = [
+    <%
+      if (headCandidatesList != null) {
+        boolean firstH = true;
+        for (Map<String, Object> h : headCandidatesList) {
+          if (!firstH) out.print(",");
+          firstH = false;
+          Integer accId = (Integer) h.get("accountId");
+          String hName = (String) h.get("fullName");
+          String hCode = (String) h.get("employeeCode");
+          Object dIdObj = h.get("departmentId");
+          Integer dId = dIdObj != null ? ((Number) dIdObj).intValue() : null;
+          out.print("{accountId:" + accId + ",fullName:'" + (hName != null ? hName.replace("'", "\\'") : "") + "',employeeCode:'" + (hCode != null ? hCode.replace("'", "\\'") : "") + "',deptId:" + (dId != null ? dId : "null") + "}");
+        }
+      }
+    %>
+  ];
+
+  // Dữ liệu phòng ban để kiểm tra thời gian thực
+  const EXISTING_DEPTS = [
+    <%
+      if (departmentsList != null) {
+        boolean firstD = true;
+        for (Map<String, Object> d : departmentsList) {
+          if (!firstD) out.print(",");
+          firstD = false;
+          Integer dId = (Integer) d.get("id");
+          String dCode = (String) d.get("code");
+          String dName = (String) d.get("name");
+          out.print("{id:" + dId + ",code:'" + (dCode != null ? dCode.replace("'", "\\'") : "") + "',name:'" + (dName != null ? dName.replace("'", "\\'") : "") + "'}");
+        }
+      }
+    %>
+  ];
+
   // Topbar date
   (function() {
     var now = new Date();
@@ -280,6 +323,89 @@
     document.getElementById('topbar-date').textContent =
       p(now.getDate())+'/'+p(now.getMonth()+1)+'/'+now.getFullYear();
   })();
+
+  function setDeptFieldStatus(inputEl, msgEl, isValid, message) {
+    if (isValid === true) {
+      inputEl.style.borderColor = "#10b981";
+      msgEl.innerHTML = '<span style="color: #059669; font-weight: 500;">✓ ' + message + '</span>';
+    } else if (isValid === false) {
+      inputEl.style.borderColor = "#dc2626";
+      msgEl.innerHTML = '<span style="color: #dc2626; font-weight: 500;">' + message + '</span>';
+    } else {
+      inputEl.style.borderColor = "";
+      msgEl.innerHTML = "";
+    }
+  }
+
+  function validateAddDeptForm() {
+    var code = (document.getElementById('addDeptCode').value || '').trim().toUpperCase();
+    var name = (document.getElementById('addDeptName').value || '').trim().toLowerCase();
+
+    var codeInput = document.getElementById('addDeptCode');
+    var codeMsg   = document.getElementById('addDeptCodeMsg');
+    var nameInput = document.getElementById('addDeptName');
+    var nameMsg   = document.getElementById('addDeptNameMsg');
+    var submitBtn = document.getElementById('addDeptSubmitBtn');
+
+    var hasError = false;
+
+    // 1. Check Code
+    if (code.length > 0) {
+      var isCodeDup = EXISTING_DEPTS.some(function(d){ return d.code.toUpperCase() === code; });
+      if (isCodeDup) {
+        setDeptFieldStatus(codeInput, codeMsg, false, 'Mã phòng ban này đã tồn tại!');
+        hasError = true;
+      } else {
+        setDeptFieldStatus(codeInput, codeMsg, true, 'Mã phòng ban hợp lệ');
+      }
+    } else {
+      setDeptFieldStatus(codeInput, codeMsg, null, '');
+    }
+
+    // 2. Check Name
+    if (name.length > 0) {
+      var isNameDup = EXISTING_DEPTS.some(function(d){ return d.name.toLowerCase() === name; });
+      if (isNameDup) {
+        setDeptFieldStatus(nameInput, nameMsg, false, 'Tên phòng ban này đã tồn tại!');
+        hasError = true;
+      } else {
+        setDeptFieldStatus(nameInput, nameMsg, true, 'Tên phòng ban hợp lệ');
+      }
+    } else {
+      setDeptFieldStatus(nameInput, nameMsg, null, '');
+    }
+
+    submitBtn.disabled = hasError;
+    submitBtn.style.opacity = hasError ? '0.5' : '1';
+    submitBtn.style.cursor = hasError ? 'not-allowed' : 'pointer';
+  }
+
+  function validateEditDeptForm() {
+    var currId = parseInt(document.getElementById('editDeptId').value);
+    var name = (document.getElementById('editDeptName').value || '').trim().toLowerCase();
+
+    var nameInput = document.getElementById('editDeptName');
+    var nameMsg   = document.getElementById('editDeptNameMsg');
+    var submitBtn = document.getElementById('editDeptSubmitBtn');
+
+    var hasError = false;
+
+    if (name.length > 0) {
+      var isNameDup = EXISTING_DEPTS.some(function(d){ return d.id !== currId && d.name.toLowerCase() === name; });
+      if (isNameDup) {
+        setDeptFieldStatus(nameInput, nameMsg, false, 'Tên phòng ban này đã tồn tại!');
+        hasError = true;
+      } else {
+        setDeptFieldStatus(nameInput, nameMsg, true, 'Tên phòng ban hợp lệ');
+      }
+    } else {
+      setDeptFieldStatus(nameInput, nameMsg, null, '');
+    }
+
+    submitBtn.disabled = hasError;
+    submitBtn.style.opacity = hasError ? '0.5' : '1';
+    submitBtn.style.cursor = hasError ? 'not-allowed' : 'pointer';
+  }
 
   // Filter Table Search
   function filterTable() {
@@ -299,18 +425,60 @@
 
   // Modal Add
   function openAddModal() {
+    document.getElementById('addDeptCode').value = '';
+    document.getElementById('addDeptName').value = '';
+    setDeptFieldStatus(document.getElementById('addDeptCode'), document.getElementById('addDeptCodeMsg'), null, '');
+    setDeptFieldStatus(document.getElementById('addDeptName'), document.getElementById('addDeptNameMsg'), null, '');
+    document.getElementById('addDeptSubmitBtn').disabled = false;
+    document.getElementById('addDeptSubmitBtn').style.opacity = '1';
+    document.getElementById('addDeptSubmitBtn').style.cursor = 'pointer';
     document.getElementById('addModal').style.display = 'flex';
   }
   function closeAddModal() {
     document.getElementById('addModal').style.display = 'none';
   }
 
-  // Modal Edit
+  // Modal Edit (Chỉ hiển thị nhân viên thuộc đúng phòng ban này vào dropdown Trưởng phòng)
   function openEditModal(id, code, name, headId) {
     document.getElementById('editDeptId').value = id;
     document.getElementById('editDeptCode').value = code;
     document.getElementById('editDeptName').value = name;
-    document.getElementById('editHeadAccountId').value = headId ? headId : '';
+
+    // Lọc danh sách nhân viên chỉ thuộc đúng phòng ban đang sửa
+    var selectHead = document.getElementById('editHeadAccountId');
+    selectHead.innerHTML = '<option value="">-- Chưa bổ nhiệm --</option>';
+
+    var matchingEmployees = ALL_HEAD_CANDIDATES.filter(function(emp) {
+      return emp.deptId === id;
+    });
+
+    if (matchingEmployees.length === 0) {
+      var opt = document.createElement('option');
+      opt.value = "";
+      opt.disabled = true;
+      opt.textContent = "(Phòng ban này chưa có nhân sự trực thuộc)";
+      selectHead.appendChild(opt);
+    } else {
+      matchingEmployees.forEach(function(emp) {
+        var opt = document.createElement('option');
+        opt.value = emp.accountId;
+        opt.textContent = emp.fullName + ' (' + emp.employeeCode + ')';
+        if (headId && String(emp.accountId) === String(headId)) {
+          opt.selected = true;
+        }
+        selectHead.appendChild(opt);
+      });
+    }
+
+    if (headId) {
+      selectHead.value = headId;
+    }
+
+    setDeptFieldStatus(document.getElementById('editDeptName'), document.getElementById('editDeptNameMsg'), null, '');
+    document.getElementById('editDeptSubmitBtn').disabled = false;
+    document.getElementById('editDeptSubmitBtn').style.opacity = '1';
+    document.getElementById('editDeptSubmitBtn').style.cursor = 'pointer';
+
     document.getElementById('editModal').style.display = 'flex';
   }
   function closeEditModal() {
@@ -348,6 +516,24 @@
     if (event.target === editM) editM.style.display = 'none';
     if (event.target === delM) delM.style.display = 'none';
   };
+
+  // Tự động ẩn thông báo sau đúng 2 giây
+  setTimeout(function() {
+    var alerts = document.querySelectorAll('.flash-alert');
+    alerts.forEach(function(alert) {
+      alert.style.transition = 'opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin-bottom 0.4s ease';
+      alert.style.opacity = '0';
+      alert.style.transform = 'translateY(-8px)';
+      alert.style.maxHeight = '0';
+      alert.style.marginBottom = '0';
+      alert.style.paddingTop = '0';
+      alert.style.paddingBottom = '0';
+      alert.style.overflow = 'hidden';
+      setTimeout(function() {
+        alert.remove();
+      }, 400);
+    });
+  }, 2000);
 </script>
 </body>
 </html>

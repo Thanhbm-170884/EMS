@@ -228,10 +228,9 @@ public class HomeServlet extends HttpServlet {
                               "FROM requests r " +
                               "JOIN accounts a ON r.CreatedByAccountId = a.Id " +
                               "JOIN users u ON a.UserId = u.Id " +
-                              "WHERE r.CurrentApproverAccountId = ? AND r.Status = 'Pending' " +
+                              "WHERE r.Status = 'Pending' " +
                               "ORDER BY r.CreatedAt DESC";
         try (PreparedStatement ps = conn.prepareStatement(pendingQuery)) {
-            ps.setInt(1, accountId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> req = new HashMap<>();
@@ -306,7 +305,7 @@ public class HomeServlet extends HttpServlet {
     }
 
     private void loadAdminData(Connection conn, HttpServletRequest request) throws SQLException {
-        // A. System stat counts
+        // 1. Thống kê 4 thẻ (Tài khoản, Nhân viên, Phòng ban, Chức vụ)
         int totalAccounts = 0;
         String countAcc = "SELECT COUNT(*) as cnt FROM accounts";
         try (PreparedStatement ps = conn.prepareStatement(countAcc);
@@ -315,58 +314,57 @@ public class HomeServlet extends HttpServlet {
         }
         request.setAttribute("totalAccounts", totalAccounts);
 
-        int totalRoles = 0;
-        String countRoles = "SELECT COUNT(*) as cnt FROM roles";
-        try (PreparedStatement ps = conn.prepareStatement(countRoles);
+        int totalEmployees = 0;
+        String countEmp = "SELECT COUNT(*) as cnt FROM users";
+        try (PreparedStatement ps = conn.prepareStatement(countEmp);
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) totalRoles = rs.getInt("cnt");
+            if (rs.next()) totalEmployees = rs.getInt("cnt");
         }
-        request.setAttribute("totalRoles", totalRoles);
+        request.setAttribute("totalEmployees", totalEmployees);
 
-        int totalPeriods = 0;
-        String countPeriods = "SELECT COUNT(*) as cnt FROM timesheetperiods";
-        try (PreparedStatement ps = conn.prepareStatement(countPeriods);
+        int totalDepartments = 0;
+        String countDepts = "SELECT COUNT(*) as cnt FROM departments";
+        try (PreparedStatement ps = conn.prepareStatement(countDepts);
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) totalPeriods = rs.getInt("cnt");
+            if (rs.next()) totalDepartments = rs.getInt("cnt");
         }
-        request.setAttribute("totalPeriods", totalPeriods);
+        request.setAttribute("totalDepartments", totalDepartments);
 
-        // B. Recent system accounts
-        List<Map<String, Object>> recentAccounts = new ArrayList<>();
-        String accQuery = "SELECT u.FullName, a.Username, r.Name as RoleName, a.Status, u.EmailCompany FROM accounts a " +
-                          "JOIN users u ON a.UserId = u.Id " +
-                          "LEFT JOIN accountroles ar ON a.Id = ar.AccountId " +
-                          "LEFT JOIN roles r ON ar.RoleId = r.Id " +
-                          "ORDER BY a.Id DESC LIMIT 5";
-        try (PreparedStatement ps = conn.prepareStatement(accQuery);
+        int totalPositions = 0;
+        String countPos = "SELECT COUNT(*) as cnt FROM positions";
+        try (PreparedStatement ps = conn.prepareStatement(countPos);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) totalPositions = rs.getInt("cnt");
+        }
+        request.setAttribute("totalPositions", totalPositions);
+
+        // 2. Danh sách Nhân viên gần đây (Recent Employees)
+        List<Map<String, Object>> recentEmployees = new ArrayList<>();
+        String empQuery = "SELECT u.FullName, d.Name as DeptName FROM users u " +
+                          "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                          "ORDER BY u.Id DESC LIMIT 5";
+        try (PreparedStatement ps = conn.prepareStatement(empQuery);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Map<String, Object> acc = new HashMap<>();
-                acc.put("fullName", rs.getString("FullName"));
-                acc.put("username", rs.getString("Username"));
-                acc.put("roleName", rs.getString("RoleName"));
-                acc.put("status", rs.getBoolean("Status"));
-                acc.put("emailCompany", rs.getString("EmailCompany"));
-                recentAccounts.add(acc);
+                Map<String, Object> emp = new HashMap<>();
+                emp.put("fullName", rs.getString("FullName"));
+                emp.put("deptName", rs.getString("DeptName"));
+                recentEmployees.add(emp);
             }
         }
-        request.setAttribute("recentAccounts", recentAccounts);
-
-        // C. Config summary
-        int totalShifts = 0;
-        String countShifts = "SELECT COUNT(*) as cnt FROM shifts";
-        try (PreparedStatement ps = conn.prepareStatement(countShifts);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) totalShifts = rs.getInt("cnt");
-        }
-        request.setAttribute("totalShifts", totalShifts);
+        request.setAttribute("recentEmployees", recentEmployees);
 
         int totalHolidays = 0;
         String countHolidays = "SELECT COUNT(*) as cnt FROM holidaytemplates";
         try (PreparedStatement ps = conn.prepareStatement(countHolidays);
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) totalHolidays = rs.getInt("cnt");
+            while (rs.next()) {
+                Map<String, Object> dist = new HashMap<>();
+                dist.put("deptName", rs.getString("DeptName"));
+                dist.put("empCount", rs.getInt("EmpCount"));
+                deptDistribution.add(dist);
+            }
         }
-        request.setAttribute("totalHolidays", totalHolidays);
+        request.setAttribute("deptDistribution", deptDistribution);
     }
 }

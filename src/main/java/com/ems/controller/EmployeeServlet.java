@@ -70,6 +70,18 @@ public class EmployeeServlet extends HttpServlet {
         // Lấy danh sách chức vụ để sửa
         List<Map<String, Object>> positionsList = userDAO.getPositions();
 
+        // Flash messages
+        String successMsg = (String) session.getAttribute("successMessage");
+        String errorMsg = (String) session.getAttribute("errorMessage");
+        if (successMsg != null) {
+            request.setAttribute("successMessage", successMsg);
+            session.removeAttribute("successMessage");
+        }
+        if (errorMsg != null) {
+            request.setAttribute("errorMessage", errorMsg);
+            session.removeAttribute("errorMessage");
+        }
+
         request.setAttribute("employeeList", employeeList);
         request.setAttribute("totalEmp", totalEmp);
         request.setAttribute("activeEmp", activeEmp);
@@ -100,6 +112,26 @@ public class EmployeeServlet extends HttpServlet {
                 String fullName  = request.getParameter("fullName");
                 String email     = request.getParameter("email");
                 String phone     = request.getParameter("phone");
+
+                fullName = fullName != null ? fullName.trim() : "";
+                email = email != null ? email.trim() : "";
+                phone = phone != null ? phone.trim() : "";
+
+                // Validate
+                String error = null;
+                if (fullName.isEmpty() || email.isEmpty()) {
+                    error = "Vui lòng điền đầy đủ họ và tên và email!";
+                } else if (userDAO.isEmailExistsForOtherUserId(email, userId)) {
+                    error = "Email công ty '" + email + "' đã được sử dụng bởi nhân viên khác!";
+                } else if (!phone.isEmpty() && userDAO.isPhoneExistsForOtherUserId(phone, userId)) {
+                    error = "Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!";
+                }
+
+                if (error != null) {
+                    session.setAttribute("errorMessage", error);
+                    response.sendRedirect(request.getContextPath() + "/employees");
+                    return;
+                }
                 
                 Boolean genderVal = null;
                 String genderParam = request.getParameter("gender");
@@ -127,9 +159,15 @@ public class EmployeeServlet extends HttpServlet {
                 int departmentId = Integer.parseInt(request.getParameter("departmentId"));
                 int positionId   = Integer.parseInt(request.getParameter("positionId"));
 
-                userDAO.updateEmployeeInfo(userId, fullName, email, phone, genderVal, dobDate, departmentId, positionId);
+                boolean success = userDAO.updateEmployeeInfo(userId, fullName, email, phone, genderVal, dobDate, departmentId, positionId);
+                if (success) {
+                    session.setAttribute("successMessage", "Cập nhật thông tin nhân viên thành công!");
+                } else {
+                    session.setAttribute("errorMessage", "Không thể cập nhật thông tin nhân viên!");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("errorMessage", "Đã xảy ra lỗi khi cập nhật nhân viên!");
             }
 
         } else if ("toggleStatus".equals(action)) {
@@ -137,8 +175,10 @@ public class EmployeeServlet extends HttpServlet {
                 int userId         = Integer.parseInt(request.getParameter("userId"));
                 boolean currStatus = Boolean.parseBoolean(request.getParameter("currentStatus"));
                 userDAO.updateEmployeeStatus(userId, !currStatus);
+                session.setAttribute("successMessage", "Cập nhật trạng thái nhân viên thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("errorMessage", "Lỗi khi cập nhật trạng thái!");
             }
         }
 

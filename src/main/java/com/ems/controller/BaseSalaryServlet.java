@@ -119,7 +119,7 @@ public class BaseSalaryServlet extends HttpServlet {
         if (userIdParam != null && baseSalaryParam != null) {
             try {
                 int userId = Integer.parseInt(userIdParam);
-                String cleanSalaryStr = baseSalaryParam.replaceAll("[^0-9.]", "");
+                String cleanSalaryStr = baseSalaryParam.replaceAll("[^0-9.eE+\\-]", "");
                 java.math.BigDecimal baseSalary = new java.math.BigDecimal(cleanSalaryStr);
                 
                 int dependentsCount = 0;

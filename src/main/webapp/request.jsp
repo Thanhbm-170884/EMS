@@ -88,39 +88,38 @@
         <section class="card request-card">
             <div class="card-header">Thông tin yêu cầu</div>
             <div class="request-card-body">
-                <form action="<%= request.getContextPath() %>/requests" method="post">
+                <form action="<%= request.getContextPath() %>/requests" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="insert">
                     <div class="request-form-grid">
                         <div class="request-field">
                             <label for="requestTypeId">Loại đơn <span class="required">*</span></label>
                             <select id="requestTypeId" name="requestTypeId" required>
                                 <option value="">-- Chọn loại đơn --</option>
-                                <option value="1">Nghỉ phép</option>
                                 <option value="2">Nghỉ ốm</option>
-                                <option value="3">Làm việc từ xa</option>
-                                <option value="4">Đi công tác</option>
-                                <option value="5">Tăng ca</option>
+                                <option value="1">Nghỉ phép</option>
+                                <option value="3">Ứng lương</option>
+                                <option value="4">Đơn khác</option>
                             </select>
                         </div>
                         <div class="request-field">
                             <label for="title">Tiêu đề <span class="required">*</span></label>
                             <input id="title" type="text" name="title" maxlength="100" placeholder="Nhập tiêu đề đơn" required>
                         </div>
-                        <div class="request-field">
-                            <label for="startDate">Từ ngày <span class="required">*</span></label>
-                            <input id="startDate" type="datetime-local" name="startDate" required>
+                        <div class="request-field" id="startDateField">
+                            <label for="startDate">Từ ngày</label>
+                            <input id="startDate" type="date" name="startDate">
                         </div>
-                        <div class="request-field">
-                            <label for="endDate">Đến ngày <span class="required">*</span></label>
-                            <input id="endDate" type="datetime-local" name="endDate" required>
+                        <div class="request-field" id="endDateField">
+                            <label for="endDate">Đến ngày</label>
+                            <input id="endDate" type="date" name="endDate">
                         </div>
-                        <div class="request-field">
+                        <div class="request-field" id="valueField">
                             <label for="value">Giá trị / Số ngày</label>
                             <input id="value" type="number" name="value" step="0.5" min="0" placeholder="Ví dụ: 1.0">
                         </div>
-                        <div class="request-field">
-                            <label>Người phê duyệt</label>
-                            <input type="text" value="Quản lý trực tiếp" readonly>
+                        <div class="request-field" id="imageField">
+                            <label for="image">Ảnh minh chứng</label>
+                            <input id="image" type="file" name="image" accept="image/*">
                         </div>
                         <div class="request-field full">
                             <label for="reason">Lý do / Nội dung</label>
@@ -144,7 +143,91 @@
     (function () {
         var now = new Date();
         document.getElementById('topbar-date').textContent = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+
+        // Set min date to today (YYYY-MM-DD)
+        var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        document.getElementById('startDate').min = today;
+        document.getElementById('endDate').min = today;
     }());
+
+    function calculateDays() {
+        var startInput = document.getElementById('startDate');
+        var endInput = document.getElementById('endDate');
+        var valueInput = document.getElementById('value');
+        var type = document.getElementById('requestTypeId').value;
+
+        if ((type === '1' || type === '2') && startInput.value && endInput.value) {
+            var start = new Date(startInput.value);
+            var end = new Date(endInput.value);
+            var diff = end - start;
+            if (diff >= 0) {
+                var days = (diff / (1000 * 60 * 60 * 24)) + 1;
+                var roundedDays = Math.round(days * 2) / 2;
+                if (roundedDays < 0.5) roundedDays = 0.5;
+                valueInput.value = roundedDays;
+            } else {
+                valueInput.value = '0';
+            }
+        }
+    }
+
+    document.getElementById('startDate').addEventListener('change', function() {
+        document.getElementById('endDate').min = this.value;
+        calculateDays();
+    });
+    document.getElementById('endDate').addEventListener('change', calculateDays);
+
+    document.getElementById('requestTypeId').addEventListener('change', function() {
+        var type = this.value;
+        var valueLabel = document.querySelector('label[for="value"]');
+        var valueInput = document.getElementById('value');
+        
+        var startField = document.getElementById('startDateField');
+        var endField = document.getElementById('endDateField');
+        var startInput = document.getElementById('startDate');
+        var endInput = document.getElementById('endDate');
+
+        // Reset default states
+        startInput.required = false;
+        endInput.required = false;
+        valueInput.readOnly = false;
+        valueInput.style.backgroundColor = '';
+        startField.style.display = '';
+        endField.style.display = '';
+
+        if (type === '3') { // Ứng lương
+            startField.style.display = 'none';
+            endField.style.display = 'none';
+            startInput.value = '';
+            endInput.value = '';
+
+            valueLabel.innerHTML = 'Số tiền ứng (VNĐ) <span class="required">*</span>';
+            valueInput.placeholder = 'Ví dụ: 2000000';
+            valueInput.step = '1000';
+            valueInput.required = true;
+            valueInput.value = '';
+        } else if (type === '1' || type === '2') { // Nghỉ phép, Nghỉ ốm
+            startInput.required = true;
+            endInput.required = true;
+            document.querySelector('label[for="startDate"]').innerHTML = 'Từ ngày <span class="required">*</span>';
+            document.querySelector('label[for="endDate"]').innerHTML = 'Đến ngày <span class="required">*</span>';
+
+            valueLabel.innerHTML = 'Số ngày nghỉ (Tự động tính)';
+            valueInput.placeholder = 'Chọn khoảng thời gian...';
+            valueInput.readOnly = true;
+            valueInput.style.backgroundColor = '#f3f4f6';
+            valueInput.required = true;
+            calculateDays();
+        } else { // Đơn khác
+            valueLabel.innerHTML = 'Giá trị / Số ngày';
+            valueInput.placeholder = 'Ví dụ: 1.0';
+            valueInput.step = '0.5';
+            valueInput.required = false;
+
+            document.querySelector('label[for="startDate"]').innerHTML = 'Từ ngày';
+            document.querySelector('label[for="endDate"]').innerHTML = 'Đến ngày';
+        }
+    });
 </script>
 </body>
 </html>

@@ -128,7 +128,7 @@
             <div class="modal-grid-3">
                 <div class="modal-form-group">
                     <label>Tên đợt cấu hình</label>
-                    <input type="text" name="configname" required placeholder="VD: Luật Thuế 2026">
+                    <input type="text" name="configname" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" placeholder="VD: Luật Thuế 2026">
                 </div>
                 <div class="modal-form-group">
                     <label>Ngày bắt đầu áp dụng</label>

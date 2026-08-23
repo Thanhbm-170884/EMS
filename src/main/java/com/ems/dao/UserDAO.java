@@ -59,11 +59,12 @@ public class UserDAO {
     /** Lấy tất cả người dùng trong hệ thống */
     public java.util.List<java.util.Map<String, Object>> getAllUsers() {
         java.util.List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
-        String query = "SELECT a.Id as accountId, a.Username, a.Status as accountStatus, u.FullName, u.EmailCompany, r.Name as roleName, u.DepartmentId, u.PositionId " +
+        String query = "SELECT a.Id as accountId, a.Username, a.Status as accountStatus, u.FullName, u.EmailCompany, u.Phone, r.Name as roleName, u.DepartmentId, u.PositionId " +
                        "FROM accounts a " +
                        "JOIN users u ON a.UserId = u.Id " +
                        "LEFT JOIN accountroles ar ON a.Id = ar.AccountId " +
                        "LEFT JOIN roles r ON ar.RoleId = r.Id " +
+                        "Where ar.RoleID != 1 " +
                        "ORDER BY a.Id DESC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
@@ -75,6 +76,7 @@ public class UserDAO {
                 map.put("accountStatus", rs.getBoolean("accountStatus"));
                 map.put("fullName", rs.getString("FullName"));
                 map.put("emailCompany", rs.getString("EmailCompany"));
+                map.put("phone", rs.getString("Phone"));
                 map.put("roleName", rs.getString("roleName"));
                 map.put("departmentId", rs.getInt("DepartmentId"));
                 map.put("positionId", rs.getInt("PositionId"));
@@ -84,6 +86,122 @@ public class UserDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    /** Kiểm tra username đã tồn tại chưa */
+    public boolean isUsernameExists(String username) {
+        if (username == null || username.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM accounts WHERE LOWER(Username) = LOWER(?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, username.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Kiểm tra email đã tồn tại chưa */
+    public boolean isEmailExists(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM users WHERE LOWER(EmailCompany) = LOWER(?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, email.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Kiểm tra số điện thoại đã tồn tại chưa */
+    public boolean isPhoneExists(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM users WHERE Phone = ? AND Phone IS NOT NULL AND Phone != ''";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, phone.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Kiểm tra email đã tồn tại ở tài khoản khác chưa (khi cập nhật) */
+    public boolean isEmailExistsForOther(String email, int accountId) {
+        if (email == null || email.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM users u JOIN accounts a ON a.UserId = u.Id WHERE LOWER(u.EmailCompany) = LOWER(?) AND a.Id != ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, email.trim());
+            ps.setInt(2, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Kiểm tra số điện thoại đã tồn tại ở tài khoản khác chưa (khi cập nhật theo AccountId) */
+    public boolean isPhoneExistsForOther(String phone, int accountId) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM users u JOIN accounts a ON a.UserId = u.Id WHERE u.Phone = ? AND a.Id != ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, phone.trim());
+            ps.setInt(2, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Kiểm tra email đã tồn tại ở nhân viên khác chưa (khi cập nhật theo UserId) */
+    public boolean isEmailExistsForOtherUserId(String email, int userId) {
+        if (email == null || email.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM users WHERE LOWER(EmailCompany) = LOWER(?) AND Id != ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, email.trim());
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Kiểm tra số điện thoại đã tồn tại ở nhân viên khác chưa (khi cập nhật theo UserId) */
+    public boolean isPhoneExistsForOtherUserId(String phone, int userId) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String query = "SELECT COUNT(*) FROM users WHERE Phone = ? AND Id != ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, phone.trim());
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /** Cập nhật trạng thái hoạt động/khóa của tài khoản */
@@ -179,9 +297,9 @@ public class UserDAO {
         return list;
     }
 
-    /** Tạo tài khoản mới đi kèm thông tin nhân viên */
-    public boolean createAccountWithUser(String username, String password, String fullName, String email, String role, int departmentId, int positionId) {
-        String insertUser = "INSERT INTO users (EmployeeCode, FullName, EmailCompany, DepartmentId, PositionId, Status) VALUES (?, ?, ?, ?, ?, 1)";
+    /** Tạo tài khoản mới đi kèm thông tin nhân viên (hỗ trợ số điện thoại) */
+    public boolean createAccountWithUser(String username, String password, String fullName, String email, String phone, String role, int departmentId, int positionId) {
+        String insertUser = "INSERT INTO users (EmployeeCode, FullName, EmailCompany, Phone, DepartmentId, PositionId, Status) VALUES (?, ?, ?, ?, ?, ?, 1)";
         String insertAccount = "INSERT INTO accounts (Username, PasswordHash, Status, UserId) VALUES (?, ?, 1, ?)";
         String insertRole = "INSERT INTO accountroles (AccountId, RoleId) VALUES (?, (SELECT Id FROM roles WHERE Name = ?))";
 
@@ -205,8 +323,9 @@ public class UserDAO {
                     ps.setString(1, empCode);
                     ps.setString(2, fullName);
                     ps.setString(3, email);
-                    ps.setInt(4, departmentId);
-                    ps.setInt(5, positionId);
+                    ps.setString(4, (phone != null && !phone.trim().isEmpty()) ? phone.trim() : null);
+                    ps.setInt(5, departmentId);
+                    ps.setInt(6, positionId);
                     ps.executeUpdate();
                     try (ResultSet rs = ps.getGeneratedKeys()) {
                         if (rs.next()) {
@@ -259,10 +378,10 @@ public class UserDAO {
     }
 
     /** Cập nhật toàn bộ thông tin tài khoản và thông tin nhân viên đi kèm */
-    public boolean updateAccountWithUser(int accountId, String fullName, String email, String role, int departmentId, int positionId) {
+    public boolean updateAccountWithUser(int accountId, String fullName, String email, String phone, String role, int departmentId, int positionId) {
         String updateUser = "UPDATE users u " +
                              "JOIN accounts a ON a.UserId = u.Id " +
-                             "SET u.FullName = ?, u.EmailCompany = ?, u.DepartmentId = ?, u.PositionId = ? " +
+                             "SET u.FullName = ?, u.EmailCompany = ?, u.Phone = ?, u.DepartmentId = ?, u.PositionId = ? " +
                              "WHERE a.Id = ?";
         String deleteRole = "DELETE FROM accountroles WHERE AccountId = ?";
         String insertRole = "INSERT INTO accountroles (AccountId, RoleId) VALUES (?, (SELECT Id FROM roles WHERE Name = ?))";
@@ -274,9 +393,10 @@ public class UserDAO {
                 try (PreparedStatement ps = conn.prepareStatement(updateUser)) {
                     ps.setString(1, fullName);
                     ps.setString(2, email);
-                    ps.setInt(3, departmentId);
-                    ps.setInt(4, positionId);
-                    ps.setInt(5, accountId);
+                    ps.setString(3, (phone != null && !phone.trim().isEmpty()) ? phone.trim() : null);
+                    ps.setInt(4, departmentId);
+                    ps.setInt(5, positionId);
+                    ps.setInt(6, accountId);
                     ps.executeUpdate();
                 }
                 
@@ -343,7 +463,7 @@ public class UserDAO {
     }
 
     /** Cập nhật thông tin chi tiết nhân viên (Họ tên, Email, SĐT, Giới tính, Ngày sinh, Phòng ban, Chức vụ) */
-    public void updateEmployeeInfo(int userId, String fullName, String email, String phone, Boolean gender, java.sql.Date dateOfBirth, int departmentId, int positionId) {
+    public boolean updateEmployeeInfo(int userId, String fullName, String email, String phone, Boolean gender, java.sql.Date dateOfBirth, int departmentId, int positionId) {
         String query = "UPDATE users SET FullName = ?, EmailCompany = ?, Phone = ?, Gender = ?, DateOfBirth = ?, DepartmentId = ?, PositionId = ? WHERE Id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -359,10 +479,11 @@ public class UserDAO {
             ps.setInt(6, departmentId);
             ps.setInt(7, positionId);
             ps.setInt(8, userId);
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     /** Bật/Tắt trạng thái nhân viên trong bảng users */
@@ -407,5 +528,22 @@ public class UserDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // Hàm lấy danh sách tất cả nhân viên đang đi làm (Status = 1)
+    public java.util.List<com.ems.model.Users> getAllActiveUsers() {
+        java.util.List<com.ems.model.Users> list = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM users WHERE Status = 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                com.ems.model.Users u = new com.ems.model.Users();
+                u.setId(rs.getInt("Id"));
+                u.setDependentscount(rs.getInt("DependentsCount"));
+                list.add(u);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
     }
 }

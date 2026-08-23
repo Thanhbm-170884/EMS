@@ -30,13 +30,31 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            request.setAttribute("error", "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu (không được để trống hoặc chỉ chứa khoảng trắng)!");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            return;
+        }
+
+        if (username.contains(" ")) {
+            request.setAttribute("error", "Tên đăng nhập không được chứa khoảng trắng!");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            return;
+        }
+
+        if (password.contains(" ")) {
+            request.setAttribute("error", "Mật khẩu không được chứa khoảng trắng!");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            return;
+        }
+
         // Gọi DAO kiểm tra thông tin đăng nhập
-        String role = userDAO.authenticate(username, password);
+        String role = userDAO.authenticate(username.trim(), password);
 
         if (role != null) {
             HttpSession session = request.getSession();
-            session.setAttribute("user", username);
-            session.setAttribute("username", username);
+            session.setAttribute("user", username.trim());
+            session.setAttribute("username", username.trim());
             session.setAttribute("role", role);
             session.setAttribute("accountId", userDAO.findAccountIdByUsername(username));
 

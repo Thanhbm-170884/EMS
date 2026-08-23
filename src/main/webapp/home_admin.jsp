@@ -8,22 +8,28 @@
     String fullName = (String) request.getAttribute("fullName");
     String deptName = (String) request.getAttribute("deptName");
     Integer totalAccounts = (Integer) request.getAttribute("totalAccounts");
-    Integer totalRoles = (Integer) request.getAttribute("totalRoles");
-    Integer totalPeriods = (Integer) request.getAttribute("totalPeriods");
-    List<Map<String, Object>> recentAccounts = (List<Map<String, Object>>) request.getAttribute("recentAccounts");
-    Integer totalShifts = (Integer) request.getAttribute("totalShifts");
-    Integer totalHolidays = (Integer) request.getAttribute("totalHolidays");
+    Integer totalEmployees = (Integer) request.getAttribute("totalEmployees");
+    Integer totalDepartments = (Integer) request.getAttribute("totalDepartments");
+    Integer totalPositions = (Integer) request.getAttribute("totalPositions");
+    List<Map<String, Object>> recentEmployees = (List<Map<String, Object>>) request.getAttribute("recentEmployees");
+    List<Map<String, Object>> deptDistribution = (List<Map<String, Object>>) request.getAttribute("deptDistribution");
+    
+    int totalEmpCount = totalEmployees != null ? totalEmployees : 0;
 %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8"/>
-  <title>EMS – Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EMS – Trang chủ Quản trị</title>
   <link rel="stylesheet" href="css/ems.css"/>
-  <link rel="stylesheet" href="css/home-admin.css"/>
+  <link rel="stylesheet" href="css/users.css"/>
+  <link rel="stylesheet" href="css/departments.css"/>
+  <link rel="stylesheet" href="css/home-admin.css?v=2.1"/>
 </head>
 <body>
 
+<!-- Sidebar -->
 <aside class="sidebar">
   <a href="home" class="sidebar-brand">
     <div class="brand-dot">E</div>
@@ -52,6 +58,7 @@
   </div>
 </aside>
 
+<!-- Main content -->
 <div class="main-content">
   <div class="topbar">
     <span class="topbar-left">Trang chủ</span>
@@ -59,75 +66,75 @@
   </div>
 
   <div class="page-body">
-    <div class="page-header">
-      <h1>Chào mừng, <%= fullName != null ? fullName : "Admin" %></h1>
-      <p>Hệ thống đang hoạt động bình thường.</p>
+    <!-- Welcome Header -->
+    <div class="dash-header">
+      <h1 class="dash-title">
+        Chào mừng, <%= fullName != null ? fullName : "Quản trị viên" %>
+      </h1>
+      <p class="dash-subtitle">Hệ thống đang hoạt động bình thường.</p>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Tổng số tài khoản</div>
+    <!-- 4 Stats Cards Grid -->
+    <div class="dash-stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-label">TÀI KHOẢN</div>
         <div class="stat-value"><%= totalAccounts != null ? totalAccounts : 0 %></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Số vai trò</div>
-        <div class="stat-value"><%= totalRoles != null ? totalRoles : 0 %></div>
+      <div class="stat-card stat-green">
+        <div class="stat-label">NHÂN VIÊN</div>
+        <div class="stat-value"><%= totalEmployees != null ? totalEmployees : 0 %></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Chu kỳ bảng lương</div>
-        <div class="stat-value"><%= totalPeriods != null ? totalPeriods : 0 %></div>
+      <div class="stat-card stat-amber">
+        <div class="stat-label">PHÒNG BAN</div>
+        <div class="stat-value"><%= totalDepartments != null ? totalDepartments : 0 %></div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="stat-label">CHỨC VỤ</div>
+        <div class="stat-value"><%= totalPositions != null ? totalPositions : 0 %></div>
       </div>
     </div>
 
-    <div class="cards-row">
-      <div class="card">
-        <div class="card-header" style="font-weight: 700; font-size: 14px; color: #111827;">
-          Danh sách tài khoản
+    <!-- 2 Bottom Cards Grid -->
+    <div class="dash-main-grid">
+      
+      <!-- Card Left: Nhân viên gần đây -->
+      <div class="card dash-card">
+        <div class="card-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Nhân viên gần đây</span>
         </div>
         
-        <div style="overflow-x: auto;">
-          <table class="dashboard-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <div class="dash-card-body">
+          <table class="dash-table">
             <thead>
-              <tr style="border-bottom: 1.5px solid #f3f4f6; color: #6b7280; text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">
-                <th style="padding: 10px 12px;">Người dùng</th>
-                <th style="padding: 10px 12px;">Email</th>
-                <th style="padding: 10px 12px;">Vai trò</th>
-                <th style="padding: 10px 12px;">Trạng thái</th>
+              <tr>
+                <th>Họ và tên</th>
+                <th class="emp-dept-cell">Phòng ban</th>
               </tr>
             </thead>
             <tbody>
               <%
-                if (recentAccounts != null && !recentAccounts.isEmpty()) {
-                  for (Map<String, Object> acc : recentAccounts) {
-                    String name = (String) acc.get("fullName");
-                    String username = (String) acc.get("username");
-                    
-                    Boolean status = (Boolean) acc.get("status");
-                    boolean isCurrentStatus = (status != null && status);
+                if (recentEmployees != null && !recentEmployees.isEmpty()) {
+                  for (Map<String, Object> emp : recentEmployees) {
+                    String name = (String) emp.get("fullName");
+                    String dName = (String) emp.get("deptName");
               %>
-                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.1s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
-                      <td style="padding: 10px 12px;">
-                        <div style="font-weight: 600; color: #111827; font-size: 12.5px;"><%= name %></div>
-                        <div style="font-size: 11px; color: #6b7280;">@<%= username %></div>
-                      </td>
-                      <td style="padding: 10px 12px; color: #4b5563; font-size: 12px;"><%= acc.get("emailCompany") != null ? acc.get("emailCompany") : "" %></td>
-                      <td style="padding: 10px 12px;">
-                        <span class="badge-role">
-                          <%= (acc.get("roleName") != null ? (String) acc.get("roleName") : "employee").toLowerCase() %>
-                        </span>
-                      </td>
-                      <td style="padding: 10px 12px;">
-                        <span class="<%= isCurrentStatus ? "badge-active" : "badge-locked" %>">
-                          <%= isCurrentStatus ? "Hoạt động" : "Bị khóa" %>
-                        </span>
-                      </td>
-                    </tr>
+                <tr>
+                  <td class="emp-name-cell">
+                    <%= name != null ? name : "" %>
+                  </td>
+                  <td class="emp-dept-cell">
+                    <span class="dept-code-tag">
+                      <%= dName != null && !dName.isEmpty() ? dName : "Chưa phân phòng" %>
+                    </span>
+                  </td>
+                </tr>
               <%
                   }
                 } else {
               %>
                 <tr>
-                  <td colspan="4" style="padding: 20px; text-align: center; color: #9ca3af;">Chưa có tài khoản nào.</td>
+                  <td colspan="2" class="empty-state-text">Chưa có nhân viên nào</td>
                 </tr>
               <% } %>
             </tbody>
@@ -135,34 +142,51 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">Cấu hình tổng quan</div>
-        <div class="cfg-row">
-          <span class="cfg-label">Tổng số ca làm việc (Shifts)</span>
-          <span class="cfg-val"><%= totalShifts != null ? totalShifts : 0 %> ca</span>
+      <!-- Card Right: Phân bổ nhân viên -->
+      <div class="card dash-card">
+        <div class="card-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          <span>Phân bổ nhân viên</span>
         </div>
-        <div class="cfg-row">
-          <span class="cfg-label">Số ngày nghỉ lễ cấu hình (Holidays)</span>
-          <span class="cfg-val"><%= totalHolidays != null ? totalHolidays : 0 %> ngày</span>
+        
+        <div class="dash-card-body">
+          <%
+            if (deptDistribution != null && !deptDistribution.isEmpty()) {
+              for (Map<String, Object> dist : deptDistribution) {
+                String dName = (String) dist.get("deptName");
+                int count = (Integer) dist.get("empCount");
+          %>
+            <div class="dist-row">
+              <div class="dist-label"><%= dName != null ? dName : "" %></div>
+              <div class="dist-count"><%= count %></div>
+            </div>
+          <%
+              }
+            } else {
+          %>
+            <div class="empty-state-text">Chưa có dữ liệu phân bổ phòng ban</div>
+          <% } %>
         </div>
-        <div class="cfg-row">
-          <span class="cfg-label">Hạn mức nghỉ phép tiêu chuẩn</span>
-          <span class="cfg-val">12 ngày/năm</span>
+
+        <div class="dist-footer">
+          <span>Tổng:</span>
+          <span class="dist-footer-val"><%= totalEmpCount %> nhân viên</span>
         </div>
       </div>
+
     </div>
   </div>
-
-  <footer>© 2026 Hệ thống Quản lý Nhân sự (EMS) · FPT University SWP391</footer>
 </div>
 
 <script>
-  function tick() {
-    var now = new Date();
-    var p = function(n){ return String(n).padStart(2,'0'); };
-    document.getElementById('topbar-date').textContent = p(now.getDate())+'/'+p(now.getMonth()+1)+'/'+now.getFullYear();
-  }
-  tick();
+  (function updateDate() {
+    const d = new Date();
+    const str = String(d.getDate()).padStart(2,'0') + '/' +
+                String(d.getMonth()+1).padStart(2,'0') + '/' +
+                d.getFullYear();
+    const el = document.getElementById('topbar-date');
+    if (el) el.textContent = str;
+  })();
 </script>
 </body>
 </html>

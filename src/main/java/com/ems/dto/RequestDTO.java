@@ -22,6 +22,7 @@ public class RequestDTO {
 
     private Integer currentApproverAccountId;
     private String currentApproverName;
+    private String rejectionReason;
 
     public RequestDTO() {
     }
@@ -168,5 +169,13 @@ public class RequestDTO {
 
     public void setCurrentApproverName(String currentApproverName) {
         this.currentApproverName = currentApproverName;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

@@ -39,18 +39,22 @@
                 int startItem = totalFilteredItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
                 int endItem = Math.min(currentPage * pageSize, totalFilteredItems);
                 %>
-                <%! private String buildPageUrl(String search, String status, int page, int pageSize) { StringBuilder
-                  sb=new StringBuilder("pay-periods?page=").append(page).append(" &pageSize=").append(pageSize);
-        if (search != null && !search.trim().isEmpty()) {
-            try {
-                sb.append(" &search=").append(java.net.URLEncoder.encode(search.trim(), " UTF-8")); } catch (Exception
-                  ignored) {} } if (status !=null && !status.trim().isEmpty()) { sb.append("&status=").append(status);
-        }
-        return sb.toString();
-    }
+                <%!
+                    private String buildPageUrl(String search, String status, int page, int pageSize) {
+                        StringBuilder sb = new StringBuilder("pay-periods?page=").append(page).append("&pageSize=").append(pageSize);
+                        if (search != null && !search.trim().isEmpty()) {
+                            try {
+                                sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
+                            } catch (Exception ignored) {}
+                        }
+                        if (status != null && !status.trim().isEmpty()) {
+                            sb.append("&status=").append(status);
+                        }
+                        return sb.toString();
+                    }
 %>
 <!DOCTYPE html>
-<html lang=" vi">
+<html lang="vi">
 
                   <head>
                     <meta charset="UTF-8" />
@@ -260,7 +264,7 @@
                                           <div class="action-group" style="justify-content: flex-end;">
 
                                             <!-- Link to view payslips of this period -->
-                                            <a href="manager-payslips?periodId=<%= p.getId() %>" class="btn-action-view"
+                                            <a href="payslips?periodId=<%= p.getId() %>" class="btn-action-view"
                                               title="Xem bảng lương kỳ này">
                                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -398,7 +402,7 @@
                                 <div class="modal-form-group">
                                   <label>Tên kỳ lương <span style="color:#ef4444;">*</span></label>
                                   <input type="text" name="name" id="createName"
-                                    placeholder="VD: Kỳ lương Tháng 09/2026" required />
+                                    placeholder="VD: Kỳ lương Tháng 09/2026" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" />
                                 </div>
 
                                 <div class="modal-form-group modal-date-grid">
@@ -447,7 +451,7 @@
 
                                 <div class="modal-form-group">
                                   <label>Tên kỳ lương <span style="color:#ef4444;">*</span></label>
-                                  <input type="text" name="name" id="editName" required />
+                                  <input type="text" name="name" id="editName" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" />
                                 </div>
 
                                 <div class="modal-form-group modal-date-grid">

@@ -74,6 +74,18 @@ public class UserServlet extends HttpServlet {
             e.printStackTrace();
         }
 
+        // Flash messages
+        String successMsg = (String) session.getAttribute("successMessage");
+        String errorMsg = (String) session.getAttribute("errorMessage");
+        if (successMsg != null) {
+            request.setAttribute("successMessage", successMsg);
+            session.removeAttribute("successMessage");
+        }
+        if (errorMsg != null) {
+            request.setAttribute("errorMessage", errorMsg);
+            session.removeAttribute("errorMessage");
+        }
+
         request.setAttribute("usersList", usersList);
         request.setAttribute("totalCount", totalCount);
         request.setAttribute("activeCount", activeCount);
@@ -112,16 +124,20 @@ public class UserServlet extends HttpServlet {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 boolean currentStatus = Boolean.parseBoolean(request.getParameter("currentStatus"));
                 userDAO.updateAccountStatus(accountId, !currentStatus);
+                session.setAttribute("successMessage", "Cập nhật trạng thái tài khoản thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("errorMessage", "Lỗi khi cập nhật trạng thái tài khoản!");
             }
         } else if ("updateRole".equalsIgnoreCase(action)) {
             try {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 String roleName = request.getParameter("roleName");
                 userDAO.updateAccountRole(accountId, roleName);
+                session.setAttribute("successMessage", "Cập nhật vai trò thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("errorMessage", "Lỗi khi cập nhật vai trò!");
             }
         } else if ("create".equalsIgnoreCase(action)) {
             try {
@@ -129,26 +145,107 @@ public class UserServlet extends HttpServlet {
                 String password = request.getParameter("password");
                 String fullName = request.getParameter("fullName");
                 String email = request.getParameter("email");
+                String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
-                int departmentId = Integer.parseInt(request.getParameter("departmentId"));
-                int positionId = Integer.parseInt(request.getParameter("positionId"));
+                String deptStr = request.getParameter("departmentId");
+                String posStr = request.getParameter("positionId");
 
-                userDAO.createAccountWithUser(username, password, fullName, email, role, departmentId, positionId);
+                username = username != null ? username.trim() : "";
+                fullName = fullName != null ? fullName.trim() : "";
+                email = email != null ? email.trim() : "";
+                phone = phone != null ? phone.trim() : "";
+
+                int departmentId = (deptStr != null && !deptStr.isEmpty()) ? Integer.parseInt(deptStr) : 0;
+                int positionId = (posStr != null && !posStr.isEmpty()) ? Integer.parseInt(posStr) : 0;
+
+                if (!"Manager".equalsIgnoreCase(role) && !"Employee".equalsIgnoreCase(role)) {
+                    role = "Employee";
+                }
+
+                String rawUsername = request.getParameter("username");
+                String rawEmail = request.getParameter("email");
+                String rawPhone = request.getParameter("phone");
+
+                // Validate trùng lặp & viết liền
+                String error = null;
+                if (username.isEmpty() || password == null || password.isEmpty() || fullName.isEmpty() || email.isEmpty()) {
+                    error = "Vui lòng điền đầy đủ các thông tin bắt buộc!";
+                } else if (rawUsername != null && rawUsername.contains(" ")) {
+                    error = "Tên tài khoản phải viết liền, không được chứa khoảng trắng!";
+                } else if (rawEmail != null && rawEmail.contains(" ")) {
+                    error = "Email phải viết liền, không được chứa khoảng trắng!";
+                } else if (rawPhone != null && rawPhone.contains(" ")) {
+                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (userDAO.isUsernameExists(username)) {
+                    error = "Tên tài khoản (Username) '" + username + "' đã tồn tại! Vui lòng chọn tên khác.";
+                } else if (userDAO.isEmailExists(email)) {
+                    error = "Email công ty '" + email + "' đã tồn tại! Vui lòng nhập email khác.";
+                } else if (!phone.isEmpty() && userDAO.isPhoneExists(phone)) {
+                    error = "Số điện thoại '" + phone + "' đã tồn tại trong hệ thống!";
+                }
+
+                if (error != null) {
+                    session.setAttribute("errorMessage", error);
+                    response.sendRedirect(request.getContextPath() + "/users");
+                    return;
+                }
+
+                boolean success = userDAO.createAccountWithUser(username, password, fullName, email, phone, role, departmentId, positionId);
+                if (success) {
+                    session.setAttribute("successMessage", "Thêm mới tài khoản thành công!");
+                } else {
+                    session.setAttribute("errorMessage", "Không thể tạo tài khoản, vui lòng thử lại!");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("errorMessage", "Đã xảy ra lỗi khi tạo tài khoản!");
             }
         } else if ("update".equalsIgnoreCase(action)) {
             try {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 String fullName = request.getParameter("fullName");
                 String email = request.getParameter("email");
+                String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
                 int departmentId = Integer.parseInt(request.getParameter("departmentId"));
                 int positionId = Integer.parseInt(request.getParameter("positionId"));
 
-                userDAO.updateAccountWithUser(accountId, fullName, email, role, departmentId, positionId);
+                fullName = fullName != null ? fullName.trim() : "";
+                email = email != null ? email.trim() : "";
+                phone = phone != null ? phone.trim() : "";
+
+                String rawEmail = request.getParameter("email");
+                String rawPhone = request.getParameter("phone");
+
+                // Validate trùng lặp khi sửa
+                String error = null;
+                if (fullName.isEmpty() || email.isEmpty()) {
+                    error = "Vui lòng điền đầy đủ họ và tên và email!";
+                } else if (rawEmail != null && rawEmail.contains(" ")) {
+                    error = "Email phải viết liền, không được chứa khoảng trắng!";
+                } else if (rawPhone != null && rawPhone.contains(" ")) {
+                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (userDAO.isEmailExistsForOther(email, accountId)) {
+                    error = "Email công ty '" + email + "' đã được sử dụng bởi tài khoản khác!";
+                } else if (!phone.isEmpty() && userDAO.isPhoneExistsForOther(phone, accountId)) {
+                    error = "Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!";
+                }
+
+                if (error != null) {
+                    session.setAttribute("errorMessage", error);
+                    response.sendRedirect(request.getContextPath() + "/users");
+                    return;
+                }
+
+                boolean success = userDAO.updateAccountWithUser(accountId, fullName, email, phone, role, departmentId, positionId);
+                if (success) {
+                    session.setAttribute("successMessage", "Lưu thay đổi tài khoản thành công!");
+                } else {
+                    session.setAttribute("errorMessage", "Không thể cập nhật tài khoản!");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("errorMessage", "Đã xảy ra lỗi khi cập nhật tài khoản!");
             }
         }
 

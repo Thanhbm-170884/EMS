@@ -29,6 +29,10 @@
                            class="nav-link ${pageContext.request.servletPath == '/request-manager.jsp' ? 'active' : ''}">
                             Xử lý đơn
                         </a>
+            <a href="${pageContext.request.contextPath}/requests?action=employeeBalances"
+                           class="nav-link ${pageContext.request.servletPath == '/employee-balances.jsp' ? 'active' : ''}">
+                            Trạng thái nhân sự
+                        </a>
             <a href="${pageContext.request.contextPath}/holiday"
                class="nav-link ${pageContext.request.servletPath == '/holiday.jsp' ? 'active' : ''}">
                 Quản lý ngày nghỉ lễ

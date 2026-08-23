@@ -7,8 +7,8 @@
     String deptName = (String) request.getAttribute("deptName");
     Integer totalPositions = (Integer) request.getAttribute("totalPositions");
     Integer assignedPositions = (Integer) request.getAttribute("assignedPositions");
-    if (totalPositions == null) totalPositions = positionsList != null ? positionsList.size() : 0;
-    if (assignedPositions == null) assignedPositions = 0;
+    String successMsg = (String) request.getAttribute("successMsg");
+    String errorMsg = (String) request.getAttribute("errorMsg");
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -59,6 +59,18 @@
   </div>
 
   <div class="page-body">
+    <% if (successMsg != null && !successMsg.isEmpty()) { %>
+      <div class="flash-alert" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span><%= successMsg %></span>
+      </div>
+    <% } %>
+    <% if (errorMsg != null && !errorMsg.isEmpty()) { %>
+      <div class="flash-alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><%= errorMsg %></span>
+      </div>
+    <% } %>
 
     <!-- Page Header -->
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
@@ -81,6 +93,31 @@
       <div class="stat-card" style="border-left: 4px solid #10b981;">
         <div class="stat-label">ĐÃ CÓ NHÂN SỰ</div>
         <div class="stat-value"><%= assignedPositions %></div>
+      </div>
+    </div>
+
+    <!-- Level Guide / Chú thích Cấp bậc -->
+    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+      <div style="font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        Cấp bậc chức vụ (Job Level):
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; font-size: 12.5px;">
+        <span style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
+          <strong>Level 1:</strong> Thực tập / Junior
+        </span>
+        <span style="background: #ecfeff; border: 1px solid #a5f3fc; color: #155e75; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
+          <strong>Level 2:</strong> Nhân viên chính thức / Middle
+        </span>
+        <span style="background: #fefce8; border: 1px solid #fef08a; color: #854d0e; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
+          <strong>Level 3:</strong> Chuyên viên / Senior
+        </span>
+        <span style="background: #faf5ff; border: 1px solid #e9d5ff; color: #6b21a8; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
+          <strong>Level 4:</strong> Trưởng nhóm / Quản lý / Lead
+        </span>
+        <span style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
+          <strong>Level 5:</strong> Ban Giám đốc / Tổng giám đốc
+        </span>
       </div>
     </div>
 
@@ -117,6 +154,7 @@
                   String name = (String) pos.get("name");
                   int jobLevel = (Integer) pos.get("jobLevel");
                   int totalEmp = (Integer) pos.get("totalEmployees");
+
             %>
             <tr class="pos-row" data-code="<%= code != null ? code.toLowerCase() : "" %>" data-name="<%= name != null ? name.toLowerCase() : "" %>" style="border-bottom: 1px solid #f3f4f6; transition: background 0.1s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
               <td style="padding: 12px 16px;">
@@ -172,25 +210,28 @@
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Mã chức vụ <span style="color:red;">*</span></label>
-          <input type="text" name="code" class="form-input" placeholder="Ví dụ: DEV, TEST, ACC, HR_SPEC..." required/>
+          <input type="text" name="code" id="addPosCode" class="form-input" placeholder="Ví dụ: DEV, TEST, ACC, HR_SPEC..." required oninput="validateAddPosForm()"/>
+          <div id="addPosCodeMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Tên chức vụ <span style="color:red;">*</span></label>
-          <input type="text" name="name" class="form-input" placeholder="Ví dụ: Lập trình viên, Kế toán viên..." required/>
+          <input type="text" name="name" id="addPosName" class="form-input" placeholder="Ví dụ: Lập trình viên, Kế toán viên..." required oninput="validateAddPosForm()"/>
+          <div id="addPosNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Cấp bậc (Job Level) <span style="color:red;">*</span></label>
           <select name="jobLevel" class="form-input" required>
-            <option value="1">Level 1 - Junior / Thực tập</option>
-            <option value="2" selected>Level 2 - Middle / Nhân viên chính thức</option>
-            <option value="3">Level 3 - Senior / Chuyên viên</option>
-            <option value="4">Level 4 - Lead / Trưởng nhóm / Quản lý</option>
+            <option value="1">Level 1 - Thực tập / Junior</option>
+            <option value="2" selected>Level 2 - Nhân viên chính thức / Middle</option>
+            <option value="3">Level 3 - Chuyên viên / Senior</option>
+            <option value="4">Level 4 - Trưởng nhóm / Quản lý / Lead</option>
+            <option value="5">Level 5 - Ban Giám đốc / Tổng giám đốc</option>
           </select>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" onclick="closeAddModal()">Hủy</button>
-        <button type="submit" class="btn-primary">Thêm mới</button>
+        <button type="submit" id="addPosSubmitBtn" class="btn-primary">Thêm mới</button>
       </div>
     </form>
   </div>
@@ -215,27 +256,46 @@
         </div>
         <div class="form-group">
           <label class="form-label">Tên chức vụ <span style="color:red;">*</span></label>
-          <input type="text" name="name" id="editPosName" class="form-input" required/>
+          <input type="text" name="name" id="editPosName" class="form-input" required oninput="validateEditPosForm()"/>
+          <div id="editPosNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Cấp bậc (Job Level) <span style="color:red;">*</span></label>
           <select name="jobLevel" id="editPosLevel" class="form-input" required>
-            <option value="1">Level 1 - Junior / Thực tập</option>
-            <option value="2">Level 2 - Middle / Nhân viên chính thức</option>
-            <option value="3">Level 3 - Senior / Chuyên viên</option>
-            <option value="4">Level 4 - Lead / Trưởng nhóm / Quản lý</option>
+            <option value="1">Level 1 - Thực tập / Junior</option>
+            <option value="2">Level 2 - Nhân viên chính thức / Middle</option>
+            <option value="3">Level 3 - Chuyên viên / Senior</option>
+            <option value="4">Level 4 - Trưởng nhóm / Quản lý / Lead</option>
+            <option value="5">Level 5 - Ban Giám đốc / Tổng giám đốc</option>
           </select>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" onclick="closeEditModal()">Hủy</button>
-        <button type="submit" class="btn-primary">Lưu thay đổi</button>
+        <button type="submit" id="editPosSubmitBtn" class="btn-primary">Lưu thay đổi</button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
+  // Dữ liệu chức vụ để kiểm tra thời gian thực
+  const EXISTING_POSITIONS = [
+    <%
+      if (positionsList != null) {
+        boolean firstP = true;
+        for (Map<String, Object> p : positionsList) {
+          if (!firstP) out.print(",");
+          firstP = false;
+          Integer pId = (Integer) p.get("id");
+          String pCode = (String) p.get("code");
+          String pName = (String) p.get("name");
+          out.print("{id:" + pId + ",code:'" + (pCode != null ? pCode.replace("'", "\\'") : "") + "',name:'" + (pName != null ? pName.replace("'", "\\'") : "") + "'}");
+        }
+      }
+    %>
+  ];
+
   // Cập nhật ngày tháng trên Topbar
   (function updateDate() {
     const d = new Date();
@@ -245,6 +305,89 @@
     const el = document.getElementById('topbar-date');
     if (el) el.textContent = str;
   })();
+
+  function setPosFieldStatus(inputEl, msgEl, isValid, message) {
+    if (isValid === true) {
+      inputEl.style.borderColor = "#10b981";
+      msgEl.innerHTML = '<span style="color: #059669; font-weight: 500;">✓ ' + message + '</span>';
+    } else if (isValid === false) {
+      inputEl.style.borderColor = "#dc2626";
+      msgEl.innerHTML = '<span style="color: #dc2626; font-weight: 500;">' + message + '</span>';
+    } else {
+      inputEl.style.borderColor = "";
+      msgEl.innerHTML = "";
+    }
+  }
+
+  function validateAddPosForm() {
+    const code = (document.getElementById('addPosCode').value || '').trim().toUpperCase();
+    const name = (document.getElementById('addPosName').value || '').trim().toLowerCase();
+
+    const codeInput = document.getElementById('addPosCode');
+    const codeMsg   = document.getElementById('addPosCodeMsg');
+    const nameInput = document.getElementById('addPosName');
+    const nameMsg   = document.getElementById('addPosNameMsg');
+    const submitBtn = document.getElementById('addPosSubmitBtn');
+
+    let hasError = false;
+
+    // 1. Check Code
+    if (code.length > 0) {
+      const isCodeDup = EXISTING_POSITIONS.some(p => p.code.toUpperCase() === code);
+      if (isCodeDup) {
+        setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ này đã tồn tại!');
+        hasError = true;
+      } else {
+        setPosFieldStatus(codeInput, codeMsg, true, 'Mã chức vụ hợp lệ');
+      }
+    } else {
+      setPosFieldStatus(codeInput, codeMsg, null, '');
+    }
+
+    // 2. Check Name
+    if (name.length > 0) {
+      const isNameDup = EXISTING_POSITIONS.some(p => p.name.toLowerCase() === name);
+      if (isNameDup) {
+        setPosFieldStatus(nameInput, nameMsg, false, 'Tên chức vụ này đã tồn tại!');
+        hasError = true;
+      } else {
+        setPosFieldStatus(nameInput, nameMsg, true, 'Tên chức vụ hợp lệ');
+      }
+    } else {
+      setPosFieldStatus(nameInput, nameMsg, null, '');
+    }
+
+    submitBtn.disabled = hasError;
+    submitBtn.style.opacity = hasError ? '0.5' : '1';
+    submitBtn.style.cursor = hasError ? 'not-allowed' : 'pointer';
+  }
+
+  function validateEditPosForm() {
+    const currId = parseInt(document.getElementById('editPosId').value);
+    const name = (document.getElementById('editPosName').value || '').trim().toLowerCase();
+
+    const nameInput = document.getElementById('editPosName');
+    const nameMsg   = document.getElementById('editPosNameMsg');
+    const submitBtn = document.getElementById('editPosSubmitBtn');
+
+    let hasError = false;
+
+    if (name.length > 0) {
+      const isNameDup = EXISTING_POSITIONS.some(p => p.id !== currId && p.name.toLowerCase() === name);
+      if (isNameDup) {
+        setPosFieldStatus(nameInput, nameMsg, false, 'Tên chức vụ này đã tồn tại!');
+        hasError = true;
+      } else {
+        setPosFieldStatus(nameInput, nameMsg, true, 'Tên chức vụ hợp lệ');
+      }
+    } else {
+      setPosFieldStatus(nameInput, nameMsg, null, '');
+    }
+
+    submitBtn.disabled = hasError;
+    submitBtn.style.opacity = hasError ? '0.5' : '1';
+    submitBtn.style.cursor = hasError ? 'not-allowed' : 'pointer';
+  }
 
   // Lọc tìm kiếm theo Mã hoặc Tên chức vụ
   function filterTable() {
@@ -263,6 +406,13 @@
 
   // Modal Thêm
   function openAddModal() {
+    document.getElementById('addPosCode').value = '';
+    document.getElementById('addPosName').value = '';
+    setPosFieldStatus(document.getElementById('addPosCode'), document.getElementById('addPosCodeMsg'), null, '');
+    setPosFieldStatus(document.getElementById('addPosName'), document.getElementById('addPosNameMsg'), null, '');
+    document.getElementById('addPosSubmitBtn').disabled = false;
+    document.getElementById('addPosSubmitBtn').style.opacity = '1';
+    document.getElementById('addPosSubmitBtn').style.cursor = 'pointer';
     document.getElementById('addModal').style.display = 'flex';
   }
   function closeAddModal() {
@@ -275,6 +425,12 @@
     document.getElementById('editPosCode').value = code;
     document.getElementById('editPosName').value = name;
     document.getElementById('editPosLevel').value = level;
+
+    setPosFieldStatus(document.getElementById('editPosName'), document.getElementById('editPosNameMsg'), null, '');
+    document.getElementById('editPosSubmitBtn').disabled = false;
+    document.getElementById('editPosSubmitBtn').style.opacity = '1';
+    document.getElementById('editPosSubmitBtn').style.cursor = 'pointer';
+
     document.getElementById('editModal').style.display = 'flex';
   }
   function closeEditModal() {
@@ -286,7 +442,25 @@
     if (e.target.classList.contains('modal-backdrop')) {
       e.target.style.display = 'none';
     }
-  }
+  };
+
+  // Tự động ẩn thông báo sau đúng 2 giây
+  setTimeout(function() {
+    var alerts = document.querySelectorAll('.flash-alert');
+    alerts.forEach(function(alert) {
+      alert.style.transition = 'opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin-bottom 0.4s ease';
+      alert.style.opacity = '0';
+      alert.style.transform = 'translateY(-8px)';
+      alert.style.maxHeight = '0';
+      alert.style.marginBottom = '0';
+      alert.style.paddingTop = '0';
+      alert.style.paddingBottom = '0';
+      alert.style.overflow = 'hidden';
+      setTimeout(function() {
+        alert.remove();
+      }, 400);
+    });
+  }, 2000);
 </script>
 </body>
 </html>

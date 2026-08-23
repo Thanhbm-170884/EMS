@@ -67,12 +67,18 @@ public class HolidayService {
         if (start.isAfter(end)) {
             throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc");
         }
+
+        // Giữ lại coefficient cũ nếu đã có instance, không ghi đè thành 1.0
+        Map<Integer, HolidayYearInstance> existing = HolidayYearInstanceDAO.getInstanceByYear(year);
+        HolidayYearInstance old = existing.get(templateId);
+        double coefficient = (old != null) ? old.getCoefficient() : 1.0;
+
         HolidayYearInstance hi = new HolidayYearInstance();
         hi.setTemplateId(templateId);
         hi.setYear(year);
         hi.setStartDate(start);
         hi.setEndDate(end);
-        hi.setCoefficient(1.0);
+        hi.setCoefficient(coefficient);
         hi.setCreatedBy(accountId);
         HolidayYearInstanceDAO.upsertInstance(hi);
     }

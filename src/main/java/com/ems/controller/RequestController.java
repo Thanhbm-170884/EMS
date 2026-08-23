@@ -2,6 +2,7 @@ package com.ems.controller;
 
 import com.ems.dao.RequestDAO;
 import com.ems.dto.RequestDTO;
+import com.ems.dto.EmployeeBalanceDTO;
 import com.ems.util.DBConnection;
 
 import jakarta.servlet.ServletException;
@@ -18,6 +19,7 @@ import java.sql.Connection;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
+import java.text.SimpleDateFormat;
 
 @WebServlet("/requests")
 @MultipartConfig(maxFileSize = 5 * 1024 * 1024, maxRequestSize = 6 * 1024 * 1024)
@@ -49,12 +51,20 @@ public class RequestController extends HttpServlet {
                     detail(request, response, dao);
                     break;
 
+                case "ajaxDetail":
+                    ajaxDetail(request, response, dao);
+                    break;
+
                 case "myRequests":
                     myRequests(request, response, dao);
                     break;
 
                 case "pending":
                     pending(request, response, dao);
+                    break;
+
+                case "employeeBalances":
+                    employeeBalances(request, response, dao);
                     break;
 
                 case "create":
@@ -251,10 +261,64 @@ public class RequestController extends HttpServlet {
             return;
         }
 
-        List<RequestDTO> list =
-                dao.getPendingRequests(accountId);
+        // 1. Get filter params
+        String tab = request.getParameter("tab");
+        if (tab == null || tab.trim().isEmpty()) {
+            tab = "Pending";
+        }
+        String searchName = request.getParameter("searchName");
+        String filterType = request.getParameter("filterType");
 
-        request.setAttribute("requests", list);
+        // 2. Fetch all requests
+        List<RequestDTO> allRequests = dao.getAll();
+        
+        // 3. Extract request types for dropdown
+        java.util.Set<String> allRequestTypes = new java.util.LinkedHashSet<>();
+        if (allRequests != null) {
+            for (RequestDTO item : allRequests) {
+                if (item.getRequestTypeName() != null) {
+                    allRequestTypes.add(item.getRequestTypeName());
+                }
+            }
+        }
+
+        // 4. Load selected request for detail view if id is provided
+        String idParam = request.getParameter("id");
+        if (idParam != null && !idParam.trim().isEmpty()) {
+            try {
+                int id = Integer.parseInt(idParam.trim());
+                RequestDTO selectedRequest = dao.getById(id);
+                request.setAttribute("selectedRequest", selectedRequest);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // 5. Filter list for presentation
+        List<RequestDTO> filteredList = allRequests;
+        if (filteredList != null) {
+            String finalTab = tab;
+            filteredList = filteredList.stream().filter(item -> {
+                String itemStatus = item.getStatus() == null ? "" : item.getStatus();
+                boolean tabOk = "Pending".equalsIgnoreCase(finalTab) 
+                    ? "Pending".equalsIgnoreCase(itemStatus)
+                    : ("Approved".equalsIgnoreCase(itemStatus) || "Rejected".equalsIgnoreCase(itemStatus));
+                
+                String employeeName = item.getCreatedByName() == null ? "" : item.getCreatedByName();
+                boolean nameOk = searchName == null || searchName.trim().isEmpty() 
+                    || employeeName.toLowerCase().contains(searchName.trim().toLowerCase());
+                
+                String typeName = item.getRequestTypeName() == null ? "" : item.getRequestTypeName();
+                boolean typeOk = filterType == null || filterType.trim().isEmpty() 
+                    || typeName.equalsIgnoreCase(filterType.trim());
+                
+                return tabOk && nameOk && typeOk;
+            }).collect(java.util.stream.Collectors.toList());
+        }
+
+        request.setAttribute("requests", filteredList);
+        request.setAttribute("allRequestTypes", allRequestTypes);
+        request.setAttribute("tab", tab);
+        request.setAttribute("searchName", searchName);
+        request.setAttribute("filterType", filterType);
 
         request.getRequestDispatcher(
                 "/request-manager.jsp"
@@ -305,17 +369,8 @@ public class RequestController extends HttpServlet {
         dto.setTitle(title);
         dto.setReason(reason);
 
-        dto.setStartDate(
-                Timestamp.valueOf(
-                        startDate.replace("T", " ") + ":00"
-                )
-        );
-
-        dto.setEndDate(
-                Timestamp.valueOf(
-                        endDate.replace("T", " ") + ":00"
-                )
-        );
+        dto.setStartDate(parseTimestamp(startDate));
+        dto.setEndDate(parseTimestamp(endDate));
 
         String value = request.getParameter("value");
         dto.setValue(value == null || value.isBlank() ? 1 : Double.parseDouble(value));
@@ -333,6 +388,30 @@ public class RequestController extends HttpServlet {
                 request.getContextPath()
                         + "/requests?action=myRequests"
         );
+    }
+
+    private Timestamp parseTimestamp(String dateStr) {
+        if (dateStr == null || dateStr.trim().isBlank() || "null".equalsIgnoreCase(dateStr.trim())) {
+            return null;
+        }
+        String cleanStr = dateStr.trim().replace("T", " ");
+        if (cleanStr.length() == 10) {
+            cleanStr += " 00:00:00";
+        } else if (cleanStr.length() == 16) {
+            cleanStr += ":00";
+        }
+        try {
+            return Timestamp.valueOf(cleanStr);
+        } catch (IllegalArgumentException e) {
+            try {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date parsed = sdf.parse(cleanStr);
+                return new Timestamp(parsed.getTime());
+            } catch (Exception ex) {
+                System.err.println("Error parsing date: '" + dateStr + "' - " + ex.getMessage());
+                return null;
+            }
+        }
     }
 
     private String saveUploadedImage(HttpServletRequest request)
@@ -385,8 +464,12 @@ public class RequestController extends HttpServlet {
         }
 
         int id = Integer.parseInt(request.getParameter("id"));
+        String rejectionReason = request.getParameter("rejectionReason");
+        if (rejectionReason != null) {
+            rejectionReason = rejectionReason.trim();
+        }
 
-        if (!dao.updateStatusForApprover(id, accountId, status)) {
+        if (!dao.updateStatusForApprover(id, accountId, status, rejectionReason)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -413,5 +496,91 @@ public class RequestController extends HttpServlet {
                 request.getContextPath()
                         + "/requests?action=myRequests"
         );
+    }
+
+    private void employeeBalances(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            RequestDAO dao
+    ) throws Exception {
+
+        HttpSession session = request.getSession();
+        String role = (String) session.getAttribute("role");
+        if (role == null || !"manager".equalsIgnoreCase(role)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        List<EmployeeBalanceDTO> list = dao.getEmployeeBalances();
+        request.setAttribute("balances", list);
+
+        request.getRequestDispatcher(
+                "/employee-balances.jsp"
+        ).forward(request, response);
+    }
+
+    private void ajaxDetail(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            RequestDAO dao
+    ) throws Exception {
+        response.setContentType("application/json; charset=UTF-8");
+        int id = Integer.parseInt(request.getParameter("id"));
+        RequestDTO dto = dao.getById(id);
+        if (dto == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"error\": \"Not found\"}");
+            return;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        String startStr = dto.getStartDate() != null ? sdf.format(dto.getStartDate()) : "-";
+        String endStr = dto.getEndDate() != null ? sdf.format(dto.getEndDate()) : "-";
+        String createdStr = dto.getCreatedAt() != null ? sdf.format(dto.getCreatedAt()) : "-";
+
+        String json = String.format(
+            java.util.Locale.US,
+            "{" +
+            "\"id\": %d," +
+            "\"title\": \"%s\"," +
+            "\"reason\": \"%s\"," +
+            "\"startDate\": \"%s\"," +
+            "\"endDate\": \"%s\"," +
+            "\"value\": %f," +
+            "\"imageUrl\": \"%s\"," +
+            "\"requestTypeName\": \"%s\"," +
+            "\"requestTypeId\": %d," +
+            "\"createdByName\": \"%s\"," +
+            "\"currentApproverName\": \"%s\"," +
+            "\"status\": \"%s\"," +
+            "\"rejectionReason\": \"%s\"," +
+            "\"createdAt\": \"%s\"" +
+            "}",
+            dto.getId(),
+            escapeJson(dto.getTitle()),
+            escapeJson(dto.getReason()),
+            startStr,
+            endStr,
+            dto.getValue(),
+            escapeJson(dto.getImageUrl()),
+            escapeJson(dto.getRequestTypeName()),
+            dto.getRequestTypeId(),
+            escapeJson(dto.getCreatedByName()),
+            escapeJson(dto.getCurrentApproverName()),
+            escapeJson(dto.getStatus()),
+            escapeJson(dto.getRejectionReason()),
+            createdStr
+        );
+
+        response.getWriter().write(json);
+    }
+
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\r", "\\r")
+                  .replace("\n", "\\n")
+                  .replace("\t", "\\t");
     }
 }
