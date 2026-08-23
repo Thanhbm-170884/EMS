@@ -84,6 +84,11 @@
                class="nav-link ${pageContext.request.servletPath == '/notification.jsp' ? 'active' : ''}">
                 Thông báo
             </a>
+            <a href="${pageContext.request.contextPath}/my-payslip"
+               class="nav-link ${pageContext.request.servletPath == '/my-payslip.jsp' || fn:contains(pageContext.request.requestURI, '/my-payslip') ? 'active' : ''}">
+                Xem lương
+            </a>
+
 
         </c:if>
 

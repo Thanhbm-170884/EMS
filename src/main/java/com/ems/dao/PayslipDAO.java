@@ -401,4 +401,70 @@ public class PayslipDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
-}
+
+    public List<PayslipDTO> getPayslipsByUserId(int userId) {
+        List<PayslipDTO> list = new ArrayList<>();
+        String sql = "SELECT p.Id, p.PeriodId, p.StandardWorkDays, p.ActualWorkDays, " +
+                "p.BaseSalary, p.ActualBaseSalary, p.OtHours, p.OtSalary, p.BonusAmount, " +
+                "p.DependentsCount, p.DependentDeduction, p.TaxableIncome, p.PenaltyAmount, p.AdvanceAmount, " +
+                "(COALESCE(p.PenaltyAmount, 0) + COALESCE(p.AdvanceAmount, 0) + COALESCE(p.OtherDeductions, 0)) AS OtherDeductions, " +
+                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, p.TaxDeduction, p.NetAmount, p.Status, p.Note, " +
+                "u.EmployeeCode, u.FullName, d.Name AS DepartmentName, pos.Name AS PositionName, t.Name AS PeriodName " +
+                "FROM payslips p " +
+                "JOIN users u ON p.UserId = u.Id " +
+                "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                "LEFT JOIN positions pos ON u.PositionId = pos.Id " +
+                "LEFT JOIN timesheetperiods t ON p.PeriodId = t.Id " +
+                "WHERE p.UserId = ? AND p.Status IN ('Confirmed', 'Paid') " +
+                "ORDER BY t.StartDate DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PayslipDTO dto = new PayslipDTO();
+                    dto.setId(rs.getInt("Id"));
+                    dto.setPeriodId(rs.getInt("PeriodId"));
+                    dto.setStatus(rs.getString("Status"));
+
+                    dto.setEmployeeCode(rs.getString("EmployeeCode"));
+                    dto.setFullName(rs.getString("FullName"));
+                    dto.setDepartmentName(rs.getString("DepartmentName"));
+                    dto.setPositionName(rs.getString("PositionName"));
+
+                    dto.setStandardWorkDays(rs.getInt("StandardWorkDays"));
+                    dto.setActualWorkDays(rs.getBigDecimal("ActualWorkDays"));
+                    dto.setBaseSalary(rs.getBigDecimal("BaseSalary"));
+                    dto.setActualBaseSalary(rs.getBigDecimal("ActualBaseSalary"));
+                    dto.setOtHours(rs.getBigDecimal("OtHours"));
+                    dto.setOtSalary(rs.getBigDecimal("OtSalary"));
+                    dto.setBonusAmount(rs.getBigDecimal("BonusAmount"));
+                    dto.setDependentsCount(rs.getInt("DependentsCount"));
+                    dto.setDependentDeduction(rs.getBigDecimal("DependentDeduction"));
+                    dto.setTaxableIncome(rs.getBigDecimal("TaxableIncome"));
+                    dto.setPenaltyAmount(rs.getBigDecimal("PenaltyAmount"));
+                    dto.setAdvanceAmount(rs.getBigDecimal("AdvanceAmount"));
+                    dto.setOtherDeductions(rs.getBigDecimal("OtherDeductions"));
+                    dto.setGrossAmount(rs.getBigDecimal("GrossAmount"));
+                    dto.setTotalInsurance(rs.getBigDecimal("TotalInsuranceDeduction"));
+                    dto.setBhxh(rs.getBigDecimal("BhxhAmount"));
+                    dto.setBhyt(rs.getBigDecimal("BhytAmount"));
+                    dto.setBhtn(rs.getBigDecimal("BhtnAmount"));
+                    dto.setTaxDeduction(rs.getBigDecimal("TaxDeduction"));
+                    dto.setNetAmount(rs.getBigDecimal("NetAmount"));
+                    dto.setNote(rs.getString("Note"));
+
+                    dto.setAllowanceDetails(getAllowanceDetailsByPayslipId(dto.getId()));
+                    dto.setPeriodName(rs.getString("PeriodName"));
+
+                    list.add(dto);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+}

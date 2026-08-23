@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class WorkScheduleServlet extends HttpServlet {
         boolean hasSchedule = shifts != null && !shifts.isEmpty();
         request.setAttribute("shifts", shifts);
         request.setAttribute("hasSchedule", hasSchedule);
+        // Gửi ngày hiện tại để form hiển thị effectiveDate mặc định
+        request.setAttribute("today", LocalDate.now().toString());
         request.getRequestDispatcher("/work-schedule.jsp").forward(request, response);
     }
 
@@ -37,6 +40,17 @@ public class WorkScheduleServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
+
+        // Đọc ngày áp dụng từ form (HR chọn), fallback về hôm nay nếu không có
+        LocalDate effectiveDate;
+        try {
+            String effectiveDateParam = request.getParameter("effectiveDate");
+            effectiveDate = (effectiveDateParam != null && !effectiveDateParam.isBlank())
+                    ? LocalDate.parse(effectiveDateParam)
+                    : LocalDate.now();
+        } catch (Exception e) {
+            effectiveDate = LocalDate.now();
+        }
 
         List<ShiftDTO> shiftDTOS = new ArrayList<>();
 
@@ -46,20 +60,20 @@ public class WorkScheduleServlet extends HttpServlet {
                 continue;
 
             String workingParam = request.getParameter("working_" + i);
-            String startTime = request.getParameter("startTime_" + i);
-            String endTime = request.getParameter("endTime_" + i);
-            String breakStart = request.getParameter("breakStart_" + i);
-            String breakEnd = request.getParameter("breakEnd_" + i);
+            String startTime    = request.getParameter("startTime_" + i);
+            String endTime      = request.getParameter("endTime_" + i);
+            String breakStart   = request.getParameter("breakStart_" + i);
+            String breakEnd     = request.getParameter("breakEnd_" + i);
 
             ShiftDTO dto = new ShiftDTO();
             dto.setDayOfWeek(Integer.parseInt(dayOfWeek.trim()));
             boolean working = "true".equals(workingParam);
             dto.setWorking(working);
             if (working) {
-                dto.setStartTime(startTime != null ? startTime.trim() : null);
-                dto.setEndTime(endTime != null ? endTime.trim() : null);
+                dto.setStartTime(startTime  != null ? startTime.trim()  : null);
+                dto.setEndTime(endTime      != null ? endTime.trim()    : null);
                 dto.setBreakStart(breakStart != null ? breakStart.trim() : null);
-                dto.setBreakEnd(breakEnd != null ? breakEnd.trim() : null);
+                dto.setBreakEnd(breakEnd    != null ? breakEnd.trim()   : null);
             } else {
                 dto.setStartTime(null);
                 dto.setEndTime(null);
@@ -68,7 +82,9 @@ public class WorkScheduleServlet extends HttpServlet {
             }
             shiftDTOS.add(dto);
         }
-        workScheduleService.saveWorkSchedule(shiftDTOS);
+
+        // Gọi saveNewDefaultSchedule với effectiveDate để versioning đúng
+        workScheduleService.saveNewDefaultSchedule(shiftDTOS, effectiveDate);
         response.sendRedirect(request.getContextPath() + "/work-schedule?saved=1");
     }
 }

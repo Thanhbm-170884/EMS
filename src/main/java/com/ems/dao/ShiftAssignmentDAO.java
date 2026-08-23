@@ -588,4 +588,4 @@ public class ShiftAssignmentDAO {
         }
         return sb.toString();
     }
-}
+}
