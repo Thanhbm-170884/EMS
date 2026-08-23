@@ -171,12 +171,6 @@ public class PayslipServlet extends HttpServlet {
         if ("generate".equals(action)) {
             int periodId = Integer.parseInt(request.getParameter("periodId"));
 
-            if (isPeriodLocked(periodId)) {
-                request.getSession().setAttribute("msgError", "Kỳ lương đã bị khóa, không thể thực hiện thao tác!");
-                response.sendRedirect(request.getContextPath() + "/payslips?periodId=" + periodId);
-                return;
-            }
-
             PayrollService payrollService = new PayrollService();
             String result = payrollService.generatePayrollMonth(periodId, managerId);
 
@@ -194,12 +188,6 @@ public class PayslipServlet extends HttpServlet {
             // Lấy dữ liệu từ Form Edit gửi lên
             int payslipId = Integer.parseInt(request.getParameter("payslipId"));
             int periodId = Integer.parseInt(request.getParameter("periodId"));
-
-            if (isPeriodLocked(periodId)) {
-                request.getSession().setAttribute("msgError", "Kỳ lương đã bị khóa, không thể thực hiện thao tác!");
-                response.sendRedirect(request.getContextPath() + "/payslips?periodId=" + periodId);
-                return;
-            }
 
             String note = request.getParameter("note");
 
