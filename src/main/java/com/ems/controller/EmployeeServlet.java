@@ -147,8 +147,14 @@ public class EmployeeServlet extends HttpServlet {
                 java.sql.Date dob = null;
                 if (error == null) {
                     try {
-                        dob = java.sql.Date.valueOf(dobStr.trim());
-                        java.time.LocalDate birthDate = dob.toLocalDate();
+                        java.time.LocalDate birthDate;
+                        if (dobStr.contains("/")) {
+                            java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                            birthDate = java.time.LocalDate.parse(dobStr.trim(), dtf);
+                        } else {
+                            birthDate = java.time.LocalDate.parse(dobStr.trim());
+                        }
+                        dob = java.sql.Date.valueOf(birthDate);
                         java.time.LocalDate now = java.time.LocalDate.now();
                         if (birthDate.isAfter(now)) {
                             error = "Ngày sinh không được là ngày trong tương lai!";
@@ -156,7 +162,7 @@ public class EmployeeServlet extends HttpServlet {
                             error = "Nhân viên phải từ đủ 18 tuổi trở lên!";
                         }
                     } catch (Exception ex) {
-                        error = "Định dạng ngày sinh không hợp lệ (yyyy-MM-dd)!";
+                        error = "Định dạng ngày sinh không hợp lệ (dd/mm/yyyy)!";
                     }
                 }
 
@@ -197,20 +203,67 @@ public class EmployeeServlet extends HttpServlet {
         } else if ("update".equals(action)) {
             try {
                 int userId       = Integer.parseInt(request.getParameter("userId"));
+                String fullName  = request.getParameter("fullName");
                 String email     = request.getParameter("email");
+                String phone     = request.getParameter("phone");
+                String genderStr = request.getParameter("gender");
+                String dobStr    = request.getParameter("dob");
+                String deptStr   = request.getParameter("departmentId");
+                String posStr    = request.getParameter("positionId");
+                String dependentsStr = request.getParameter("dependentsCount");
+                String salaryStr = request.getParameter("baseSalary");
+
+                fullName = fullName != null ? fullName.trim() : "";
                 email = email != null ? email.trim() : "";
+                phone = phone != null ? phone.trim() : "";
+
+                String rawEmail = request.getParameter("email");
+                String rawPhone = request.getParameter("phone");
 
                 // Validate
                 String error = null;
-                String rawEmail = request.getParameter("email");
-                if (email.isEmpty()) {
-                    error = "Vui lòng nhập email công ty!";
+                if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || dobStr == null || dobStr.trim().isEmpty() || deptStr == null || posStr == null) {
+                    error = "Vui lòng điền đầy đủ các thông tin bắt buộc (*)!";
+                } else if (!fullName.matches("^[a-zA-ZÀ-ỹ\\s]+$")) {
+                    error = "Họ và tên chỉ được chứa chữ cái và khoảng trắng!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
                 } else if (!email.toLowerCase().endsWith("@techcorp.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@techcorp\\.vn$")) {
                     error = "Email công ty phải có định dạng @techcorp.vn (ví dụ: nhanvien@techcorp.vn)!";
+                } else if (rawPhone != null && rawPhone.contains(" ")) {
+                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (!phone.matches("^0[0-9]{9}$")) {
+                    error = "Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng số 0 (ví dụ: 0912345678)!";
                 } else if (userDAO.isEmailExistsForOtherUserId(email, userId)) {
                     error = "Email công ty '" + email + "' đã được sử dụng bởi nhân viên khác!";
+                } else if (userDAO.isPhoneExistsForOtherUserId(phone, userId)) {
+                    error = "Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!";
+                }
+
+                java.sql.Date dob = null;
+                if (error == null) {
+                    try {
+                        java.time.LocalDate birthDate;
+                        if (dobStr.contains("/")) {
+                            java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                            birthDate = java.time.LocalDate.parse(dobStr.trim(), dtf);
+                        } else {
+                            birthDate = java.time.LocalDate.parse(dobStr.trim());
+                        }
+                        java.time.LocalDate today = java.time.LocalDate.now();
+                        if (birthDate.isAfter(today)) {
+                            error = "Ngày sinh không hợp lệ!";
+                        } else {
+                            int age = java.time.Period.between(birthDate, today).getYears();
+                            if (age < 18) {
+                                error = "Nhân viên phải từ đủ 18 tuổi trở lên!";
+                            } else {
+                                dob = java.sql.Date.valueOf(birthDate);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        error = "Định dạng ngày sinh không hợp lệ (dd/mm/yyyy)!";
+                    }
                 }
 
                 if (error != null) {
@@ -219,10 +272,30 @@ public class EmployeeServlet extends HttpServlet {
                     return;
                 }
 
-                int departmentId = Integer.parseInt(request.getParameter("departmentId"));
-                int positionId   = Integer.parseInt(request.getParameter("positionId"));
+                Boolean gender = null;
+                if ("true".equalsIgnoreCase(genderStr) || "1".equals(genderStr)) {
+                    gender = true;
+                } else if ("false".equalsIgnoreCase(genderStr) || "0".equals(genderStr)) {
+                    gender = false;
+                }
 
-                boolean success = userDAO.updateEmployeeAssignment(userId, email, departmentId, positionId);
+                int departmentId = Integer.parseInt(deptStr);
+                int positionId   = Integer.parseInt(posStr);
+                int dependentsCount = 0;
+                if (dependentsStr != null && !dependentsStr.trim().isEmpty()) {
+                    try {
+                        dependentsCount = Integer.parseInt(dependentsStr.trim());
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                java.math.BigDecimal baseSalary = new java.math.BigDecimal("5000000");
+                if (salaryStr != null && !salaryStr.trim().isEmpty()) {
+                    try {
+                        baseSalary = new java.math.BigDecimal(salaryStr.trim().replace(",", ""));
+                    } catch (Exception ignored) {}
+                }
+
+                boolean success = userDAO.updateEmployeeFull(userId, fullName, email, phone, gender, dob, departmentId, positionId, dependentsCount, baseSalary);
                 if (success) {
                     session.setAttribute("successMessage", "Cập nhật thông tin nhân viên thành công!");
                 } else {

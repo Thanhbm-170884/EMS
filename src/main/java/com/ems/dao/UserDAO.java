@@ -519,6 +519,49 @@ public class UserDAO {
         return false;
     }
 
+    /** Cập nhật thông tin tài khoản cơ bản (Họ tên, Email, Vai trò) */
+    public boolean updateAccountBasic(int accountId, String fullName, String email, String role) {
+        String updateUser = "UPDATE users u " +
+                             "JOIN accounts a ON a.UserId = u.Id " +
+                             "SET u.FullName = ?, u.EmailCompany = ? " +
+                             "WHERE a.Id = ?";
+        String deleteRole = "DELETE FROM accountroles WHERE AccountId = ?";
+        String insertRole = "INSERT INTO accountroles (AccountId, RoleId) VALUES (?, (SELECT Id FROM roles WHERE Name = ?))";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Cập nhật thông tin User
+                try (PreparedStatement ps = conn.prepareStatement(updateUser)) {
+                    ps.setString(1, fullName);
+                    ps.setString(2, email);
+                    ps.setInt(3, accountId);
+                    ps.executeUpdate();
+                }
+                
+                // 2. Xóa và thêm mới quyền trong bảng trung gian
+                try (PreparedStatement ps = conn.prepareStatement(deleteRole)) {
+                    ps.setInt(1, accountId);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement(insertRole)) {
+                    ps.setInt(1, accountId);
+                    ps.setString(2, role);
+                    ps.executeUpdate();
+                }
+                
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /** Cập nhật toàn bộ thông tin tài khoản và thông tin nhân viên đi kèm */
     public boolean updateAccountWithUser(int accountId, String fullName, String email, String phone, String role, int departmentId, int positionId) {
         String updateUser = "UPDATE users u " +
@@ -572,10 +615,15 @@ public class UserDAO {
             "SELECT u.Id as userId, u.EmployeeCode, u.FullName, u.EmailCompany, u.Phone, " +
             "       u.Gender, u.DateOfBirth, u.Status as userStatus, u.DependentsCount, " +
             "       u.DepartmentId, u.PositionId, " +
-            "       d.Name as departmentName, p.Name as positionName, p.JobLevel " +
+            "       d.Name as departmentName, p.Name as positionName, p.JobLevel, " +
+            "       ebs.BaseSalary, a.Username, r.Name as roleName " +
             "FROM users u " +
             "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
             "LEFT JOIN positions p ON u.PositionId = p.Id " +
+            "LEFT JOIN (SELECT UserId, MAX(BaseSalary) as BaseSalary FROM employmentbasesalarys GROUP BY UserId) ebs ON ebs.UserId = u.Id " +
+            "LEFT JOIN accounts a ON a.UserId = u.Id " +
+            "LEFT JOIN accountroles ar ON ar.AccountId = a.Id " +
+            "LEFT JOIN roles r ON ar.RoleId = r.Id " +
             "ORDER BY LENGTH(u.EmployeeCode) ASC, u.EmployeeCode ASC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
@@ -596,12 +644,71 @@ public class UserDAO {
                 map.put("departmentName", rs.getString("departmentName"));
                 map.put("positionName",   rs.getString("positionName"));
                 map.put("jobLevel",       rs.getInt("JobLevel"));
+                map.put("baseSalary",     rs.getBigDecimal("BaseSalary"));
+                map.put("username",       rs.getString("Username"));
+                map.put("roleName",       rs.getString("roleName"));
                 list.add(map);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+    /** Cập nhật toàn bộ thông tin chi tiết nhân viên (Họ tên, Email, SĐT, Giới tính, Ngày sinh, Phòng ban, Chức vụ, Người phụ thuộc, Lương cơ bản) */
+    public boolean updateEmployeeFull(int userId, String fullName, String email, String phone, Boolean gender, java.sql.Date dateOfBirth, int departmentId, int positionId, int dependentsCount, java.math.BigDecimal baseSalary) {
+        String updateUser = "UPDATE users SET FullName = ?, EmailCompany = ?, Phone = ?, Gender = ?, DateOfBirth = ?, DepartmentId = ?, PositionId = ?, DependentsCount = ? WHERE Id = ?";
+        String updateSalary = "UPDATE employmentbasesalarys SET BaseSalary = ? WHERE UserId = ?";
+        String insertSalary = "INSERT INTO employmentbasesalarys (BaseSalary, UserId) VALUES (?, ?)";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Update users table
+                try (PreparedStatement ps = conn.prepareStatement(updateUser)) {
+                    ps.setString(1, fullName);
+                    ps.setString(2, email);
+                    ps.setString(3, (phone != null && !phone.trim().isEmpty()) ? phone.trim() : null);
+                    if (gender != null) {
+                        ps.setBoolean(4, gender);
+                    } else {
+                        ps.setNull(4, java.sql.Types.BIT);
+                    }
+                    ps.setDate(5, dateOfBirth);
+                    ps.setInt(6, departmentId);
+                    ps.setInt(7, positionId);
+                    ps.setInt(8, Math.max(0, dependentsCount));
+                    ps.setInt(9, userId);
+                    ps.executeUpdate();
+                }
+
+                // 2. Update or insert employmentbasesalarys
+                if (baseSalary != null) {
+                    int updatedRows = 0;
+                    try (PreparedStatement ps = conn.prepareStatement(updateSalary)) {
+                        ps.setBigDecimal(1, baseSalary);
+                        ps.setInt(2, userId);
+                        updatedRows = ps.executeUpdate();
+                    }
+                    if (updatedRows == 0) {
+                        try (PreparedStatement ps = conn.prepareStatement(insertSalary)) {
+                            ps.setBigDecimal(1, baseSalary);
+                            ps.setInt(2, userId);
+                            ps.executeUpdate();
+                        }
+                    }
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /** Cập nhật thông tin chi tiết nhân viên (Họ tên, Email, SĐT, Giới tính, Ngày sinh, Phòng ban, Chức vụ) */

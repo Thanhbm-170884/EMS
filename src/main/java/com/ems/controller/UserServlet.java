@@ -192,30 +192,25 @@ public class UserServlet extends HttpServlet {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 String fullName = request.getParameter("fullName");
                 String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
-                int departmentId = Integer.parseInt(request.getParameter("departmentId"));
-                int positionId = Integer.parseInt(request.getParameter("positionId"));
 
                 fullName = fullName != null ? fullName.trim() : "";
                 email = email != null ? email.trim() : "";
-                phone = phone != null ? phone.trim() : "";
 
                 String rawEmail = request.getParameter("email");
-                String rawPhone = request.getParameter("phone");
 
                 // Validate trùng lặp khi sửa
                 String error = null;
                 if (fullName.isEmpty() || email.isEmpty()) {
                     error = "Vui lòng điền đầy đủ họ và tên và email!";
+                } else if (!fullName.matches("^[a-zA-ZÀ-ỹ\\s]+$")) {
+                    error = "Họ và tên chỉ được chứa chữ cái và khoảng trắng!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
-                } else if (rawPhone != null && rawPhone.contains(" ")) {
-                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (!email.toLowerCase().endsWith("@techcorp.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@techcorp\\.vn$")) {
+                    error = "Email công ty phải có định dạng @techcorp.vn (ví dụ: nhanvien@techcorp.vn)!";
                 } else if (userDAO.isEmailExistsForOther(email, accountId)) {
                     error = "Email công ty '" + email + "' đã được sử dụng bởi tài khoản khác!";
-                } else if (!phone.isEmpty() && userDAO.isPhoneExistsForOther(phone, accountId)) {
-                    error = "Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!";
                 }
 
                 if (error != null) {
@@ -224,7 +219,7 @@ public class UserServlet extends HttpServlet {
                     return;
                 }
 
-                boolean success = userDAO.updateAccountWithUser(accountId, fullName, email, phone, role, departmentId, positionId);
+                boolean success = userDAO.updateAccountBasic(accountId, fullName, email, role);
                 if (success) {
                     session.setAttribute("successMessage", "Lưu thay đổi tài khoản thành công!");
                 } else {

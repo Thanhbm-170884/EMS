@@ -19,37 +19,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EMS – Quản lý tài khoản</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/ems.css"/>
   <link rel="stylesheet" href="css/users.css"/>
-  <style>
-    .page-nav-btn, .page-num-btn {
-      padding: 6px 12px;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      background: #ffffff;
-      color: #374151;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      outline: none;
-    }
-    .page-nav-btn:hover:not(:disabled), .page-num-btn:hover:not(.active) {
-      background: #f3f4f6;
-      border-color: #d1d5db;
-    }
-    .page-nav-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    .page-num-btn.active {
-      background: #0d9488;
-      color: #ffffff;
-      border-color: #0d9488;
-      font-weight: 600;
-    }
-  </style>
 </head>
 <body>
 
@@ -105,7 +79,7 @@
         <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 4px;">Quản lý người dùng</h1>
         <p style="font-size: 14px; color: #4b5563;">Xem và phân quyền người dùng trong hệ thống</p>
       </div>
-      <button class="btn-add-acc" onclick="openAddModal()">
+      <button class="btn-add-acc" type="button" onclick="openAddModal()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Thêm tài khoản
       </button>
@@ -130,7 +104,7 @@
     <!-- Main Card User List -->
     <div class="card">
       <div class="card-header" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: #111827; border-bottom: 1px solid #f3f4f6; padding: 14px 18px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         Danh sách người dùng
       </div>
       
@@ -198,16 +172,12 @@
                       </span>
                     </td>
                     <td style="padding: 12px 16px;">
-                      <%
-                        String phoneVal = (String) u.get("phone");
-                        if (phoneVal == null) phoneVal = "";
-                      %>
-                      <a href="javascript:void(0)" onclick="openEditModal(<%= u.get("accountId") %>, '<%= username %>', '<%= name != null ? name.replace("'", "\\'") : "" %>', '<%= email != null ? email.replace("'", "\\'") : "" %>', '<%= phoneVal.replace("'", "\\'") %>', '<%= roleName != null ? roleName : "" %>', <%= u.get("departmentId") %>, <%= u.get("positionId") %>)" style="color: #0d9488; text-decoration: none; font-weight: 600; margin-right: 12px;">Sửa</a>
+                      <a href="javascript:void(0)" onclick="openEditModal(<%= u.get("accountId") %>, '<%= username %>', '<%= name != null ? name.replace("'", "\\'") : "" %>', '<%= email != null ? email.replace("'", "\\'") : "" %>', '<%= roleName != null ? roleName : "" %>')" style="color: #0d9488; text-decoration: none; font-weight: 600; margin-right: 12px;">Sửa</a>
                       <form action="users" method="post" style="display:inline;">
                         <input type="hidden" name="action" value="toggleStatus"/>
                         <input type="hidden" name="accountId" value="<%= u.get("accountId") %>"/>
                         <input type="hidden" name="currentStatus" value="<%= isCurrentStatus %>"/>
-                        <button type="submit" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 13.5px; font-weight: 600; padding: 0; font-family: inherit;">
+                        <button type="submit" style="background: none; border: none; color: <%= isCurrentStatus ? "#dc2626" : "#0d9488" %>; cursor: pointer; font-size: 13.5px; font-weight: 600; padding: 0; font-family: inherit;">
                           <%= isCurrentStatus ? "Khóa" : "Hiện" %>
                         </button>
                       </form>
@@ -215,57 +185,46 @@
                   </tr>
             <%
                 }
-              } else {
+              }
             %>
-              <tr id="userEmptyRow">
+              <tr id="userEmptyRow" style="<%= (usersList == null || usersList.isEmpty()) ? "" : "display:none;" %>">
                 <td colspan="5" style="padding: 30px; text-align: center; color: #9ca3af;">Không có người dùng nào được tìm thấy.</td>
               </tr>
-            <% } %>
           </tbody>
         </table>
-      </div>
-
-      <!-- Pagination Container -->
-      <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-top: 1px solid #f3f4f6; font-size: 13px; color: #6b7280; flex-wrap: wrap; gap: 10px;">
-        <div id="userPaginationInfo">Hiển thị 0 - 0 / 0 người dùng</div>
-        <div id="userPaginationControls" style="display: flex; gap: 6px; align-items: center;"></div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Modal Edit Account -->
-<div class="modal-backdrop" id="editModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <span class="modal-title">Chỉnh sửa tài khoản</span>
-      <button class="modal-close" onclick="closeEditModal()">&times;</button>
+<div class="modal-backdrop" id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;">
+  <div class="modal-content" style="background:#fff; border-radius:12px; width:440px; max-width:94vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+      <span class="modal-title" style="font-weight:700; font-size:16px; color:#111827;">Chỉnh sửa tài khoản</span>
+      <button class="modal-close" type="button" onclick="closeEditModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#6b7280;">&times;</button>
     </div>
     <form action="users" method="post">
       <input type="hidden" name="action" value="update"/>
       <input type="hidden" name="accountId" id="editAccountId"/>
-      <div class="modal-body">
+      <div class="modal-body" style="padding:20px 22px; display:flex; flex-direction:column; gap:14px;">
         <div class="form-group">
-          <label class="form-label">Tên tài khoản (Username)</label>
-          <input type="text" id="editUsername" class="form-input" readonly style="background: #f3f4f6; color: #6b7280; cursor: not-allowed;"/>
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Tên tài khoản (Username)</label>
+          <input type="text" id="editUsername" class="form-input" readonly style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; background: #f3f4f6; color: #6b7280; cursor: not-allowed; box-sizing:border-box;"/>
         </div>
         <div class="form-group">
-          <label class="form-label">Họ và tên</label>
-          <input type="text" name="fullName" id="editFullName" class="form-input" required/>
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Họ và tên <span style="color:red;">*</span></label>
+          <input type="text" name="fullName" id="editFullName" class="form-input" required oninput="validateEditForm()" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; box-sizing:border-box;"/>
+          <div id="editFullNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
-          <label class="form-label">Email công ty</label>
-          <input type="email" name="email" id="editEmail" class="form-input" required oninput="validateEditForm()"/>
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Email công ty <span style="color:red;">*</span></label>
+          <input type="email" name="email" id="editEmail" class="form-input" required oninput="validateEditForm()" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; box-sizing:border-box;"/>
           <div id="editEmailMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
         <div class="form-group">
-          <label class="form-label">Số điện thoại</label>
-          <input type="tel" name="phone" id="editPhone" class="form-input" placeholder="0912345678" oninput="validateEditForm()"/>
-          <div id="editPhoneMsg" style="font-size: 12px; margin-top: 4px;"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Vai trò</label>
-          <select name="role" id="editRole" class="form-input" style="height: 38px;">
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Vai trò</label>
+          <select name="role" id="editRole" class="form-input" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; height: 38px; box-sizing:border-box;">
             <%
               if (rolesList != null) {
                 for (String r : rolesList) {
@@ -279,57 +238,29 @@
             %>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Phòng ban</label>
-          <select name="departmentId" id="editDept" class="form-input" style="height: 38px;">
-            <%
-              if (deptsList != null) {
-                for (Map<String, Object> d : deptsList) {
-            %>
-                  <option value="<%= d.get("id") %>"><%= d.get("name") %></option>
-            <%
-                }
-              }
-            %>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Chức vụ</label>
-          <select name="positionId" id="editPos" class="form-input" style="height: 38px;">
-            <%
-              if (positionsList != null) {
-                for (Map<String, Object> p : positionsList) {
-            %>
-                  <option value="<%= p.get("id") %>"><%= p.get("name") %></option>
-            <%
-                }
-              }
-            %>
-          </select>
-        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeEditModal()">Hủy</button>
-        <button type="submit" id="editSubmitBtn" class="btn-primary">Lưu thay đổi</button>
+      <div class="modal-footer" style="padding:14px 22px; border-top:1px solid #f3f4f6; display:flex; justify-content:flex-end; gap:10px; background:#fafafa; border-radius:0 0 12px 12px;">
+        <button type="button" class="btn-secondary" onclick="closeEditModal()" style="padding:9px 18px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; font-size:13.5px; cursor:pointer; color:#374151;">Hủy</button>
+        <button type="submit" id="editSubmitBtn" class="btn-primary" style="padding:9px 18px; border:none; border-radius:8px; background:#0d9488; color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;">Lưu thay đổi</button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Modal Background Add Account -->
-<div class="modal-backdrop" id="addModal">
-  <div class="modal-content" style="max-width: 480px;">
-    <div class="modal-header">
-      <span class="modal-title">Cấp tài khoản đăng nhập</span>
-      <button class="modal-close" onclick="closeAddModal()">&times;</button>
+<div class="modal-backdrop" id="addModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;">
+  <div class="modal-content" style="background:#fff; border-radius:12px; width:480px; max-width:94vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+      <span class="modal-title" style="font-weight:700; font-size:16px; color:#111827;">Cấp tài khoản đăng nhập</span>
+      <button class="modal-close" type="button" onclick="closeAddModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#6b7280;">&times;</button>
     </div>
     <form action="users" method="post">
       <input type="hidden" name="action" value="create"/>
-      <div class="modal-body" style="gap: 14px;">
+      <div class="modal-body" style="padding:20px 22px; display:flex; flex-direction:column; gap: 14px;">
         
         <div class="form-group">
-          <label class="form-label">Chọn nhân viên cần cấp tài khoản <span style="color:red;">*</span></label>
-          <select name="userId" id="addUserId" class="form-input" style="height: 40px;" required>
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Chọn nhân viên cần cấp tài khoản <span style="color:red;">*</span></label>
+          <select name="userId" id="addUserId" class="form-input" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; height: 40px; box-sizing:border-box;" required>
             <%
               if (employeesWithoutAccount != null && !employeesWithoutAccount.isEmpty()) {
                 for (Map<String, Object> emp : employeesWithoutAccount) {
@@ -350,19 +281,19 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Tên tài khoản (Username) <span style="color:red;">*</span></label>
-          <input type="text" name="username" id="addUsername" class="form-input" required placeholder="nhap_username" oninput="validateAddForm()"/>
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Tên tài khoản (Username) <span style="color:red;">*</span></label>
+          <input type="text" name="username" id="addUsername" class="form-input" required placeholder="nhap_username" oninput="validateAddForm()" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; box-sizing:border-box;"/>
           <div id="addUsernameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Mật khẩu <span style="color:red;">*</span></label>
-          <input type="password" name="password" id="addPassword" class="form-input" required placeholder="Nhập mật khẩu khởi tạo"/>
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Mật khẩu <span style="color:red;">*</span></label>
+          <input type="password" name="password" id="addPassword" class="form-input" required placeholder="Nhập mật khẩu khởi tạo" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; box-sizing:border-box;"/>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Vai trò hệ thống <span style="color:red;">*</span></label>
-          <select name="role" class="form-input" style="height: 38px;">
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Vai trò hệ thống <span style="color:red;">*</span></label>
+          <select name="role" class="form-input" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; height: 38px; box-sizing:border-box;">
             <%
               if (rolesList != null) {
                 for (String r : rolesList) {
@@ -381,9 +312,9 @@
         </div>
 
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeAddModal()">Hủy</button>
-        <button type="submit" id="addSubmitBtn" class="btn-primary" <%= (employeesWithoutAccount == null || employeesWithoutAccount.isEmpty()) ? "disabled style='opacity:0.5; cursor:not-allowed;'" : "" %>>Cấp tài khoản</button>
+      <div class="modal-footer" style="padding:14px 22px; border-top:1px solid #f3f4f6; display:flex; justify-content:flex-end; gap:10px; background:#fafafa; border-radius:0 0 12px 12px;">
+        <button type="button" class="btn-secondary" onclick="closeAddModal()" style="padding:9px 18px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; font-size:13.5px; cursor:pointer; color:#374151;">Hủy</button>
+        <button type="submit" id="addSubmitBtn" class="btn-primary" style="padding:9px 18px; border:none; border-radius:8px; background:#0d9488; color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;" <%= (employeesWithoutAccount == null || employeesWithoutAccount.isEmpty()) ? "disabled style='padding:9px 18px; border:none; border-radius:8px; background:#0d9488; color:#fff; font-size:13.5px; font-weight:600; opacity:0.5; cursor:not-allowed;'" : "" %>>Cấp tài khoản</button>
       </div>
     </form>
   </div>
@@ -400,21 +331,26 @@
           firstU = false;
           String un = (String) u.get("username");
           String em = (String) u.get("emailCompany");
-          String ph = (String) u.get("phone");
           Integer accId = (Integer) u.get("accountId");
-          out.print("{id:" + accId + ",username:'" + (un != null ? un.replace("'", "\\'") : "") + "',email:'" + (em != null ? em.replace("'", "\\'") : "") + "',phone:'" + (ph != null ? ph.replace("'", "\\'") : "") + "'}");
+          out.print("{id:" + accId + ",username:'" + (un != null ? un.replace("'", "\\'") : "") + "',email:'" + (em != null ? em.replace("'", "\\'") : "") + "'}");
         }
       }
     %>
   ];
 
   // Date rendering
-  const dateSpan = document.getElementById("topbar-date");
-  const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-  dateSpan.textContent = new Date().toLocaleDateString('vi-VN', options);
+  (function() {
+    const dateSpan = document.getElementById("topbar-date");
+    if (dateSpan) {
+      const now = new Date();
+      const p = function(n){ return String(n).padStart(2,'0'); };
+      dateSpan.textContent = p(now.getDate()) + '/' + p(now.getMonth()+1) + '/' + now.getFullYear();
+    }
+  })();
 
   // Helper hiển thị thông báo hợp lệ / lỗi
   function setFieldStatus(inputEl, msgEl, isValid, message) {
+    if (!inputEl || !msgEl) return;
     if (isValid === true) {
       inputEl.style.borderColor = "#10b981";
       msgEl.innerHTML = '<span style="color: #059669; font-weight: 500;">✓ ' + message + '</span>';
@@ -422,7 +358,7 @@
       inputEl.style.borderColor = "#dc2626";
       msgEl.innerHTML = '<span style="color: #dc2626; font-weight: 500;">' + message + '</span>';
     } else {
-      inputEl.style.borderColor = "";
+      inputEl.style.borderColor = "#e5e7eb";
       msgEl.innerHTML = "";
     }
   }
@@ -447,7 +383,7 @@
         setFieldStatus(unInput, unMsg, false, "Tên tài khoản phải có ít nhất 3 ký tự!");
         hasError = true;
       } else {
-        const isUnDup = EXISTING_USERS.some(u => u.username && u.username.toLowerCase() === un);
+        const isUnDup = EXISTING_USERS.some(function(u){ return u.username && u.username.toLowerCase() === un; });
         if (isUnDup) {
           setFieldStatus(unInput, unMsg, false, "Tên tài khoản này đã tồn tại!");
           hasError = true;
@@ -459,43 +395,50 @@
       setFieldStatus(unInput, unMsg, null, "");
     }
 
-    } else {
-      setFieldStatus(phInput, phMsg, null, "");
+    if (submitBtn) {
+      submitBtn.disabled = hasError;
+      submitBtn.style.opacity = hasError ? "0.5" : "1";
+      submitBtn.style.cursor = hasError ? "not-allowed" : "pointer";
     }
-
-    // Vô hiệu hóa nút tạo nếu có lỗi
-    submitBtn.disabled = hasError;
-    submitBtn.style.opacity = hasError ? "0.5" : "1";
-    submitBtn.style.cursor = hasError ? "not-allowed" : "pointer";
   }
 
   // Kiểm tra thời gian thực khi SỬA tài khoản
   function validateEditForm() {
     const currentId = parseInt(document.getElementById("editAccountId").value);
+    const rawName = document.getElementById("editFullName") ? document.getElementById("editFullName").value : "";
     const rawEm = document.getElementById("editEmail") ? document.getElementById("editEmail").value : "";
-    const rawPh = document.getElementById("editPhone") ? document.getElementById("editPhone").value : "";
 
-    const em = rawEm.trim().toLowerCase();
-    const ph = rawPh.trim();
-
-    const emInput = document.getElementById("editEmail");
-    const emMsg = document.getElementById("editEmailMsg");
-    const phInput = document.getElementById("editPhone");
-    const phMsg = document.getElementById("editPhoneMsg");
+    const nameInput = document.getElementById("editFullName");
+    const nameMsg   = document.getElementById("editFullNameMsg");
+    const emInput   = document.getElementById("editEmail");
+    const emMsg     = document.getElementById("editEmailMsg");
     const submitBtn = document.getElementById("editSubmitBtn");
 
+    const em = rawEm.trim().toLowerCase();
     let hasError = false;
 
-    // 1. Check Email (loại trừ tài khoản hiện tại)
+    // 1. Check FullName
+    if (rawName.trim().length > 0) {
+      if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(rawName.trim())) {
+        setFieldStatus(nameInput, nameMsg, false, "Họ và tên chỉ được chứa chữ cái và khoảng trắng!");
+        hasError = true;
+      } else {
+        setFieldStatus(nameInput, nameMsg, true, "Họ tên hợp lệ");
+      }
+    } else {
+      setFieldStatus(nameInput, nameMsg, null, "");
+    }
+
+    // 2. Check Email (loại trừ tài khoản hiện tại)
     if (rawEm.length > 0) {
       if (/\s/.test(rawEm)) {
         setFieldStatus(emInput, emMsg, false, "Email phải viết liền, không được chứa khoảng trắng!");
         hasError = true;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-        setFieldStatus(emInput, emMsg, false, "Định dạng email chưa đúng!");
+      } else if (!/^[a-zA-Z0-9._%+-]+@techcorp\.vn$/.test(em)) {
+        setFieldStatus(emInput, emMsg, false, "Email công ty phải có đuôi @techcorp.vn (VD: nhanvien@techcorp.vn)!");
         hasError = true;
       } else {
-        const isEmDup = EXISTING_USERS.some(u => u.id !== currentId && u.email.toLowerCase() === em);
+        const isEmDup = EXISTING_USERS.some(function(u){ return u.id !== currentId && u.email && u.email.toLowerCase() === em; });
         if (isEmDup) {
           setFieldStatus(emInput, emMsg, false, "Email này đã được dùng bởi tài khoản khác!");
           hasError = true;
@@ -507,44 +450,27 @@
       setFieldStatus(emInput, emMsg, null, "");
     }
 
-    // 2. Check Phone (loại trừ tài khoản hiện tại)
-    if (rawPh.length > 0) {
-      if (/\s/.test(rawPh)) {
-        setFieldStatus(phInput, phMsg, false, "Số điện thoại phải viết liền, không được chứa khoảng trắng!");
-        hasError = true;
-      } else if (!/^[0-9]{9,11}$/.test(ph)) {
-        setFieldStatus(phInput, phMsg, false, "Số điện thoại phải từ 9 - 11 chữ số!");
-        hasError = true;
-      } else {
-        const isPhDup = EXISTING_USERS.some(u => u.id !== currentId && u.phone && u.phone === ph);
-        if (isPhDup) {
-          setFieldStatus(phInput, phMsg, false, "Số điện thoại đã được dùng bởi tài khoản khác!");
-          hasError = true;
-        } else {
-          setFieldStatus(phInput, phMsg, true, "Số điện thoại hợp lệ");
-        }
-      }
-    } else {
-      setFieldStatus(phInput, phMsg, null, "");
+    if (submitBtn) {
+      submitBtn.disabled = hasError;
+      submitBtn.style.opacity = hasError ? "0.5" : "1";
+      submitBtn.style.cursor = hasError ? "not-allowed" : "pointer";
     }
-
-    submitBtn.disabled = hasError;
-    submitBtn.style.opacity = hasError ? "0.5" : "1";
-    submitBtn.style.cursor = hasError ? "not-allowed" : "pointer";
   }
 
   // Modal actions
   function openAddModal() {
-    // Reset form fields and validation messages
-    document.getElementById("addUsername").value = "";
-    document.getElementById("addEmail").value = "";
-    document.getElementById("addPhone").value = "";
+    if (document.getElementById("addUsername")) document.getElementById("addUsername").value = "";
+    if (document.getElementById("addPassword")) document.getElementById("addPassword").value = "";
     setFieldStatus(document.getElementById("addUsername"), document.getElementById("addUsernameMsg"), null, "");
-    setFieldStatus(document.getElementById("addEmail"), document.getElementById("addEmailMsg"), null, "");
-    setFieldStatus(document.getElementById("addPhone"), document.getElementById("addPhoneMsg"), null, "");
-    document.getElementById("addSubmitBtn").disabled = false;
-    document.getElementById("addSubmitBtn").style.opacity = "1";
-    document.getElementById("addSubmitBtn").style.cursor = "pointer";
+    
+    const sel = document.getElementById("addUserId");
+    const hasEmp = sel && sel.options.length > 0 && sel.value !== "";
+    const submitBtn = document.getElementById("addSubmitBtn");
+    if (submitBtn) {
+      submitBtn.disabled = !hasEmp;
+      submitBtn.style.opacity = hasEmp ? "1" : "0.5";
+      submitBtn.style.cursor = hasEmp ? "pointer" : "not-allowed";
+    }
     document.getElementById("addModal").style.display = "flex";
   }
 
@@ -552,39 +478,70 @@
     document.getElementById("addModal").style.display = "none";
   }
 
-  // Close modal when clicking outside content
-  window.onclick = function(event) {
-    const addModal = document.getElementById("addModal");
-    const editModal = document.getElementById("editModal");
-    if (event.target == addModal) {
-      closeAddModal();
-    }
-    if (event.target == editModal) {
-      closeEditModal();
-    }
-  }
-
-  function openEditModal(accountId, username, fullName, email, phone, role, departmentId, positionId) {
+  function openEditModal(accountId, username, fullName, email, role) {
     document.getElementById("editAccountId").value = accountId;
-    document.getElementById("editUsername").value = username;
-    document.getElementById("editFullName").value = fullName;
-    document.getElementById("editEmail").value = email;
-    document.getElementById("editPhone").value = phone || '';
-    document.getElementById("editRole").value = role;
-    document.getElementById("editDept").value = departmentId;
-    document.getElementById("editPos").value = positionId;
+    document.getElementById("editUsername").value = username || '';
+    document.getElementById("editFullName").value = fullName || '';
+    document.getElementById("editEmail").value = email || '';
+    if (role && document.getElementById("editRole")) {
+      document.getElementById("editRole").value = role;
+    }
 
+    setFieldStatus(document.getElementById("editFullName"), document.getElementById("editFullNameMsg"), null, "");
     setFieldStatus(document.getElementById("editEmail"), document.getElementById("editEmailMsg"), null, "");
-    setFieldStatus(document.getElementById("editPhone"), document.getElementById("editPhoneMsg"), null, "");
-    document.getElementById("editSubmitBtn").disabled = false;
-    document.getElementById("editSubmitBtn").style.opacity = "1";
-    document.getElementById("editSubmitBtn").style.cursor = "pointer";
+    const submitBtn = document.getElementById("editSubmitBtn");
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = "1";
+      submitBtn.style.cursor = "pointer";
+    }
 
     document.getElementById("editModal").style.display = "flex";
   }
 
   function closeEditModal() {
     document.getElementById("editModal").style.display = "none";
+  }
+
+  // Đóng modal khi click ra ngoài
+  document.getElementById("addModal").addEventListener("click", function(e) {
+    if (e.target === this) closeAddModal();
+  });
+  document.getElementById("editModal").addEventListener("click", function(e) {
+    if (e.target === this) closeEditModal();
+  });
+
+  // Tìm kiếm và lọc tài khoản
+  function filterUsers() {
+    const searchVal = (document.getElementById('userSearchInput') ? document.getElementById('userSearchInput').value : '').toLowerCase().trim();
+    const roleVal   = (document.getElementById('userRoleFilter') ? document.getElementById('userRoleFilter').value : '').toLowerCase().trim();
+    const statusVal = (document.getElementById('userStatusFilter') ? document.getElementById('userStatusFilter').value : '').toLowerCase().trim();
+
+    const allRows = document.querySelectorAll('.user-row');
+    let visibleCount = 0;
+    allRows.forEach(function(row) {
+      const name = (row.getAttribute('data-name') || '').toLowerCase();
+      const un   = (row.getAttribute('data-username') || '').toLowerCase();
+      const em   = (row.getAttribute('data-email') || '').toLowerCase();
+      const role = (row.getAttribute('data-role') || '').toLowerCase();
+      const st   = (row.getAttribute('data-status') || '').toLowerCase();
+
+      const matchSearch = !searchVal || name.includes(searchVal) || un.includes(searchVal) || em.includes(searchVal);
+      const matchRole   = !roleVal || role === roleVal;
+      const matchStatus = !statusVal || st === statusVal;
+
+      if (matchSearch && matchRole && matchStatus) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const emptyRow = document.getElementById('userEmptyRow');
+    if (emptyRow) {
+      emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
   }
 
   // Tự động ẩn thông báo sau đúng 2 giây
@@ -604,139 +561,6 @@
       }, 400);
     });
   }, 2000);
-
-  // Phân trang & Tìm kiếm Người dùng
-  const USER_PAGE_SIZE = 10;
-  let currentUserPage = 1;
-  let filteredUserRows = [];
-
-  function filterUsers() {
-    const searchVal = (document.getElementById('userSearchInput') ? document.getElementById('userSearchInput').value : '').toLowerCase().trim();
-    const roleVal   = (document.getElementById('userRoleFilter') ? document.getElementById('userRoleFilter').value : '').toLowerCase().trim();
-    const statusVal = (document.getElementById('userStatusFilter') ? document.getElementById('userStatusFilter').value : '').toLowerCase().trim();
-
-    const allRows = Array.from(document.querySelectorAll('.user-row'));
-    filteredUserRows = allRows.filter(row => {
-      const name = row.getAttribute('data-name') || '';
-      const un   = row.getAttribute('data-username') || '';
-      const em   = row.getAttribute('data-email') || '';
-      const role = row.getAttribute('data-role') || '';
-      const st   = row.getAttribute('data-status') || '';
-
-      const matchSearch = !searchVal || name.includes(searchVal) || un.includes(searchVal) || em.includes(searchVal);
-      const matchRole   = !roleVal || role === roleVal;
-      const matchStatus = !statusVal || st === statusVal;
-
-      return matchSearch && matchRole && matchStatus;
-    });
-
-    currentUserPage = 1;
-    renderUserPagination();
-  }
-
-  function renderUserPagination() {
-    const allRows = document.querySelectorAll('.user-row');
-    allRows.forEach(r => r.style.display = 'none');
-
-    const emptyRow = document.getElementById('userEmptyRow');
-    const total = filteredUserRows.length;
-
-    if (total === 0) {
-      if (emptyRow) emptyRow.style.display = '';
-    } else {
-      if (emptyRow) emptyRow.style.display = 'none';
-    }
-
-    const totalPages = Math.ceil(total / USER_PAGE_SIZE) || 1;
-    if (currentUserPage > totalPages) currentUserPage = totalPages;
-    if (currentUserPage < 1) currentUserPage = 1;
-
-    const startIdx = (currentUserPage - 1) * USER_PAGE_SIZE;
-    const endIdx   = Math.min(startIdx + USER_PAGE_SIZE, total);
-
-    for (let i = startIdx; i < endIdx; i++) {
-      filteredUserRows[i].style.display = '';
-    }
-
-    // Update pagination info
-    const infoEl = document.getElementById('userPaginationInfo');
-    if (infoEl) {
-      if (total === 0) {
-        infoEl.textContent = 'Không tìm thấy người dùng nào phù hợp';
-      } else {
-        infoEl.textContent = 'Hiển thị ' + (startIdx + 1) + ' - ' + endIdx + ' trên tổng số ' + total + ' người dùng';
-      }
-    }
-
-    // Render controls
-    const controlsEl = document.getElementById('userPaginationControls');
-    if (!controlsEl) return;
-    controlsEl.innerHTML = '';
-
-    if (totalPages <= 1) {
-      return; // Không cần phân trang nếu chỉ có 1 trang
-    }
-
-    // Nút Trước
-    const prevBtn = document.createElement('button');
-    prevBtn.innerHTML = '&laquo; Trước';
-    prevBtn.className = 'page-nav-btn';
-    prevBtn.type = 'button';
-    prevBtn.disabled = currentUserPage === 1;
-    prevBtn.onclick = function() {
-      if (currentUserPage > 1) {
-        currentUserPage--;
-        renderUserPagination();
-      }
-    };
-    controlsEl.appendChild(prevBtn);
-
-    // Các trang số
-    for (let p = 1; p <= totalPages; p++) {
-      if (totalPages > 7) {
-        if (p !== 1 && p !== totalPages && Math.abs(p - currentUserPage) > 2) {
-          if (p === 2 || p === totalPages - 1) {
-            const dots = document.createElement('span');
-            dots.textContent = '...';
-            dots.style.padding = '0 4px';
-            dots.style.color = '#9ca3af';
-            controlsEl.appendChild(dots);
-          }
-          continue;
-        }
-      }
-      const pageBtn = document.createElement('button');
-      pageBtn.textContent = p;
-      pageBtn.type = 'button';
-      pageBtn.className = 'page-num-btn' + (p === currentUserPage ? ' active' : '');
-      pageBtn.onclick = (function(page) {
-        return function() {
-          currentUserPage = page;
-          renderUserPagination();
-        };
-      })(p);
-      controlsEl.appendChild(pageBtn);
-    }
-
-    // Nút Tiếp
-    const nextBtn = document.createElement('button');
-    nextBtn.innerHTML = 'Tiếp &raquo;';
-    nextBtn.className = 'page-nav-btn';
-    nextBtn.type = 'button';
-    nextBtn.disabled = currentUserPage === totalPages;
-    nextBtn.onclick = function() {
-      if (currentUserPage < totalPages) {
-        currentUserPage++;
-        renderUserPagination();
-      }
-    };
-    controlsEl.appendChild(nextBtn);
-  }
-
-  // Khởi tạo phân trang ngay khi tải xong
-  window.addEventListener('DOMContentLoaded', function() {
-    filterUsers();
-  });
 </script>
 </body>
 </html>

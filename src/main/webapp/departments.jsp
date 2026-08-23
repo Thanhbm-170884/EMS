@@ -18,7 +18,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EMS – Quản lý phòng ban</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/ems.css"/>
   <link rel="stylesheet" href="css/users.css"/>
   <link rel="stylesheet" href="css/departments.css"/>
@@ -57,7 +59,7 @@
 <!-- Main content -->
 <div class="main-content">
   <div class="topbar">
-    <span class="topbar-left">Quản lý phòng ban</span>
+    <span class="topbar-left">Quản trị / Phòng ban</span>
     <span class="topbar-right" id="topbar-date"></span>
   </div>
 
@@ -81,7 +83,7 @@
         <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 4px;">Quản lý phòng ban</h1>
         <p style="font-size: 14px; color: #4b5563;">Danh sách các phòng ban và cơ cấu nhân sự trong công ty</p>
       </div>
-      <button class="btn-add-acc" onclick="openAddModal()">
+      <button class="btn-add-acc" type="button" onclick="openAddModal()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Thêm phòng ban
       </button>
