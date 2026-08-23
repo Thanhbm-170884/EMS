@@ -100,10 +100,17 @@
     <% } %>
 
     <!-- Page Header -->
-    <div class="emp-page-header">
+    <div class="emp-page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <div>
         <h1 class="emp-page-title">Thông tin nhân viên</h1>
         <p class="emp-page-subtitle">Danh sách hồ sơ nhân viên trong hệ thống</p>
+      </div>
+      <div>
+        <button type="button" onclick="openAddEmpModal()"
+                style="background: #0d9488; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(13,148,136,0.2);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm nhân viên
+        </button>
       </div>
     </div>
 
@@ -305,6 +312,98 @@
   </div>
 </div>
 
+<!-- Modal Thêm nhân viên mới -->
+<div class="modal-backdrop" id="addEmpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;">
+  <div class="modal-content" style="background:#fff; border-radius:12px; width:540px; max-width:94vw; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="padding:16px 22px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+      <span class="modal-title" style="font-weight:700; font-size:16px; color:#111827;">Thêm hồ sơ nhân viên mới</span>
+      <button onclick="closeAddEmpModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#6b7280; line-height:1;">&times;</button>
+    </div>
+    <form action="employees" method="post" style="display:flex; flex-direction:column; overflow:hidden;">
+      <input type="hidden" name="action" value="create"/>
+      <div class="modal-body" style="padding:20px 22px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; max-height:66vh;">
+        
+        <div class="form-group">
+          <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Họ và tên <span style="color:red;">*</span></label>
+          <input type="text" name="fullName" id="addEmpFullName" class="form-input" required placeholder="Nguyễn Văn A" oninput="validateAddEmpForm()"
+                 style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+          <div id="addEmpFullNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Email công ty <span style="color:red;">*</span></label>
+            <input type="email" name="email" id="addEmpEmail" class="form-input" required placeholder="email@company.com" oninput="validateAddEmpForm()"
+                   style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+            <div id="addEmpEmailMsg" style="font-size: 12px; margin-top: 4px;"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Số điện thoại <span style="color:red;">*</span></label>
+            <input type="tel" name="phone" id="addEmpPhone" class="form-input" required placeholder="0912345678" oninput="validateAddEmpForm()"
+                   style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+            <div id="addEmpPhoneMsg" style="font-size: 12px; margin-top: 4px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Giới tính <span style="color:red;">*</span></label>
+            <select name="gender" id="addEmpGender" class="form-input" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box; height:38px;">
+              <option value="true">Nam</option>
+              <option value="false">Nữ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Ngày sinh <span style="color:red;">*</span></label>
+            <input type="date" name="dob" id="addEmpDob" class="form-input" required oninput="validateAddEmpForm()"
+                   style="width:100%; padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box; height:38px;"/>
+            <div id="addEmpDobMsg" style="font-size: 12px; margin-top: 4px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Phòng ban <span style="color:red;">*</span></label>
+            <select name="departmentId" id="addEmpDept" class="form-input" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box; height:38px;">
+              <% if (deptsList != null) { for (Map<String, Object> d : deptsList) { %>
+                <option value="<%= d.get("id") %>"><%= d.get("name") %></option>
+              <% }} %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Chức vụ <span style="color:red;">*</span></label>
+            <select name="positionId" id="addEmpPos" class="form-input" style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box; height:38px;">
+              <% if (positionsList != null) { for (Map<String, Object> p : positionsList) { %>
+                <option value="<%= p.get("id") %>"><%= p.get("name") %></option>
+              <% }} %>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Số người phụ thuộc</label>
+            <input type="number" name="dependentsCount" id="addEmpDependents" min="0" value="0" class="form-input"
+                   style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Lương cơ bản (VNĐ)</label>
+            <input type="number" name="baseSalary" id="addEmpSalary" min="0" step="100000" value="5000000" class="form-input"
+                   style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
+          </div>
+        </div>
+
+      </div>
+      <div style="padding:14px 22px; border-top:1px solid #f3f4f6; display:flex; justify-content:flex-end; gap:10px; background:#fafafa; border-radius:0 0 12px 12px;">
+        <button type="button" onclick="closeAddEmpModal()"
+                style="padding:9px 18px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; font-size:13.5px; cursor:pointer; color:#374151;">Hủy</button>
+        <button type="submit" id="addEmpSubmitBtn"
+                style="padding:9px 18px; border:none; border-radius:8px; background:#0d9488; color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;">Thêm nhân viên</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal Sửa thông tin nhân viên -->
 <div class="modal-backdrop" id="editEmpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;">
   <div class="modal-content" style="background:#fff; border-radius:12px; width:440px; max-width:94vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
@@ -370,8 +469,8 @@
         for (Map<String, Object> emp : employeeList) {
           if (!firstE) out.print(",");
           firstE = false;
-          Integer uId = (Integer) emp.get("id");
-          String em = (String) emp.get("email");
+          Integer uId = (Integer) emp.get("userId");
+          String em = (String) emp.get("emailCompany");
           String ph = (String) emp.get("phone");
           out.print("{id:" + uId + ",email:'" + (em != null ? em.replace("'", "\\'") : "") + "',phone:'" + (ph != null ? ph.replace("'", "\\'") : "") + "'}");
         }
@@ -396,6 +495,112 @@
     } else {
       inputEl.style.borderColor = "#e5e7eb";
       msgEl.innerHTML = "";
+    }
+  }
+
+  function openAddEmpModal() {
+    document.getElementById('addEmpModal').style.display = 'flex';
+  }
+
+  function closeAddEmpModal() {
+    document.getElementById('addEmpModal').style.display = 'none';
+  }
+
+  function validateAddEmpForm() {
+    var rawName = document.getElementById('addEmpFullName') ? document.getElementById('addEmpFullName').value : '';
+    var rawEm   = document.getElementById('addEmpEmail') ? document.getElementById('addEmpEmail').value : '';
+    var rawPh   = document.getElementById('addEmpPhone') ? document.getElementById('addEmpPhone').value : '';
+    var rawDob  = document.getElementById('addEmpDob') ? document.getElementById('addEmpDob').value : '';
+
+    var nameInput = document.getElementById('addEmpFullName');
+    var nameMsg   = document.getElementById('addEmpFullNameMsg');
+    var emInput   = document.getElementById('addEmpEmail');
+    var emMsg     = document.getElementById('addEmpEmailMsg');
+    var phInput   = document.getElementById('addEmpPhone');
+    var phMsg     = document.getElementById('addEmpPhoneMsg');
+    var dobInput  = document.getElementById('addEmpDob');
+    var dobMsg    = document.getElementById('addEmpDobMsg');
+    var submitBtn = document.getElementById('addEmpSubmitBtn');
+
+    var em = rawEm.trim().toLowerCase();
+    var ph = rawPh.trim();
+    var hasError = false;
+
+    // 1. Check FullName
+    if (rawName.trim().length > 0) {
+      setEmpFieldStatus(nameInput, nameMsg, true, 'Họ tên hợp lệ');
+    } else {
+      setEmpFieldStatus(nameInput, nameMsg, null, '');
+    }
+
+    // 2. Check Email
+    if (rawEm.length > 0) {
+      if (/\s/.test(rawEm)) {
+        setEmpFieldStatus(emInput, emMsg, false, 'Email phải viết liền, không được chứa khoảng trắng!');
+        hasError = true;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+        setEmpFieldStatus(emInput, emMsg, false, 'Định dạng email chưa đúng!');
+        hasError = true;
+      } else {
+        var isEmDup = EXISTING_EMPLOYEES.some(function(e){ return e.email && e.email.toLowerCase() === em; });
+        if (isEmDup) {
+          setEmpFieldStatus(emInput, emMsg, false, 'Email công ty này đã tồn tại trong hệ thống!');
+          hasError = true;
+        } else {
+          setEmpFieldStatus(emInput, emMsg, true, 'Email hợp lệ');
+        }
+      }
+    } else {
+      setEmpFieldStatus(emInput, emMsg, null, '');
+    }
+
+    // 3. Check Phone
+    if (rawPh.length > 0) {
+      if (/\s/.test(rawPh)) {
+        setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại phải viết liền, không được chứa khoảng trắng!');
+        hasError = true;
+      } else if (!/^[0-9]{9,11}$/.test(ph)) {
+        setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại phải từ 9 - 11 chữ số!');
+        hasError = true;
+      } else {
+        var isPhDup = EXISTING_EMPLOYEES.some(function(e){ return e.phone && e.phone === ph; });
+        if (isPhDup) {
+          setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại này đã được sử dụng!');
+          hasError = true;
+        } else {
+          setEmpFieldStatus(phInput, phMsg, true, 'Số điện thoại hợp lệ');
+        }
+      }
+    } else {
+      setEmpFieldStatus(phInput, phMsg, null, '');
+    }
+
+    // 4. Check Date of Birth
+    if (rawDob.length > 0) {
+      var birth = new Date(rawDob);
+      var today = new Date();
+      var age = today.getFullYear() - birth.getFullYear();
+      var m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+      }
+      if (birth > today) {
+        setEmpFieldStatus(dobInput, dobMsg, false, 'Ngày sinh không được là ngày trong tương lai!');
+        hasError = true;
+      } else if (age < 18) {
+        setEmpFieldStatus(dobInput, dobMsg, false, 'Nhân viên phải từ đủ 18 tuổi trở lên (Hiện tại: ' + age + ' tuổi)!');
+        hasError = true;
+      } else {
+        setEmpFieldStatus(dobInput, dobMsg, true, 'Ngày sinh hợp lệ (' + age + ' tuổi)');
+      }
+    } else {
+      setEmpFieldStatus(dobInput, dobMsg, null, '');
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = hasError;
+      submitBtn.style.opacity = hasError ? '0.5' : '1';
+      submitBtn.style.cursor = hasError ? 'not-allowed' : 'pointer';
     }
   }
 
@@ -619,6 +824,9 @@
   }
 
   // Đóng modal khi click ra ngoài
+  document.getElementById('addEmpModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddEmpModal();
+  });
   document.getElementById('editEmpModal').addEventListener('click', function(e) {
     if (e.target === this) closeEditEmpModal();
   });

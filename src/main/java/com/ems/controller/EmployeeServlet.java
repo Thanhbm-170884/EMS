@@ -106,7 +106,91 @@ public class EmployeeServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
 
-        if ("update".equals(action)) {
+        if ("create".equals(action)) {
+            try {
+                String fullName = request.getParameter("fullName");
+                String email = request.getParameter("email");
+                String phone = request.getParameter("phone");
+                String genderStr = request.getParameter("gender");
+                String dobStr = request.getParameter("dob");
+                String deptStr = request.getParameter("departmentId");
+                String posStr = request.getParameter("positionId");
+                String dependentsStr = request.getParameter("dependentsCount");
+                String salaryStr = request.getParameter("baseSalary");
+
+                fullName = fullName != null ? fullName.trim() : "";
+                email = email != null ? email.trim() : "";
+                phone = phone != null ? phone.trim() : "";
+
+                String rawEmail = request.getParameter("email");
+                String rawPhone = request.getParameter("phone");
+
+                String error = null;
+                if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || dobStr == null || dobStr.trim().isEmpty() || deptStr == null || posStr == null) {
+                    error = "Vui lòng điền đầy đủ các thông tin bắt buộc (*)!";
+                } else if (rawEmail != null && rawEmail.contains(" ")) {
+                    error = "Email phải viết liền, không được chứa khoảng trắng!";
+                } else if (rawPhone != null && rawPhone.contains(" ")) {
+                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (!phone.matches("^0[0-9]{9}$") && !phone.matches("^[0-9]{9,11}$")) {
+                    error = "Số điện thoại không hợp lệ (phải từ 9 - 11 chữ số)!";
+                } else if (userDAO.isEmailExists(email)) {
+                    error = "Email công ty '" + email + "' đã tồn tại trong hệ thống!";
+                } else if (userDAO.isPhoneExists(phone)) {
+                    error = "Số điện thoại '" + phone + "' đã tồn tại trong hệ thống!";
+                }
+
+                java.sql.Date dob = null;
+                if (error == null) {
+                    try {
+                        dob = java.sql.Date.valueOf(dobStr.trim());
+                        java.time.LocalDate birthDate = dob.toLocalDate();
+                        java.time.LocalDate now = java.time.LocalDate.now();
+                        if (birthDate.isAfter(now)) {
+                            error = "Ngày sinh không được là ngày trong tương lai!";
+                        } else if (java.time.Period.between(birthDate, now).getYears() < 18) {
+                            error = "Nhân viên phải từ đủ 18 tuổi trở lên!";
+                        }
+                    } catch (Exception ex) {
+                        error = "Định dạng ngày sinh không hợp lệ (yyyy-MM-dd)!";
+                    }
+                }
+
+                if (error != null) {
+                    session.setAttribute("errorMessage", error);
+                    response.sendRedirect(request.getContextPath() + "/employees");
+                    return;
+                }
+
+                Boolean gender = "true".equalsIgnoreCase(genderStr) || "1".equals(genderStr);
+                int departmentId = Integer.parseInt(deptStr);
+                int positionId = Integer.parseInt(posStr);
+                int dependentsCount = 0;
+                if (dependentsStr != null && !dependentsStr.trim().isEmpty()) {
+                    try {
+                        dependentsCount = Integer.parseInt(dependentsStr.trim());
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                java.math.BigDecimal baseSalary = new java.math.BigDecimal("5000000");
+                if (salaryStr != null && !salaryStr.trim().isEmpty()) {
+                    try {
+                        baseSalary = new java.math.BigDecimal(salaryStr.trim().replace(",", ""));
+                    } catch (Exception ignored) {}
+                }
+
+                boolean success = userDAO.createEmployee(fullName, email, phone, gender, dob, departmentId, positionId, dependentsCount, baseSalary);
+                if (success) {
+                    session.setAttribute("successMessage", "Thêm mới nhân viên thành công!");
+                } else {
+                    session.setAttribute("errorMessage", "Không thể thêm nhân viên, vui lòng thử lại!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                session.setAttribute("errorMessage", "Đã xảy ra lỗi khi thêm mới nhân viên!");
+            }
+
+        } else if ("update".equals(action)) {
             try {
                 int userId       = Integer.parseInt(request.getParameter("userId"));
                 String email     = request.getParameter("email");

@@ -377,6 +377,148 @@ public class UserDAO {
         return false;
     }
 
+    /** Tạo mới hồ sơ nhân viên đầy đủ thông tin kèm Lương cơ bản */
+    public boolean createEmployee(String fullName, String email, String phone, Boolean gender, java.sql.Date dob, int departmentId, int positionId, int dependentsCount, java.math.BigDecimal baseSalary) {
+        String insertUser = "INSERT INTO users (EmployeeCode, FullName, EmailCompany, Phone, Gender, DateOfBirth, DepartmentId, PositionId, DependentsCount, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+        String insertSalary = "INSERT INTO employmentbasesalarys (BaseSalary, UserId) VALUES (?, ?)";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Lấy số lượng user để sinh EmployeeCode
+                int nextId = 1;
+                String countQuery = "SELECT COUNT(*) FROM users";
+                try (PreparedStatement ps = conn.prepareStatement(countQuery);
+                     ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        nextId = rs.getInt(1) + 1;
+                    }
+                }
+                String empCode = "EMP" + String.format("%04d", nextId);
+
+                // 2. Thêm mới User
+                int userId = -1;
+                try (PreparedStatement ps = conn.prepareStatement(insertUser, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setString(1, empCode);
+                    ps.setString(2, fullName);
+                    ps.setString(3, email);
+                    ps.setString(4, (phone != null && !phone.trim().isEmpty()) ? phone.trim() : null);
+                    if (gender != null) {
+                        ps.setBoolean(5, gender);
+                    } else {
+                        ps.setNull(5, java.sql.Types.BIT);
+                    }
+                    ps.setDate(6, dob);
+                    ps.setInt(7, departmentId);
+                    ps.setInt(8, positionId);
+                    ps.setInt(9, Math.max(0, dependentsCount));
+                    ps.executeUpdate();
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            userId = rs.getInt(1);
+                        }
+                    }
+                }
+
+                if (userId == -1) {
+                    conn.rollback();
+                    return false;
+                }
+
+                // 3. Thêm lương cơ bản
+                if (baseSalary != null && baseSalary.compareTo(java.math.BigDecimal.ZERO) >= 0) {
+                    try (PreparedStatement ps = conn.prepareStatement(insertSalary)) {
+                        ps.setBigDecimal(1, baseSalary);
+                        ps.setInt(2, userId);
+                        ps.executeUpdate();
+                    }
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /** Lấy danh sách nhân viên chưa có tài khoản đăng nhập */
+    public java.util.List<java.util.Map<String, Object>> getEmployeesWithoutAccount() {
+        java.util.List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
+        String query = "SELECT u.Id as userId, u.EmployeeCode, u.FullName, u.EmailCompany, d.Name as departmentName, p.Name as positionName " +
+                       "FROM users u " +
+                       "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                       "LEFT JOIN positions p ON u.PositionId = p.Id " +
+                       "WHERE u.Id NOT IN (SELECT a.UserId FROM accounts a WHERE a.UserId IS NOT NULL) " +
+                       "AND u.Status = 1 " +
+                       "ORDER BY LENGTH(u.EmployeeCode) ASC, u.EmployeeCode ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("userId", rs.getInt("userId"));
+                map.put("employeeCode", rs.getString("EmployeeCode"));
+                map.put("fullName", rs.getString("FullName"));
+                map.put("emailCompany", rs.getString("EmailCompany"));
+                map.put("departmentName", rs.getString("departmentName") != null ? rs.getString("departmentName") : "Chưa phân phòng");
+                map.put("positionName", rs.getString("positionName") != null ? rs.getString("positionName") : "Chưa có chức vụ");
+                list.add(map);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /** Cấp tài khoản đăng nhập cho nhân viên đã có trong hệ thống */
+    public boolean createAccountForUser(int userId, String username, String password, String role) {
+        String insertAccount = "INSERT INTO accounts (Username, PasswordHash, Status, UserId) VALUES (?, ?, 1, ?)";
+        String insertRole = "INSERT INTO accountroles (AccountId, RoleId) VALUES (?, (SELECT Id FROM roles WHERE Name = ?))";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                int accountId = -1;
+                try (PreparedStatement ps = conn.prepareStatement(insertAccount, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setString(1, username);
+                    ps.setString(2, password);
+                    ps.setInt(3, userId);
+                    ps.executeUpdate();
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            accountId = rs.getInt(1);
+                        }
+                    }
+                }
+
+                if (accountId == -1) {
+                    conn.rollback();
+                    return false;
+                }
+
+                try (PreparedStatement ps = conn.prepareStatement(insertRole)) {
+                    ps.setInt(1, accountId);
+                    ps.setString(2, role);
+                    ps.executeUpdate();
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /** Cập nhật toàn bộ thông tin tài khoản và thông tin nhân viên đi kèm */
     public boolean updateAccountWithUser(int accountId, String fullName, String email, String phone, String role, int departmentId, int positionId) {
         String updateUser = "UPDATE users u " +

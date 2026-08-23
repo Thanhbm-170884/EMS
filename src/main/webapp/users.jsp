@@ -8,6 +8,7 @@
     List<String> rolesList = (List<String>) request.getAttribute("rolesList");
     List<Map<String, Object>> deptsList = (List<Map<String, Object>>) request.getAttribute("deptsList");
     List<Map<String, Object>> positionsList = (List<Map<String, Object>>) request.getAttribute("positionsList");
+    List<Map<String, Object>> employeesWithoutAccount = (List<Map<String, Object>>) request.getAttribute("employeesWithoutAccount");
     String fullName = (String) request.getAttribute("fullName");
     String deptName = (String) request.getAttribute("deptName");
     String successMessage = (String) request.getAttribute("successMessage");
@@ -317,39 +318,50 @@
 
 <!-- Modal Background Add Account -->
 <div class="modal-backdrop" id="addModal">
-  <div class="modal-content">
+  <div class="modal-content" style="max-width: 480px;">
     <div class="modal-header">
-      <span class="modal-title">Thêm tài khoản mới</span>
+      <span class="modal-title">Cấp tài khoản đăng nhập</span>
       <button class="modal-close" onclick="closeAddModal()">&times;</button>
     </div>
     <form action="users" method="post">
       <input type="hidden" name="action" value="create"/>
-      <div class="modal-body">
+      <div class="modal-body" style="gap: 14px;">
+        
         <div class="form-group">
-          <label class="form-label">Tên tài khoản (Username)</label>
+          <label class="form-label">Chọn nhân viên cần cấp tài khoản <span style="color:red;">*</span></label>
+          <select name="userId" id="addUserId" class="form-input" style="height: 40px;" required>
+            <%
+              if (employeesWithoutAccount != null && !employeesWithoutAccount.isEmpty()) {
+                for (Map<String, Object> emp : employeesWithoutAccount) {
+            %>
+                  <option value="<%= emp.get("userId") %>">
+                    <%= emp.get("employeeCode") %> - <%= emp.get("fullName") %> (<%= emp.get("departmentName") %>)
+                  </option>
+            <%
+                }
+              } else {
+            %>
+                <option value="" disabled selected>-- Hiện không có nhân viên nào chưa có tài khoản --</option>
+            <% } %>
+          </select>
+          <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+            * Chỉ hiển thị những nhân viên đã có hồ sơ nhưng chưa được cấp tài khoản.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tên tài khoản (Username) <span style="color:red;">*</span></label>
           <input type="text" name="username" id="addUsername" class="form-input" required placeholder="nhap_username" oninput="validateAddForm()"/>
           <div id="addUsernameMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
+
         <div class="form-group">
-          <label class="form-label">Mật khẩu</label>
-          <input type="password" name="password" class="form-input" required placeholder="Mật khẩu"/>
+          <label class="form-label">Mật khẩu <span style="color:red;">*</span></label>
+          <input type="password" name="password" id="addPassword" class="form-input" required placeholder="Nhập mật khẩu khởi tạo"/>
         </div>
+
         <div class="form-group">
-          <label class="form-label">Họ và tên</label>
-          <input type="text" name="fullName" class="form-input" required placeholder="Nguyen Van A"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email công ty</label>
-          <input type="email" name="email" id="addEmail" class="form-input" required placeholder="email@company.com" oninput="validateAddForm()"/>
-          <div id="addEmailMsg" style="font-size: 12px; margin-top: 4px;"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Số điện thoại</label>
-          <input type="tel" name="phone" id="addPhone" class="form-input" placeholder="0912345678" oninput="validateAddForm()"/>
-          <div id="addPhoneMsg" style="font-size: 12px; margin-top: 4px;"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Vai trò</label>
+          <label class="form-label">Vai trò hệ thống <span style="color:red;">*</span></label>
           <select name="role" class="form-input" style="height: 38px;">
             <%
               if (rolesList != null) {
@@ -367,38 +379,11 @@
             <% } %>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Phòng ban</label>
-          <select name="departmentId" class="form-input" style="height: 38px;">
-            <%
-              if (deptsList != null) {
-                for (Map<String, Object> d : deptsList) {
-            %>
-                  <option value="<%= d.get("id") %>"><%= d.get("name") %></option>
-            <%
-                }
-              }
-            %>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Chức vụ</label>
-          <select name="positionId" class="form-input" style="height: 38px;">
-            <%
-              if (positionsList != null) {
-                for (Map<String, Object> p : positionsList) {
-            %>
-                  <option value="<%= p.get("id") %>"><%= p.get("name") %></option>
-            <%
-                }
-              }
-            %>
-          </select>
-        </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" onclick="closeAddModal()">Hủy</button>
-        <button type="submit" id="addSubmitBtn" class="btn-primary">Tạo tài khoản</button>
+        <button type="submit" id="addSubmitBtn" class="btn-primary" <%= (employeesWithoutAccount == null || employeesWithoutAccount.isEmpty()) ? "disabled style='opacity:0.5; cursor:not-allowed;'" : "" %>>Cấp tài khoản</button>
       </div>
     </form>
   </div>
@@ -442,33 +427,24 @@
     }
   }
 
-  // Kiểm tra thời gian thực khi THÊM tài khoản
+  // Kiểm tra thời gian thực khi CẤP tài khoản
   function validateAddForm() {
     const rawUn = document.getElementById("addUsername") ? document.getElementById("addUsername").value : "";
-    const rawEm = document.getElementById("addEmail") ? document.getElementById("addEmail").value : "";
-    const rawPh = document.getElementById("addPhone") ? document.getElementById("addPhone").value : "";
-
     const un = rawUn.trim().toLowerCase();
-    const em = rawEm.trim().toLowerCase();
-    const ph = rawPh.trim();
 
     const unInput = document.getElementById("addUsername");
     const unMsg = document.getElementById("addUsernameMsg");
-    const emInput = document.getElementById("addEmail");
-    const emMsg = document.getElementById("addEmailMsg");
-    const phInput = document.getElementById("addPhone");
-    const phMsg = document.getElementById("addPhoneMsg");
     const submitBtn = document.getElementById("addSubmitBtn");
 
     let hasError = false;
 
-    // 1. Check Username
+    // Check Username
     if (rawUn.length > 0) {
       if (/\s/.test(rawUn)) {
         setFieldStatus(unInput, unMsg, false, "Tên tài khoản phải viết liền, không được chứa khoảng trắng!");
         hasError = true;
       } else {
-        const isUnDup = EXISTING_USERS.some(u => u.username.toLowerCase() === un);
+        const isUnDup = EXISTING_USERS.some(u => u.username && u.username.toLowerCase() === un);
         if (isUnDup) {
           setFieldStatus(unInput, unMsg, false, "Tên tài khoản này đã tồn tại!");
           hasError = true;
@@ -480,44 +456,6 @@
       setFieldStatus(unInput, unMsg, null, "");
     }
 
-    // 2. Check Email
-    if (rawEm.length > 0) {
-      if (/\s/.test(rawEm)) {
-        setFieldStatus(emInput, emMsg, false, "Email phải viết liền, không được chứa khoảng trắng!");
-        hasError = true;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-        setFieldStatus(emInput, emMsg, false, "Định dạng email chưa đúng!");
-        hasError = true;
-      } else {
-        const isEmDup = EXISTING_USERS.some(u => u.email.toLowerCase() === em);
-        if (isEmDup) {
-          setFieldStatus(emInput, emMsg, false, "Email công ty này đã tồn tại!");
-          hasError = true;
-        } else {
-          setFieldStatus(emInput, emMsg, true, "Email hợp lệ");
-        }
-      }
-    } else {
-      setFieldStatus(emInput, emMsg, null, "");
-    }
-
-    // 3. Check Phone
-    if (rawPh.length > 0) {
-      if (/\s/.test(rawPh)) {
-        setFieldStatus(phInput, phMsg, false, "Số điện thoại phải viết liền, không được chứa khoảng trắng!");
-        hasError = true;
-      } else if (!/^[0-9]{9,11}$/.test(ph)) {
-        setFieldStatus(phInput, phMsg, false, "Số điện thoại phải từ 9 - 11 chữ số!");
-        hasError = true;
-      } else {
-        const isPhDup = EXISTING_USERS.some(u => u.phone && u.phone === ph);
-        if (isPhDup) {
-          setFieldStatus(phInput, phMsg, false, "Số điện thoại này đã được sử dụng!");
-          hasError = true;
-        } else {
-          setFieldStatus(phInput, phMsg, true, "Số điện thoại hợp lệ");
-        }
-      }
     } else {
       setFieldStatus(phInput, phMsg, null, "");
     }
