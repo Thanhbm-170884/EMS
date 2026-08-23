@@ -457,47 +457,60 @@ public class ShiftAssignmentDAO {
      */
     public static List<String> findConflictingEmployees(
             Shiftassignmentbatches newBatch,
+            List<Integer> weekdays,
             List<Integer> empIds,
             Integer excludeBatchId) {
 
         if (empIds == null || empIds.isEmpty()) return new ArrayList<>();
 
-        // Build IN-clause placeholder: (?,?,?...)
-        StringBuilder inClause = new StringBuilder();
+        // Build IN-clause placeholder for empIds: (?,?,?...)
+        StringBuilder empInClause = new StringBuilder();
         for (int i = 0; i < empIds.size(); i++) {
-            if (i > 0) inClause.append(",");
-            inClause.append("?");
+            if (i > 0) empInClause.append(",");
+            empInClause.append("?");
+        }
+
+        // Build IN-clause for weekdays if newBatch is WEEKLY
+        boolean isWeekly = "WEEKLY".equals(newBatch.getRecurType()) && weekdays != null && !weekdays.isEmpty();
+        StringBuilder weekdayInClause = new StringBuilder();
+        if (isWeekly) {
+            for (int i = 0; i < weekdays.size(); i++) {
+                if (i > 0) weekdayInClause.append(",");
+                weekdayInClause.append("?");
+            }
+        } else {
+            // Default safe clause so SQL doesn't break. We won't bind anything to it since it's short-circuited.
+            weekdayInClause.append("-1");
         }
 
         /*
          * Logic SQL:
-         *  - Lấy các batch hiện có (b2) khác với batch đang sửa
-         *  - Có nhân viên chung với danh sách empIds mới
-         *  - Khoảng ngày của b2 giao với khoảng ngày mới:
-         *      b2.startDate <= newBatch.endDate  (hoặc newBatch.endDate null = vô hạn)
-         *      AND newBatch.startDate <= b2.endDate (hoặc b2.endDate null = vô hạn)
-         *  - Giờ ca của b2 chồng với giờ ca mới:
-         *      s_old.StartTime < s_new.EndTime
-         *      AND s_new.StartTime < s_old.EndTime
+         *  - Khoảng ngày giao nhau
+         *  - Giờ làm chồng nhau
+         *  - Nếu cả 2 đều là WEEKLY, bắt buộc phải có ngày trong tuần (Weekday) chung mới là conflict.
          */
         String sql =
             "SELECT DISTINCT u.FullName, s_old.Name AS OldShiftName, " +
             "       s_old.StartTime AS OldStart, s_old.EndTime AS OldEnd " +
             "FROM shiftassignmentbatch_employees be2 " +
             "JOIN shiftassignmentbatches b2    ON be2.BatchId = b2.Id " +
-            "JOIN shifts s_new                 ON s_new.Id = ? " +       // ca mới
-            "JOIN shifts s_old                 ON s_old.Id = b2.ShiftId " + // ca cũ
+            "JOIN shifts s_new                 ON s_new.Id = ? " +
+            "JOIN shifts s_old                 ON s_old.Id = b2.ShiftId " +
             "JOIN users u                      ON be2.EmployeeId = u.Id " +
-            "WHERE be2.EmployeeId IN (" + inClause + ") " +
-            // Loại trừ chính batch đang sửa
+            "WHERE be2.EmployeeId IN (" + empInClause + ") " +
             "  AND (? IS NULL OR b2.Id != ?) " +
-            // Date range overlap: b2.start <= new.end AND new.start <= b2.end
-            // Trường hợp endDate NULL => coi như vô hạn (không giới hạn trên)
             "  AND b2.StartDate <= COALESCE(?, '9999-12-31') " +
             "  AND COALESCE(b2.EndDate, '9999-12-31') >= ? " +
-            // Time overlap: s_old.start < s_new.end AND s_new.start < s_old.end
             "  AND s_old.StartTime < s_new.EndTime " +
             "  AND s_new.StartTime < s_old.EndTime " +
+            "  AND (" +
+            "    ? != 'WEEKLY' OR b2.RecurType != 'WEEKLY' " +
+            "    OR EXISTS (" +
+            "      SELECT 1 FROM shiftassignmentbatch_weekdays wd_old " +
+            "      WHERE wd_old.BatchId = b2.Id " +
+            "        AND wd_old.DayOfWeek IN (" + weekdayInClause + ")" +
+            "    )" +
+            "  ) " +
             "ORDER BY u.FullName";
 
         List<String> conflicts = new ArrayList<>();
@@ -505,14 +518,14 @@ public class ShiftAssignmentDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int idx = 1;
-            ps.setInt(idx++, newBatch.getShiftId());           // s_new.Id = ?
+            ps.setInt(idx++, newBatch.getShiftId());
 
-            // IN clause: empIds
+            // Bind empIds
             for (Integer empId : empIds) {
                 ps.setInt(idx++, empId);
             }
 
-            // excludeBatchId (nullable)
+            // Bind excludeBatchId
             if (excludeBatchId != null) {
                 ps.setInt(idx++, excludeBatchId);
                 ps.setInt(idx++, excludeBatchId);
@@ -521,24 +534,34 @@ public class ShiftAssignmentDAO {
                 ps.setNull(idx++, java.sql.Types.INTEGER);
             }
 
-            // newBatch.endDate (nullable → COALESCE '9999-12-31')
+            // Bind endDate
             if (newBatch.getEndDate() != null) {
-                ps.setDate(idx++, Date.valueOf(newBatch.getEndDate()));
+                ps.setDate(idx++, java.sql.Date.valueOf(newBatch.getEndDate()));
             } else {
-                ps.setDate(idx++, Date.valueOf(java.time.LocalDate.of(9999, 12, 31)));
+                ps.setDate(idx++, java.sql.Date.valueOf(java.time.LocalDate.of(9999, 12, 31)));
             }
 
-            // newBatch.startDate
-            ps.setDate(idx++, Date.valueOf(newBatch.getStartDate()));
+            // Bind startDate
+            ps.setDate(idx++, java.sql.Date.valueOf(newBatch.getStartDate()));
+
+            // Bind recurType (for ? != 'WEEKLY')
+            ps.setString(idx++, newBatch.getRecurType() != null ? newBatch.getRecurType() : "NONE");
+
+            // Bind weekdays if isWeekly
+            if (isWeekly) {
+                for (Integer wd : weekdays) {
+                    ps.setInt(idx++, wd);
+                }
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String name      = rs.getString("FullName");
                     String shiftName = rs.getString("OldShiftName");
-                    Time   oStart    = rs.getTime("OldStart");
-                    Time   oEnd      = rs.getTime("OldEnd");
+                    java.sql.Time oStart = rs.getTime("OldStart");
+                    java.sql.Time oEnd   = rs.getTime("OldEnd");
                     String timeRange = (oStart != null && oEnd != null)
-                            ? " (" + oStart.toLocalTime() + " – " + oEnd.toLocalTime() + ")"
+                            ? " (" + oStart.toLocalTime() + " - " + oEnd.toLocalTime() + ")"
                             : "";
                     conflicts.add(name + " [ca: " + shiftName + timeRange + "]");
                 }

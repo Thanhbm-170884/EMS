@@ -75,6 +75,20 @@ public class ShiftAssignmentCalendarDAO {
         return new ArrayList<>(byDate.values());
     }
 
+    /**
+     * Trả về Map<LocalDate, ShiftAssignmentDayDTO> của các ca được gán riêng (override / ca bù / OT)
+     * trong khoảng [from, to] cho nhân viên employeeId.
+     * Tiện dụng cho EmployeeCalendarService để tra cứu O(1) thay vì O(n) list scan.
+     */
+    public static Map<LocalDate, ShiftAssignmentDayDTO> getOverrideMap(int employeeId, LocalDate from, LocalDate to) {
+        List<ShiftAssignmentDayDTO> list = getAssignmentsForEmployee(employeeId, from, to);
+        Map<LocalDate, ShiftAssignmentDayDTO> map = new java.util.HashMap<>();
+        for (ShiftAssignmentDayDTO dto : list) {
+            map.put(dto.getDate(), dto);
+        }
+        return map;
+    }
+
     private static boolean matches(BatchRule r, LocalDate d) {
         switch (r.recurType) {
             case "NONE":    return true; // đã giới hạn theo range ở ngoài rồi
@@ -85,8 +99,9 @@ public class ShiftAssignmentCalendarDAO {
     }
 
     private static boolean matchesWeekly(BatchRule r, LocalDate d) {
-        int dow = d.getDayOfWeek().getValue(); // 1=Mon..7=Sun
-        if (!r.weekdays.contains(dow)) return false;
+        int javaDow = d.getDayOfWeek().getValue(); // 1=Mon..7=Sun
+        int appDow  = (javaDow == 7) ? 1 : javaDow + 1; // 1=CN, 2=T2..7=T7
+        if (!r.weekdays.contains(appDow)) return false;
         if (r.recurInterval <= 1) return true;
 
         LocalDate startMonday = r.startDate.minusDays(r.startDate.getDayOfWeek().getValue() - 1L);
@@ -107,7 +122,10 @@ public class ShiftAssignmentCalendarDAO {
         }
         if ("WEEKDAY".equals(r.monthlyType)) {
             if (r.monthlyWeekday == null || r.monthlyOccurrence == null) return false;
-            if (d.getDayOfWeek().getValue() != r.monthlyWeekday) return false;
+            int javaDow = d.getDayOfWeek().getValue();
+            int appDow  = (javaDow == 7) ? 1 : javaDow + 1; // 1=CN, 2=T2..7=T7
+            if (appDow != r.monthlyWeekday) return false;
+            
             if (r.monthlyOccurrence == -1) {
                 return d.plusDays(7).getMonthValue() != d.getMonthValue(); // lần cuối cùng của weekday trong tháng
             }
