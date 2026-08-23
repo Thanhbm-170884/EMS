@@ -19,9 +19,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/ems.css"/>
-  <link rel="stylesheet" href="css/users.css"/>
-  <link rel="stylesheet" href="css/employees.css"/>
+  <link rel="stylesheet" href="css/ems.css?v=3.0"/>
+  <link rel="stylesheet" href="css/users.css?v=3.0"/>
+  <link rel="stylesheet" href="css/employees.css?v=3.0"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>

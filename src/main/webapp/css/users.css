@@ -5,27 +5,38 @@
 
 /* ---------- Button Primary Action (Thêm mới) ---------- */
 .btn-add-acc {
-  background: #0d9488;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.15s ease;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  text-decoration: none;
-  line-height: 1.4;
+  background: #0d9488 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  transition: background 0.15s ease !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 .btn-add-acc:hover {
-  background: #0f766e;
+  background: #0f766e !important;
 }
 .btn-add-acc:active {
-  transform: translateY(0);
+  transform: translateY(0) !important;
+}
+
+.btn-add-acc svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: currentColor !important;
+  stroke-width: 2.5px !important;
+  flex-shrink: 0 !important;
 }
 
 /* ---------- Shared Stats Row & Stat Card ---------- */
