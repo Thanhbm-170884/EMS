@@ -149,6 +149,13 @@ public class PositionServlet extends HttpServlet {
             return;
         }
 
+        String rawCode = request.getParameter("code");
+        if (rawCode != null && rawCode.contains(" ")) {
+            session.setAttribute("errorMsg", "Mã chức vụ phải viết liền, không được chứa khoảng trắng!");
+            response.sendRedirect(request.getContextPath() + "/positions");
+            return;
+        }
+
         code = code.trim().toUpperCase();
         name = name.trim();
 

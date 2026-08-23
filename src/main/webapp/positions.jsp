@@ -15,10 +15,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EMS – Quản lý chức vụ</title>
-  <link rel="stylesheet" href="css/ems.css"/>
-  <link rel="stylesheet" href="css/users.css"/>
-  <link rel="stylesheet" href="css/departments.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/ems.css?v=3.0"/>
+  <link rel="stylesheet" href="css/users.css?v=3.0"/>
+  <link rel="stylesheet" href="css/departments.css?v=3.0"/>
 </head>
 <body>
 
@@ -54,7 +56,7 @@
 <!-- Main content -->
 <div class="main-content">
   <div class="topbar">
-    <span class="topbar-left">Quản lý chức vụ</span>
+    <span class="topbar-left">Quản trị / Chức vụ</span>
     <span class="topbar-right" id="topbar-date"></span>
   </div>
 
@@ -78,7 +80,7 @@
         <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 4px;">Quản lý chức vụ</h1>
         <p style="font-size: 14px; color: #4b5563;">Danh sách các chức danh nghề nghiệp và phân cấp chuyên môn trong công ty</p>
       </div>
-      <button class="btn-add-acc" onclick="openAddModal()">
+      <button class="btn-add-acc" type="button" onclick="openAddModal()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Thêm chức vụ
       </button>
@@ -320,8 +322,10 @@
   }
 
   function validateAddPosForm() {
-    const code = (document.getElementById('addPosCode').value || '').trim().toUpperCase();
-    const name = (document.getElementById('addPosName').value || '').trim().toLowerCase();
+    const rawCode = document.getElementById('addPosCode') ? document.getElementById('addPosCode').value : '';
+    const rawName = document.getElementById('addPosName') ? document.getElementById('addPosName').value : '';
+    const code = rawCode.trim().toUpperCase();
+    const name = rawName.trim().toLowerCase();
 
     const codeInput = document.getElementById('addPosCode');
     const codeMsg   = document.getElementById('addPosCodeMsg');
@@ -332,13 +336,18 @@
     let hasError = false;
 
     // 1. Check Code
-    if (code.length > 0) {
-      const isCodeDup = EXISTING_POSITIONS.some(p => p.code.toUpperCase() === code);
-      if (isCodeDup) {
-        setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ này đã tồn tại!');
+    if (rawCode.length > 0) {
+      if (/\s/.test(rawCode)) {
+        setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ phải viết liền, không được chứa khoảng trắng!');
         hasError = true;
       } else {
-        setPosFieldStatus(codeInput, codeMsg, true, 'Mã chức vụ hợp lệ');
+        const isCodeDup = EXISTING_POSITIONS.some(p => p.code.toUpperCase() === code);
+        if (isCodeDup) {
+          setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ này đã tồn tại!');
+          hasError = true;
+        } else {
+          setPosFieldStatus(codeInput, codeMsg, true, 'Mã chức vụ hợp lệ');
+        }
       }
     } else {
       setPosFieldStatus(codeInput, codeMsg, null, '');

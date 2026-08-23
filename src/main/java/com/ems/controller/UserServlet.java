@@ -51,6 +51,7 @@ public class UserServlet extends HttpServlet {
         List<String> rolesList = userDAO.getAllRoles();
         List<Map<String, Object>> deptsList = userDAO.getDepartments();
         List<Map<String, Object>> positionsList = userDAO.getPositions();
+        List<Map<String, Object>> employeesWithoutAccount = userDAO.getEmployeesWithoutAccount();
 
         // Fetch fullName of logged in Admin
         String username = (String) session.getAttribute("username");
@@ -93,6 +94,7 @@ public class UserServlet extends HttpServlet {
         request.setAttribute("rolesList", rolesList);
         request.setAttribute("deptsList", deptsList);
         request.setAttribute("positionsList", positionsList);
+        request.setAttribute("employeesWithoutAccount", employeesWithoutAccount);
         request.setAttribute("adminUsername", username);
         request.setAttribute("fullName", adminFullName);
         request.setAttribute("deptName", adminDeptName);
@@ -141,47 +143,31 @@ public class UserServlet extends HttpServlet {
             }
         } else if ("create".equalsIgnoreCase(action)) {
             try {
+                String userIdStr = request.getParameter("userId");
                 String username = request.getParameter("username");
                 String password = request.getParameter("password");
-                String fullName = request.getParameter("fullName");
-                String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
-                String deptStr = request.getParameter("departmentId");
-                String posStr = request.getParameter("positionId");
 
                 username = username != null ? username.trim() : "";
-                fullName = fullName != null ? fullName.trim() : "";
-                email = email != null ? email.trim() : "";
-                phone = phone != null ? phone.trim() : "";
-
-                int departmentId = (deptStr != null && !deptStr.isEmpty()) ? Integer.parseInt(deptStr) : 0;
-                int positionId = (posStr != null && !posStr.isEmpty()) ? Integer.parseInt(posStr) : 0;
+                String rawUsername = request.getParameter("username");
 
                 if (!"Manager".equalsIgnoreCase(role) && !"Employee".equalsIgnoreCase(role)) {
                     role = "Employee";
                 }
 
-                String rawUsername = request.getParameter("username");
-                String rawEmail = request.getParameter("email");
-                String rawPhone = request.getParameter("phone");
-
-                // Validate trùng lặp & viết liền
                 String error = null;
-                if (username.isEmpty() || password == null || password.isEmpty() || fullName.isEmpty() || email.isEmpty()) {
-                    error = "Vui lòng điền đầy đủ các thông tin bắt buộc!";
+                if (userIdStr == null || userIdStr.trim().isEmpty()) {
+                    error = "Vui lòng chọn nhân viên cần cấp tài khoản!";
+                } else if (username.isEmpty() || password == null || password.isEmpty()) {
+                    error = "Vui lòng điền đầy đủ Tên tài khoản và Mật khẩu!";
                 } else if (rawUsername != null && rawUsername.contains(" ")) {
                     error = "Tên tài khoản phải viết liền, không được chứa khoảng trắng!";
-                } else if (rawEmail != null && rawEmail.contains(" ")) {
-                    error = "Email phải viết liền, không được chứa khoảng trắng!";
-                } else if (rawPhone != null && rawPhone.contains(" ")) {
-                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (username.length() < 3) {
+                    error = "Tên tài khoản phải có ít nhất 3 ký tự!";
+                } else if (password.length() < 6) {
+                    error = "Mật khẩu phải có ít nhất 6 ký tự!";
                 } else if (userDAO.isUsernameExists(username)) {
                     error = "Tên tài khoản (Username) '" + username + "' đã tồn tại! Vui lòng chọn tên khác.";
-                } else if (userDAO.isEmailExists(email)) {
-                    error = "Email công ty '" + email + "' đã tồn tại! Vui lòng nhập email khác.";
-                } else if (!phone.isEmpty() && userDAO.isPhoneExists(phone)) {
-                    error = "Số điện thoại '" + phone + "' đã tồn tại trong hệ thống!";
                 }
 
                 if (error != null) {
@@ -190,11 +176,12 @@ public class UserServlet extends HttpServlet {
                     return;
                 }
 
-                boolean success = userDAO.createAccountWithUser(username, password, fullName, email, phone, role, departmentId, positionId);
+                int userId = Integer.parseInt(userIdStr.trim());
+                boolean success = userDAO.createAccountForUser(userId, username, password, role);
                 if (success) {
-                    session.setAttribute("successMessage", "Thêm mới tài khoản thành công!");
+                    session.setAttribute("successMessage", "Cấp tài khoản đăng nhập thành công!");
                 } else {
-                    session.setAttribute("errorMessage", "Không thể tạo tài khoản, vui lòng thử lại!");
+                    session.setAttribute("errorMessage", "Không thể cấp tài khoản, vui lòng thử lại!");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -205,30 +192,25 @@ public class UserServlet extends HttpServlet {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 String fullName = request.getParameter("fullName");
                 String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
-                int departmentId = Integer.parseInt(request.getParameter("departmentId"));
-                int positionId = Integer.parseInt(request.getParameter("positionId"));
 
                 fullName = fullName != null ? fullName.trim() : "";
                 email = email != null ? email.trim() : "";
-                phone = phone != null ? phone.trim() : "";
 
                 String rawEmail = request.getParameter("email");
-                String rawPhone = request.getParameter("phone");
 
                 // Validate trùng lặp khi sửa
                 String error = null;
                 if (fullName.isEmpty() || email.isEmpty()) {
                     error = "Vui lòng điền đầy đủ họ và tên và email!";
+                } else if (!fullName.matches("^[a-zA-ZÀ-ỹ\\s]+$")) {
+                    error = "Họ và tên chỉ được chứa chữ cái và khoảng trắng!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
-                } else if (rawPhone != null && rawPhone.contains(" ")) {
-                    error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
+                } else if (!email.toLowerCase().endsWith("@techcorp.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@techcorp\\.vn$")) {
+                    error = "Email công ty phải có định dạng @techcorp.vn (ví dụ: nhanvien@techcorp.vn)!";
                 } else if (userDAO.isEmailExistsForOther(email, accountId)) {
                     error = "Email công ty '" + email + "' đã được sử dụng bởi tài khoản khác!";
-                } else if (!phone.isEmpty() && userDAO.isPhoneExistsForOther(phone, accountId)) {
-                    error = "Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!";
                 }
 
                 if (error != null) {
@@ -237,7 +219,7 @@ public class UserServlet extends HttpServlet {
                     return;
                 }
 
-                boolean success = userDAO.updateAccountWithUser(accountId, fullName, email, phone, role, departmentId, positionId);
+                boolean success = userDAO.updateAccountBasic(accountId, fullName, email, role);
                 if (success) {
                     session.setAttribute("successMessage", "Lưu thay đổi tài khoản thành công!");
                 } else {
