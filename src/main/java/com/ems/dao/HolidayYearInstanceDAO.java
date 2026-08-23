@@ -76,15 +76,32 @@ public class HolidayYearInstanceDAO {
     public static void upsertInstance(HolidayYearInstance hi){
         String sql = "insert into holidayyearinstances (TemplateId, Year, StartDate, EndDate, Coefficient, CreatedBy) " +
                 "values (?, ?, ?, ?, ?, ?) " +
-                "on duplicate key update StartDate = values(StartDate), EndDate = values(EndDate), Coefficient = values(Coefficient)";
+                "on duplicate key update StartDate = ?, EndDate = ?, Coefficient = ?";
         try(Connection conn = DBConnection.getConnection();
             PreparedStatement stm = conn.prepareStatement(sql)) {
             stm.setInt(1, hi.getTemplateId());
             stm.setInt(2, hi.getYear());
-            stm.setObject(3, hi.getStartDate());
-            stm.setObject(4, hi.getEndDate());
+            
+            if (hi.getStartDate() != null) {
+                stm.setDate(3, java.sql.Date.valueOf(hi.getStartDate()));
+                stm.setDate(7, java.sql.Date.valueOf(hi.getStartDate()));
+            } else {
+                stm.setNull(3, java.sql.Types.DATE);
+                stm.setNull(7, java.sql.Types.DATE);
+            }
+            
+            if (hi.getEndDate() != null) {
+                stm.setDate(4, java.sql.Date.valueOf(hi.getEndDate()));
+                stm.setDate(8, java.sql.Date.valueOf(hi.getEndDate()));
+            } else {
+                stm.setNull(4, java.sql.Types.DATE);
+                stm.setNull(8, java.sql.Types.DATE);
+            }
+            
             stm.setObject(5, hi.getCoefficient());
             stm.setObject(6, hi.getCreatedBy());
+            stm.setObject(9, hi.getCoefficient());
+            
             stm.execute();
         } catch (SQLException e) {
             throw new RuntimeException(e);

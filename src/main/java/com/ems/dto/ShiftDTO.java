@@ -7,6 +7,15 @@ public class ShiftDTO {
     private String breakStart;
     private String breakEnd;
     private Boolean isWorking;
+    private String effectiveDate; // yyyy-MM-dd, ngày bắt đầu áp dụng bộ lịch mới
+
+    public String getEffectiveDate() {
+        return effectiveDate;
+    }
+
+    public void setEffectiveDate(String effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
 
     public Boolean getWorking() {
         return isWorking;

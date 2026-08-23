@@ -84,4 +84,4 @@ public class ShiftAssignmentService {
             throw new IllegalArgumentException(sb.toString());
         }
     }
-}
+}

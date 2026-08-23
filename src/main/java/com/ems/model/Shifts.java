@@ -14,6 +14,8 @@ public class Shifts {
     private Integer latecheckoutminute;
     private Boolean isactive;
     private Boolean isDefault;
+    private java.time.LocalDate effectiveStartDate;
+    private java.time.LocalDate effectiveEndDate;
 
     public Boolean getDefault() {
         return isDefault;
@@ -21,6 +23,22 @@ public class Shifts {
 
     public void setDefault(Boolean aDefault) {
         isDefault = aDefault;
+    }
+
+    public java.time.LocalDate getEffectiveStartDate() {
+        return effectiveStartDate;
+    }
+
+    public void setEffectiveStartDate(java.time.LocalDate effectiveStartDate) {
+        this.effectiveStartDate = effectiveStartDate;
+    }
+
+    public java.time.LocalDate getEffectiveEndDate() {
+        return effectiveEndDate;
+    }
+
+    public void setEffectiveEndDate(java.time.LocalDate effectiveEndDate) {
+        this.effectiveEndDate = effectiveEndDate;
     }
 
     public int getDayOfweek() {
