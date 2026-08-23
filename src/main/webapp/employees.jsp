@@ -333,7 +333,7 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div class="form-group">
             <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Email công ty <span style="color:red;">*</span></label>
-            <input type="email" name="email" id="addEmpEmail" class="form-input" required placeholder="email@company.com" oninput="validateAddEmpForm()"
+            <input type="email" name="email" id="addEmpEmail" class="form-input" required placeholder="nhanvien@techcorp.vn" oninput="validateAddEmpForm()"
                    style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
             <div id="addEmpEmailMsg" style="font-size: 12px; margin-top: 4px;"></div>
           </div>
@@ -427,7 +427,7 @@
 
         <div class="form-group">
           <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Email công ty <span style="color:red;">*</span></label>
-          <input type="email" name="email" id="editEmpEmail" class="form-input" required oninput="validateEditEmpForm()"
+          <input type="email" name="email" id="editEmpEmail" class="form-input" required placeholder="nhanvien@techcorp.vn" oninput="validateEditEmpForm()"
                  style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
           <div id="editEmpEmailMsg" style="font-size: 12px; margin-top: 4px;"></div>
         </div>
@@ -543,8 +543,8 @@
       if (/\s/.test(rawEm)) {
         setEmpFieldStatus(emInput, emMsg, false, 'Email phải viết liền, không được chứa khoảng trắng!');
         hasError = true;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-        setEmpFieldStatus(emInput, emMsg, false, 'Định dạng email chưa đúng!');
+      } else if (!/^[a-zA-Z0-9._%+-]+@techcorp\.vn$/.test(em)) {
+        setEmpFieldStatus(emInput, emMsg, false, 'Email công ty phải có đuôi @techcorp.vn (VD: nhanvien@techcorp.vn)!');
         hasError = true;
       } else {
         var isEmDup = EXISTING_EMPLOYEES.some(function(e){ return e.email && e.email.toLowerCase() === em; });
@@ -625,8 +625,8 @@
       if (/\s/.test(rawEm)) {
         setEmpFieldStatus(emInput, emMsg, false, 'Email phải viết liền, không được chứa khoảng trắng!');
         hasError = true;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-        setEmpFieldStatus(emInput, emMsg, false, 'Định dạng email chưa đúng!');
+      } else if (!/^[a-zA-Z0-9._%+-]+@techcorp\.vn$/.test(em)) {
+        setEmpFieldStatus(emInput, emMsg, false, 'Email công ty phải có đuôi @techcorp.vn (VD: nhanvien@techcorp.vn)!');
         hasError = true;
       } else {
         var isEmDup = EXISTING_EMPLOYEES.some(function(e){ return e.id !== currId && e.email.toLowerCase() === em; });

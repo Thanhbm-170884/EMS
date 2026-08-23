@@ -132,8 +132,8 @@ public class EmployeeServlet extends HttpServlet {
                     error = "Họ và tên chỉ được chứa chữ cái và khoảng trắng!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
-                } else if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")) {
-                    error = "Định dạng email không hợp lệ!";
+                } else if (!email.toLowerCase().endsWith("@techcorp.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@techcorp\\.vn$")) {
+                    error = "Email công ty phải có định dạng @techcorp.vn (ví dụ: nhanvien@techcorp.vn)!";
                 } else if (rawPhone != null && rawPhone.contains(" ")) {
                     error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
                 } else if (!phone.matches("^0[0-9]{9}$")) {
@@ -207,6 +207,8 @@ public class EmployeeServlet extends HttpServlet {
                     error = "Vui lòng nhập email công ty!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
+                } else if (!email.toLowerCase().endsWith("@techcorp.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@techcorp\\.vn$")) {
+                    error = "Email công ty phải có định dạng @techcorp.vn (ví dụ: nhanvien@techcorp.vn)!";
                 } else if (userDAO.isEmailExistsForOtherUserId(email, userId)) {
                     error = "Email công ty '" + email + "' đã được sử dụng bởi nhân viên khác!";
                 }
