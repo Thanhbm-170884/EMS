@@ -275,38 +275,7 @@
                                               Xem bảng lương
                                             </a>
 
-                                            <!-- Toggle Lock/Unlock button -->
-                                            <form action="pay-periods" method="POST" style="display:inline;"
-                                              id="toggleForm_<%= p.getId() %>">
-                                              <input type="hidden" name="action" value="toggle-lock" />
-                                              <input type="hidden" name="id" value="<%= p.getId() %>" />
-                                              <input type="hidden" name="search" value="<%= searchStr %>" />
-                                              <input type="hidden" name="status" value="<%= selectedStatus %>" />
-                                              <input type="hidden" name="page" value="<%= currentPage %>" />
-                                              <input type="hidden" name="pageSize" value="<%= pageSize %>" />
 
-                                              <% if (isLocked) { %>
-                                                <button type="button" class="btn-action-toggle btn-unlock"
-                                                  onclick="confirmToggleLock(<%= p.getId() %>, '<%= p.getName().replace("'", "\\'") %>', false)">
-                                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-                                                  </svg>
-                                                  Mở khóa
-                                                </button>
-                                                <% } else { %>
-                                                  <button type="button" class="btn-action-toggle btn-lock"
-                                                    onclick="confirmToggleLock(<%= p.getId() %>, '<%= p.getName().replace("'", "\\'") %>', true)">
-                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                      stroke="currentColor" stroke-width="2">
-                                                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                    </svg>
-                                                    Chốt sổ
-                                                  </button>
-                                                  <% } %>
-                                            </form>
 
                                             <!-- Edit button -->
                                             <button type="button" class="btn-action-edit"
@@ -416,12 +385,7 @@
                                   </div>
                                 </div>
 
-                                <div class="modal-form-group" style="margin-top:10px;">
-                                  <label class="checkbox-label">
-                                    <input type="checkbox" name="isLocked" value="true" />
-                                    <span>Chốt/Khóa kỳ lương này ngay sau khi tạo</span>
-                                  </label>
-                                </div>
+
 
                                 <div class="modal-footer">
                                   <button type="button" class="btn-modal-cancel"
@@ -465,12 +429,6 @@
                                   </div>
                                 </div>
 
-                                <div class="modal-form-group" style="margin-top:10px;">
-                                  <label class="checkbox-label">
-                                    <input type="checkbox" name="isLocked" id="editIsLocked" value="true" />
-                                    <span>Khóa kỳ lương (Không cho phép chỉnh sửa bảng lương)</span>
-                                  </label>
-                                </div>
 
                                 <div class="modal-footer">
                                   <button type="button" class="btn-modal-cancel" onclick="closeEditModal()">Hủy</button>
@@ -541,7 +499,6 @@
                               document.getElementById('editName').value = name;
                               document.getElementById('editStartDate').value = startDate;
                               document.getElementById('editEndDate').value = endDate;
-                              document.getElementById('editIsLocked').checked = (isLocked === true || isLocked === 'true');
                               document.getElementById('editModal').style.display = 'flex';
                             }
 
