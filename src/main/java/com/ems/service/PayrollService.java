@@ -263,6 +263,10 @@ public class PayrollService {
         int updatedCount = payslipDAO.updatePayslipStatusByPeriod(periodId, "Draft", "Confirmed");
 
         if (updatedCount > 0) {
+            // Khóa kì lương sau khi chốt chấm công
+            com.ems.dao.TimesheetPeriodDAO timesheetPeriodDAO = new com.ems.dao.TimesheetPeriodDAO();
+            timesheetPeriodDAO.updatePeriodLockStatus(periodId, true);
+
             return "SUCCESS:" + updatedCount;
         } else {
             return "Không có phiếu lương bản nháp nào cần chốt trong kỳ này!";
