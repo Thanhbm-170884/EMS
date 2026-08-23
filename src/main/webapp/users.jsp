@@ -443,6 +443,9 @@
       if (/\s/.test(rawUn)) {
         setFieldStatus(unInput, unMsg, false, "Tên tài khoản phải viết liền, không được chứa khoảng trắng!");
         hasError = true;
+      } else if (un.length < 3) {
+        setFieldStatus(unInput, unMsg, false, "Tên tài khoản phải có ít nhất 3 ký tự!");
+        hasError = true;
       } else {
         const isUnDup = EXISTING_USERS.some(u => u.username && u.username.toLowerCase() === un);
         if (isUnDup) {

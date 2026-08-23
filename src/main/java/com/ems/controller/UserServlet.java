@@ -162,6 +162,10 @@ public class UserServlet extends HttpServlet {
                     error = "Vui lòng điền đầy đủ Tên tài khoản và Mật khẩu!";
                 } else if (rawUsername != null && rawUsername.contains(" ")) {
                     error = "Tên tài khoản phải viết liền, không được chứa khoảng trắng!";
+                } else if (username.length() < 3) {
+                    error = "Tên tài khoản phải có ít nhất 3 ký tự!";
+                } else if (password.length() < 6) {
+                    error = "Mật khẩu phải có ít nhất 6 ký tự!";
                 } else if (userDAO.isUsernameExists(username)) {
                     error = "Tên tài khoản (Username) '" + username + "' đã tồn tại! Vui lòng chọn tên khác.";
                 }

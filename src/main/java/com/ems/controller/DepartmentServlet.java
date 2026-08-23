@@ -136,6 +136,12 @@ public class DepartmentServlet extends HttpServlet {
                         break;
                     }
 
+                    String rawCode = request.getParameter("code");
+                    if (rawCode != null && rawCode.contains(" ")) {
+                        session.setAttribute("errorMsg", "Mã phòng ban phải viết liền, không được chứa khoảng trắng!");
+                        break;
+                    }
+
                     code = code.trim().toUpperCase();
                     name = name.trim();
 

@@ -128,12 +128,16 @@ public class EmployeeServlet extends HttpServlet {
                 String error = null;
                 if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || dobStr == null || dobStr.trim().isEmpty() || deptStr == null || posStr == null) {
                     error = "Vui lòng điền đầy đủ các thông tin bắt buộc (*)!";
+                } else if (!fullName.matches("^[a-zA-ZÀ-ỹ\\s]+$")) {
+                    error = "Họ và tên chỉ được chứa chữ cái và khoảng trắng!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
+                } else if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")) {
+                    error = "Định dạng email không hợp lệ!";
                 } else if (rawPhone != null && rawPhone.contains(" ")) {
                     error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
-                } else if (!phone.matches("^0[0-9]{9}$") && !phone.matches("^[0-9]{9,11}$")) {
-                    error = "Số điện thoại không hợp lệ (phải từ 9 - 11 chữ số)!";
+                } else if (!phone.matches("^0[0-9]{9}$")) {
+                    error = "Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng số 0 (ví dụ: 0912345678)!";
                 } else if (userDAO.isEmailExists(email)) {
                     error = "Email công ty '" + email + "' đã tồn tại trong hệ thống!";
                 } else if (userDAO.isPhoneExists(phone)) {

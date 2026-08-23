@@ -338,8 +338,10 @@
   }
 
   function validateAddDeptForm() {
-    var code = (document.getElementById('addDeptCode').value || '').trim().toUpperCase();
-    var name = (document.getElementById('addDeptName').value || '').trim().toLowerCase();
+    var rawCode = document.getElementById('addDeptCode') ? document.getElementById('addDeptCode').value : '';
+    var rawName = document.getElementById('addDeptName') ? document.getElementById('addDeptName').value : '';
+    var code = rawCode.trim().toUpperCase();
+    var name = rawName.trim().toLowerCase();
 
     var codeInput = document.getElementById('addDeptCode');
     var codeMsg   = document.getElementById('addDeptCodeMsg');
@@ -350,13 +352,18 @@
     var hasError = false;
 
     // 1. Check Code
-    if (code.length > 0) {
-      var isCodeDup = EXISTING_DEPTS.some(function(d){ return d.code.toUpperCase() === code; });
-      if (isCodeDup) {
-        setDeptFieldStatus(codeInput, codeMsg, false, 'Mã phòng ban này đã tồn tại!');
+    if (rawCode.length > 0) {
+      if (/\s/.test(rawCode)) {
+        setDeptFieldStatus(codeInput, codeMsg, false, 'Mã phòng ban phải viết liền, không được chứa khoảng trắng!');
         hasError = true;
       } else {
-        setDeptFieldStatus(codeInput, codeMsg, true, 'Mã phòng ban hợp lệ');
+        var isCodeDup = EXISTING_DEPTS.some(function(d){ return d.code.toUpperCase() === code; });
+        if (isCodeDup) {
+          setDeptFieldStatus(codeInput, codeMsg, false, 'Mã phòng ban này đã tồn tại!');
+          hasError = true;
+        } else {
+          setDeptFieldStatus(codeInput, codeMsg, true, 'Mã phòng ban hợp lệ');
+        }
       }
     } else {
       setDeptFieldStatus(codeInput, codeMsg, null, '');

@@ -320,8 +320,10 @@
   }
 
   function validateAddPosForm() {
-    const code = (document.getElementById('addPosCode').value || '').trim().toUpperCase();
-    const name = (document.getElementById('addPosName').value || '').trim().toLowerCase();
+    const rawCode = document.getElementById('addPosCode') ? document.getElementById('addPosCode').value : '';
+    const rawName = document.getElementById('addPosName') ? document.getElementById('addPosName').value : '';
+    const code = rawCode.trim().toUpperCase();
+    const name = rawName.trim().toLowerCase();
 
     const codeInput = document.getElementById('addPosCode');
     const codeMsg   = document.getElementById('addPosCodeMsg');
@@ -332,13 +334,18 @@
     let hasError = false;
 
     // 1. Check Code
-    if (code.length > 0) {
-      const isCodeDup = EXISTING_POSITIONS.some(p => p.code.toUpperCase() === code);
-      if (isCodeDup) {
-        setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ này đã tồn tại!');
+    if (rawCode.length > 0) {
+      if (/\s/.test(rawCode)) {
+        setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ phải viết liền, không được chứa khoảng trắng!');
         hasError = true;
       } else {
-        setPosFieldStatus(codeInput, codeMsg, true, 'Mã chức vụ hợp lệ');
+        const isCodeDup = EXISTING_POSITIONS.some(p => p.code.toUpperCase() === code);
+        if (isCodeDup) {
+          setPosFieldStatus(codeInput, codeMsg, false, 'Mã chức vụ này đã tồn tại!');
+          hasError = true;
+        } else {
+          setPosFieldStatus(codeInput, codeMsg, true, 'Mã chức vụ hợp lệ');
+        }
       }
     } else {
       setPosFieldStatus(codeInput, codeMsg, null, '');

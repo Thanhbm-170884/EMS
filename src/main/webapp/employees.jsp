@@ -528,7 +528,12 @@
 
     // 1. Check FullName
     if (rawName.trim().length > 0) {
-      setEmpFieldStatus(nameInput, nameMsg, true, 'Họ tên hợp lệ');
+      if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(rawName.trim())) {
+        setEmpFieldStatus(nameInput, nameMsg, false, 'Họ và tên chỉ được chứa chữ cái và khoảng trắng!');
+        hasError = true;
+      } else {
+        setEmpFieldStatus(nameInput, nameMsg, true, 'Họ tên hợp lệ');
+      }
     } else {
       setEmpFieldStatus(nameInput, nameMsg, null, '');
     }
@@ -559,8 +564,8 @@
       if (/\s/.test(rawPh)) {
         setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại phải viết liền, không được chứa khoảng trắng!');
         hasError = true;
-      } else if (!/^[0-9]{9,11}$/.test(ph)) {
-        setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại phải từ 9 - 11 chữ số!');
+      } else if (!/^0[0-9]{9}$/.test(ph)) {
+        setEmpFieldStatus(phInput, phMsg, false, 'Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng số 0 (VD: 0912345678)!');
         hasError = true;
       } else {
         var isPhDup = EXISTING_EMPLOYEES.some(function(e){ return e.phone && e.phone === ph; });
