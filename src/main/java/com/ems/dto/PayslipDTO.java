@@ -122,4 +122,13 @@ public class PayslipDTO {
         this.note = note;
     }
 
+    private String periodName;
+    public String getPeriodName() {
+        return periodName;
+    }
+    public void setPeriodName(String periodName) {
+        this.periodName = periodName;
+    }
+
 }
+

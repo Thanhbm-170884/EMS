@@ -562,4 +562,21 @@ public class UserDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
+
+    public Integer getUserIdByAccountId(int accountId) {
+        String query = "SELECT UserId FROM accounts WHERE Id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("UserId");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
+

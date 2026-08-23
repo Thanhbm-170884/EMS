@@ -3,6 +3,7 @@ package com.ems.service;
 import com.ems.dao.BaseSalaryDAO;
 import com.ems.dao.PayslipDAO;
 import com.ems.dto.ManagerPayslipDTO;
+import com.ems.dto.PayslipDTO;
 import com.ems.model.Departments;
 import com.ems.model.Timesheetperiods;
 
@@ -34,4 +35,9 @@ public class PayslipService {
     public List<Departments> getAllDepartments() {
         return baseSalaryDAO.getAllDepartments();
     }
+
+    public List<PayslipDTO> getPayslipsByUserId(int userId) {
+        return payslipDAO.getPayslipsByUserId(userId);
+    }
 }
+
