@@ -1,6 +1,10 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List, java.util.Map" %>
 <%
+    if (request.getAttribute("departmentsList") == null) {
+        response.sendRedirect(request.getContextPath() + "/departments");
+        return;
+    }
     List<Map<String, Object>> departmentsList = (List<Map<String, Object>>) request.getAttribute("departmentsList");
     List<Map<String, Object>> headCandidatesList = (List<Map<String, Object>>) request.getAttribute("headCandidatesList");
     Map<Integer, List<Map<String, Object>>> deptEmployeesMap = (Map<Integer, List<Map<String, Object>>>) request.getAttribute("deptEmployeesMap");
@@ -18,6 +22,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EMS – Quản lý Phòng ban</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,18 +34,18 @@
 
 <!-- Sidebar -->
 <aside class="sidebar">
-  <a href="home" class="sidebar-brand">
+  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
     <div class="brand-dot">E</div>
     <span class="brand-name">EMS</span>
   </a>
   <nav class="nav-group">
     <div class="nav-section-label">Tổng quan</div>
-    <a href="home" class="nav-link">Trang chủ</a>
+    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
     <div class="nav-section-label">Quản trị</div>
-    <a href="users"       class="nav-link">Tài khoản</a>
-    <a href="employees"   class="nav-link">Nhân viên</a>
-    <a href="departments" class="nav-link active">Phòng ban</a>
-    <a href="positions"   class="nav-link">Chức vụ</a>
+    <a href="<%= request.getContextPath() %>/users"       class="nav-link">Tài khoản</a>
+    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
+    <a href="<%= request.getContextPath() %>/departments" class="nav-link active">Phòng ban</a>
+    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
   </nav>
   <div class="sidebar-footer">
     <div class="user-block">
@@ -52,7 +57,7 @@
         <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
       </div>
     </div>
-    <button class="btn-logout" onclick="window.location='logout'">Đăng xuất</button>
+    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
   </div>
 </aside>
 
@@ -158,9 +163,11 @@
                   </span>
                 </a>
               </td>
-              <td style="padding: 12px 16px;">
-                <a href="javascript:void(0)" onclick="openEditModal(<%= id %>, '<%= code %>', '<%= name %>', <%= headId != null ? headId : "''" %>)" style="color: #0d9488; text-decoration: none; font-weight: 600; margin-right: 12px;">Sửa</a>
-                <a href="javascript:void(0)" onclick="openDeleteModal(<%= id %>, '<%= name %>', <%= totalEmp %>)" style="color: #dc2626; text-decoration: none; font-weight: 600;">Xóa</a>
+              <td style="padding: 12px 16px; white-space: nowrap;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <a href="javascript:void(0)" onclick="openEditModal(<%= id %>, '<%= code %>', '<%= name %>', <%= headId != null ? headId : "''" %>)" class="btn-action-edit">Sửa</a>
+                  <a href="javascript:void(0)" onclick="openDeleteModal(<%= id %>, '<%= name %>', <%= totalEmp %>)" class="btn-action-delete">Xóa</a>
+                </div>
               </td>
             </tr>
             <%

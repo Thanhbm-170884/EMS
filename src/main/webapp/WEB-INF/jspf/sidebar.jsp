@@ -61,7 +61,27 @@
 
         <!- Admin ->
         <c:if test="${sessionScope.role == 'Admin'}">
-
+            <a href="${pageContext.request.contextPath}/home"
+               class="nav-link ${pageContext.request.servletPath == '/home_admin.jsp' ? 'active' : ''}">
+                Trang chủ
+            </a>
+            <div class="nav-section-label">Quản trị</div>
+            <a href="${pageContext.request.contextPath}/users"
+               class="nav-link ${pageContext.request.servletPath == '/users.jsp' ? 'active' : ''}">
+                Tài khoản
+            </a>
+            <a href="${pageContext.request.contextPath}/employees"
+               class="nav-link ${pageContext.request.servletPath == '/employees.jsp' ? 'active' : ''}">
+                Nhân viên
+            </a>
+            <a href="${pageContext.request.contextPath}/departments"
+               class="nav-link ${pageContext.request.servletPath == '/departments.jsp' ? 'active' : ''}">
+                Phòng ban
+            </a>
+            <a href="${pageContext.request.contextPath}/positions"
+               class="nav-link ${pageContext.request.servletPath == '/positions.jsp' ? 'active' : ''}">
+                Chức vụ
+            </a>
         </c:if>
 
         <!- Employee ->
