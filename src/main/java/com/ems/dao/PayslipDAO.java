@@ -402,6 +402,36 @@ public class PayslipDAO {
         return false;
     }
 
+    public int deleteDraftPayslips(int periodId) {
+        String sqlAllowances = "DELETE FROM payslip_allowances WHERE PayslipId IN (SELECT Id FROM payslips WHERE PeriodId = ? AND Status = 'Draft')";
+        String sqlPayslips = "DELETE FROM payslips WHERE PeriodId = ? AND Status = 'Draft'";
+        
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps1 = conn.prepareStatement(sqlAllowances)) {
+                    ps1.setInt(1, periodId);
+                    ps1.executeUpdate();
+                }
+                
+                int deletedCount = 0;
+                try (PreparedStatement ps2 = conn.prepareStatement(sqlPayslips)) {
+                    ps2.setInt(1, periodId);
+                    deletedCount = ps2.executeUpdate();
+                }
+                
+                conn.commit();
+                return deletedCount;
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     public List<PayslipDTO> getPayslipsByUserId(int userId) {
         List<PayslipDTO> list = new ArrayList<>();
         String sql = "SELECT p.Id, p.PeriodId, p.StandardWorkDays, p.ActualWorkDays, " +

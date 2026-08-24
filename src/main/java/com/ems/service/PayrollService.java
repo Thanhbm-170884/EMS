@@ -229,14 +229,28 @@ public class PayrollService {
         return "SUCCESS:" + successCount;
     }
 
+    // Chạy lại tính lương từ đầu cho kỳ này
+    public String recalculatePayrollMonth(int periodId, int managerId) {
+        int deletedCount = payslipDAO.deleteDraftPayslips(periodId);
+        if (deletedCount < 0) {
+            return "Lỗi. Vui lòng thử lại!";
+        }
+
+        // Gọi lại hàm chạy lương bổ sung
+        String result = generatePayrollMonth(periodId, managerId);
+        if (result.startsWith("SUCCESS:")) {
+            return "SUCCESS: Đã tính lại " + deletedCount + " bản nháp cũ và ghi đè tạo mới " + result.substring(8);
+        }
+        return result;
+    }
+
     public String updateManualPayslip(int payslipId, BigDecimal bonus, BigDecimal penalty, BigDecimal advance,
             String note, int managerId) {
         Payslips oldPayslip = payslipDAO.getPayslipById(payslipId);
         if (oldPayslip == null)
             return "Không tìm thấy phiếu lương này!";
-        if (!"Draft".equals(oldPayslip.getStatus()))
-            return "Error: Chỉ được phép chỉnh sửa Bản nháp!";
 
+        //
         Payslips updatedPayslip = calculatePayslip(
                 oldPayslip.getUserid(),
                 oldPayslip.getPeriodid(),

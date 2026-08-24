@@ -184,6 +184,19 @@ public class PayslipServlet extends HttpServlet {
             }
 
             response.sendRedirect(request.getContextPath() + "/payslips?periodId=" + periodId);
+        } else if ("recalculate".equals(action)) {
+            int periodId = Integer.parseInt(request.getParameter("periodId"));
+
+            PayrollService payrollService = new PayrollService();
+            String result = payrollService.recalculatePayrollMonth(periodId, managerId);
+
+            if (result.startsWith("SUCCESS")) {
+                request.getSession().setAttribute("msgSuccess", result.substring(8));
+            } else {
+                request.getSession().setAttribute("msgError", result);
+            }
+
+            response.sendRedirect(request.getContextPath() + "/payslips?periodId=" + periodId);
         } else if ("edit".equals(action)) {
             // Lấy dữ liệu từ Form Edit gửi lên
             int payslipId = Integer.parseInt(request.getParameter("payslipId"));
