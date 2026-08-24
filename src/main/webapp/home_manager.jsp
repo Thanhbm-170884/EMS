@@ -109,7 +109,7 @@
         <div class="stat-label">Tổng số nhân sự</div>
         <div class="stat-value"><%= deptEmployeeCount != null ? deptEmployeeCount : 0 %> <span class="stat-unit">nhân viên</span></div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" onclick="window.location.href='requests?action=pending'" style="cursor: pointer;" title="Nhấn để xem danh sách xử lý đơn">
         <div class="stat-label">Yêu cầu chờ duyệt</div>
         <div class="stat-value"><%= pendingCount != null ? pendingCount : 0 %></div>
       </div>
@@ -121,7 +121,10 @@
 
     <div class="cards-row">
       <div class="card">
-        <div class="card-header">Yêu cầu chờ duyệt</div>
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Yêu cầu chờ duyệt</span>
+          <a href="requests?action=pending" style="font-size: 12.5px; color: #0d9488; text-decoration: none; font-weight: 600;">Xem tất cả</a>
+        </div>
         <%
           if (pendingRequests != null && !pendingRequests.isEmpty()) {
             for (Map<String, Object> req : pendingRequests) {
@@ -140,14 +143,13 @@
                   valStr = valObj.toString();
                 }
               %>
-              <div class="row-item">
+              <div class="row-item" onclick="window.location.href='requests?action=pending'" style="cursor: pointer; transition: background 0.12s ease; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'" title="Nhấn để xử lý đơn này">
                 <div>
                   <div class="row-main"><%= req.get("fullName") %></div>
                   <div class="row-sub"><%= req.get("title") %> · <%= req.get("startDate") %> (<%= valStr %> ngày)</div>
                 </div>
-                <div class="btn-group">
-                  <button class="btn-sm btn-ok" onclick="alert('Duyệt yêu cầu: <%= req.get("title") %>')">Duyệt</button>
-                  <button class="btn-sm btn-no" onclick="alert('Từ chối yêu cầu: <%= req.get("title") %>')">Từ chối</button>
+                <div style="display: flex; align-items: center; gap: 4px; color: #0d9488; font-size: 12.5px; font-weight: 600;">
+                  <span>Xử lý</span>
                 </div>
               </div>
         <%
