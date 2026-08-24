@@ -185,7 +185,10 @@ public class EmployeeServlet extends HttpServlet {
                 java.math.BigDecimal baseSalary = new java.math.BigDecimal("5000000");
                 if (salaryStr != null && !salaryStr.trim().isEmpty()) {
                     try {
-                        baseSalary = new java.math.BigDecimal(salaryStr.trim().replace(",", ""));
+                        String cleanSalary = salaryStr.trim().replaceAll("[^0-9]", "");
+                        if (!cleanSalary.isEmpty()) {
+                            baseSalary = new java.math.BigDecimal(cleanSalary);
+                        }
                     } catch (Exception ignored) {}
                 }
 
@@ -291,7 +294,10 @@ public class EmployeeServlet extends HttpServlet {
                 java.math.BigDecimal baseSalary = new java.math.BigDecimal("5000000");
                 if (salaryStr != null && !salaryStr.trim().isEmpty()) {
                     try {
-                        baseSalary = new java.math.BigDecimal(salaryStr.trim().replace(",", ""));
+                        String cleanSalary = salaryStr.trim().replaceAll("[^0-9]", "");
+                        if (!cleanSalary.isEmpty()) {
+                            baseSalary = new java.math.BigDecimal(cleanSalary);
+                        }
                     } catch (Exception ignored) {}
                 }
 
