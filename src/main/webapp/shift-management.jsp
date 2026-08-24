@@ -116,10 +116,10 @@
                               onclick="openModal('edit',${s.id},'${fn:escapeXml(s.name)}','${s.starttime}','${s.endtime}','${s.breakstart}','${s.breakend}')">
                         <i class="fa-solid fa-pen-to-square"></i> Sửa
                       </button>
-                      <button class="btn btn-sm btn-danger"
-                              onclick="confirmDelete(${s.id},'${fn:escapeXml(s.name)}')">
-                        <i class="fa-solid fa-trash"></i> Xóa
-                      </button>
+<%--                      <button class="btn btn-sm btn-danger"--%>
+<%--                              onclick="confirmDelete(${s.id},'${fn:escapeXml(s.name)}')">--%>
+<%--                        <i class="fa-solid fa-trash"></i> Xóa--%>
+<%--                      </button>--%>
                     </td>
                   </tr>
                 </c:forEach>

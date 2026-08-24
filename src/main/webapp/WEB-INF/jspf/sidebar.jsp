@@ -111,7 +111,7 @@
             <div>
                 <div class="user-name"><%= session.getAttribute("username") != null ? session.getAttribute("username") : "Manager" %>
                 </div>
-                <div class="user-role">Quản lý</div>
+                <div class="user-role"><%= session.getAttribute("role")%>></div>
             </div>
         </div>
         <button class="btn-logout" onclick="window.location='${pageContext.request.contextPath}/logout'">Đăng xuất</button>

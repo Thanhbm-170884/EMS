@@ -1,13 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%
-    if (request.getAttribute("shifts") == null && request.getAttribute("hasSchedule") == null) {
-        response.sendRedirect(request.getContextPath() + "/work-schedule");
-        return;
-    }
-%>
-<!DOCTYPE html>
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+            <!DOCTYPE html>
             <html lang="vi">
 
             <head>
@@ -21,527 +16,7 @@
                     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
                     rel="stylesheet">
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-                <style>
-                    /* ══════════════════════════════════════════════════════════
-           EFFECTIVE DATE BANNER
-           ══════════════════════════════════════════════════════════ */
-                    .effective-banner {
-                        display: flex;
-                        align-items: center;
-                        gap: 1rem;
-                        padding: 0.875rem 1.75rem;
-                        background: linear-gradient(90deg, #fef9ec, #fffbf0);
-                        border-bottom: 1px solid #fde68a;
-                    }
-
-                    .effective-banner-icon {
-                        width: 36px;
-                        height: 36px;
-                        flex-shrink: 0;
-                        background: #fef3c7;
-                        border-radius: 10px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: var(--warning);
-                        font-size: 0.95rem;
-                    }
-
-                    .effective-banner-body {
-                        flex: 1;
-                    }
-
-                    .effective-banner-body strong {
-                        display: block;
-                        font-size: 0.82rem;
-                        font-weight: 700;
-                        color: #92400e;
-                        margin-bottom: 0.1rem;
-                    }
-
-                    .effective-banner-body span {
-                        font-size: 0.74rem;
-                        color: #b45309;
-                    }
-
-                    .effective-date-input {
-                        padding: 0.42rem 0.75rem;
-                        border: 1.5px solid #fcd34d;
-                        border-radius: 8px;
-                        font-family: inherit;
-                        font-size: 0.875rem;
-                        font-weight: 600;
-                        color: var(--slate-800);
-                        background: white;
-                        outline: none;
-                        cursor: pointer;
-                        transition: var(--transition);
-                    }
-
-                    .effective-date-input:focus {
-                        border-color: var(--warning);
-                        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
-                    }
-
-                    /* ══════════════════════════════════════════════════════════
-           MODAL BODY – sections
-           ══════════════════════════════════════════════════════════ */
-                    .modal-body-inner {
-                        padding: 1.25rem 1.5rem;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 1rem;
-                    }
-
-                    /* ══════════════════════════════════════════════════════════
-           RULE BLOCKS
-           ══════════════════════════════════════════════════════════ */
-                    .rules-container {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 0.75rem;
-                    }
-
-                    .rule-block {
-                        background: white;
-                        border: 1.5px solid var(--slate-200);
-                        border-radius: 14px;
-                        overflow: hidden;
-                        transition: border-color 0.2s, box-shadow 0.2s;
-                    }
-
-                    .rule-block:focus-within {
-                        border-color: var(--primary);
-                        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
-                    }
-
-                    .rule-block.has-conflict {
-                        border-color: var(--warning);
-                    }
-
-                    /* Rule header */
-                    .rule-header {
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        padding: 0.6rem 1rem;
-                        background: var(--slate-50);
-                        border-bottom: 1px solid var(--slate-100);
-                    }
-
-                    .rule-index-badge {
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.4rem;
-                        font-size: 0.72rem;
-                        font-weight: 800;
-                        text-transform: uppercase;
-                        letter-spacing: 0.06em;
-                        color: var(--slate-500);
-                    }
-
-                    .rule-index-badge .rule-num {
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 20px;
-                        height: 20px;
-                        border-radius: 6px;
-                        background: var(--primary);
-                        color: white;
-                        font-size: 0.7rem;
-                        font-weight: 800;
-                    }
-
-                    .rule-delete-btn {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.3rem;
-                        padding: 0.3rem 0.65rem;
-                        border-radius: 7px;
-                        border: 1.5px solid #fca5a5;
-                        background: var(--danger-light);
-                        color: var(--danger);
-                        font-size: 0.75rem;
-                        font-weight: 700;
-                        cursor: pointer;
-                        transition: var(--transition);
-                        font-family: inherit;
-                    }
-
-                    .rule-delete-btn:hover {
-                        background: var(--danger);
-                        color: white;
-                        border-color: var(--danger);
-                    }
-
-                    .rule-delete-btn[disabled] {
-                        opacity: 0.3;
-                        pointer-events: none;
-                    }
-
-                    /* Day pills */
-                    .rule-body {
-                        padding: 0.85rem 1rem;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 0.85rem;
-                    }
-
-                    .rule-row {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.75rem;
-                        flex-wrap: wrap;
-                    }
-
-                    .rule-row-label {
-                        font-size: 0.72rem;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
-                        color: var(--slate-400);
-                        min-width: 70px;
-                        flex-shrink: 0;
-                    }
-
-                    .day-range-row {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        flex-wrap: wrap;
-                    }
-
-                    .day-range-select {
-                        padding: 0.38rem 0.6rem;
-                        border: 1.5px solid var(--slate-200);
-                        border-radius: 8px;
-                        font-family: inherit;
-                        font-size: 0.85rem;
-                        font-weight: 600;
-                        color: var(--slate-800);
-                        background: var(--slate-50);
-                        outline: none;
-                        cursor: pointer;
-                        transition: var(--transition);
-                        min-width: 100px;
-                        /* custom arrow */
-                        appearance: none;
-                        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-                        background-repeat: no-repeat;
-                        background-position: right 0.5rem center;
-                        background-size: 1em;
-                        padding-right: 2rem;
-                    }
-
-                    .day-range-select:focus {
-                        border-color: var(--primary);
-                        background: white;
-                        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-                    }
-
-                    .day-range-sep {
-                        color: var(--slate-400);
-                        font-size: 0.85rem;
-                        font-weight: 700;
-                    }
-
-                    .day-range-wrap-badge {
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.3rem;
-                        padding: 0.2rem 0.5rem;
-                        background: #fffbf0;
-                        border: 1px solid #fcd34d;
-                        border-radius: 6px;
-                        color: #92400e;
-                        font-size: 0.65rem;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        margin-left: 0.5rem;
-                    }
-
-                    /* Time inputs trong rule */
-                    .rule-times {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        flex-wrap: wrap;
-                    }
-
-                    .rule-time-group {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.4rem;
-                    }
-
-                    .rule-time-group input[type="time"] {
-                        padding: 0.38rem 0.6rem;
-                        border: 1.5px solid var(--slate-200);
-                        border-radius: 8px;
-                        font-family: inherit;
-                        font-size: 0.85rem;
-                        font-weight: 600;
-                        color: var(--slate-800);
-                        background: var(--slate-50);
-                        outline: none;
-                        cursor: pointer;
-                        transition: var(--transition);
-                        min-width: 100px;
-                    }
-
-                    .rule-time-group input[type="time"]:focus {
-                        border-color: var(--primary);
-                        background: white;
-                        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-                    }
-
-                    .rule-time-group input[type="time"]:disabled {
-                        background: var(--slate-100);
-                        color: var(--slate-300);
-                        cursor: not-allowed;
-                    }
-
-                    .rule-time-sep {
-                        color: var(--slate-400);
-                        font-size: 0.85rem;
-                        font-weight: 700;
-                    }
-
-                    .rule-time-divider {
-                        width: 1px;
-                        height: 28px;
-                        background: var(--slate-200);
-                        margin: 0 0.25rem;
-                    }
-
-                    /* Working toggle row */
-                    .rule-toggle-row {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.6rem;
-                    }
-
-                    .rule-working-label {
-                        font-size: 0.82rem;
-                        font-weight: 700;
-                        color: var(--dark);
-                        min-width: 68px;
-                    }
-
-                    .rule-working-label.off {
-                        color: var(--slate-400);
-                    }
-
-                    /* Conflict warning inline */
-                    .rule-conflict-warn {
-                        display: none;
-                        padding: 0.35rem 0.75rem;
-                        background: #fef3c7;
-                        border-top: 1px solid #fde68a;
-                        font-size: 0.75rem;
-                        font-weight: 600;
-                        color: #92400e;
-                        align-items: center;
-                        gap: 0.4rem;
-                    }
-
-                    .rule-conflict-warn.show {
-                        display: flex;
-                    }
-
-                    /* Btn thêm rule */
-                    .btn-add-rule {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 0.5rem;
-                        width: 100%;
-                        padding: 0.7rem;
-                        border: 1.5px dashed var(--slate-300);
-                        border-radius: 12px;
-                        background: transparent;
-                        color: var(--slate-500);
-                        font-size: 0.85rem;
-                        font-weight: 700;
-                        font-family: inherit;
-                        cursor: pointer;
-                        transition: var(--transition);
-                    }
-
-                    .btn-add-rule:hover {
-                        border-color: var(--primary);
-                        color: var(--primary);
-                        background: var(--primary-light);
-                    }
-
-                    /* ══════════════════════════════════════════════════════════
-           PREVIEW STRIP
-           ══════════════════════════════════════════════════════════ */
-                    .preview-section {
-                        background: var(--slate-50);
-                        border: 1.5px solid var(--slate-200);
-                        border-radius: 14px;
-                        overflow: hidden;
-                    }
-
-                    .preview-section-header {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        padding: 0.65rem 1rem;
-                        border-bottom: 1px solid var(--slate-200);
-                        font-size: 0.75rem;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.06em;
-                        color: var(--slate-500);
-                    }
-
-                    .preview-strip {
-                        display: grid;
-                        grid-template-columns: repeat(7, 1fr);
-                        gap: 0;
-                        /* border-collapse via inner borders */
-                    }
-
-                    .preview-day {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        padding: 0.7rem 0.4rem;
-                        border-right: 1px solid var(--slate-200);
-                        transition: background 0.2s;
-                        position: relative;
-                    }
-
-                    .preview-day:last-child {
-                        border-right: none;
-                    }
-
-                    .preview-day-name {
-                        font-size: 0.72rem;
-                        font-weight: 800;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        margin-bottom: 0.4rem;
-                    }
-
-                    .preview-day-dot {
-                        width: 8px;
-                        height: 8px;
-                        border-radius: 50%;
-                        margin-bottom: 0.35rem;
-                    }
-
-                    .preview-day-info {
-                        font-size: 0.68rem;
-                        font-weight: 600;
-                        text-align: center;
-                        line-height: 1.3;
-                    }
-
-                    /* States */
-                    .preview-day.state-work {
-                        background: white;
-                    }
-
-                    .preview-day.state-work .preview-day-name {
-                        color: var(--primary);
-                    }
-
-                    .preview-day.state-work .preview-day-dot {
-                        background: var(--primary);
-                    }
-
-                    .preview-day.state-work .preview-day-info {
-                        color: var(--slate-600);
-                    }
-
-                    .preview-day.state-off {
-                        background: var(--slate-50);
-                    }
-
-                    .preview-day.state-off .preview-day-name {
-                        color: var(--slate-400);
-                    }
-
-                    .preview-day.state-off .preview-day-dot {
-                        background: var(--slate-300);
-                    }
-
-                    .preview-day.state-off .preview-day-info {
-                        color: var(--slate-400);
-                    }
-
-                    .preview-day.state-weekend {
-                        background: #fffbf0;
-                    }
-
-                    .preview-day.state-weekend .preview-day-name {
-                        color: #b45309;
-                    }
-
-                    .preview-day.state-weekend .preview-day-dot {
-                        background: #fcd34d;
-                    }
-
-                    .preview-day.state-weekend .preview-day-info {
-                        color: #92400e;
-                    }
-
-                    .preview-day.state-conflict {
-                        background: #fef9ec;
-                    }
-
-                    .preview-day.state-conflict .preview-day-name {
-                        color: var(--warning);
-                    }
-
-                    .preview-day.state-conflict .preview-day-dot {
-                        background: var(--warning);
-                    }
-
-                    .preview-conflict-icon {
-                        position: absolute;
-                        top: 4px;
-                        right: 4px;
-                        color: var(--warning);
-                        font-size: 0.65rem;
-                    }
-
-                    /* Validation error */
-                    .validation-error {
-                        display: none;
-                        padding: 0.6rem 1rem;
-                        background: var(--danger-light);
-                        border: 1px solid #fca5a5;
-                        border-radius: 10px;
-                        font-size: 0.82rem;
-                        font-weight: 600;
-                        color: var(--danger);
-                        align-items: center;
-                        gap: 0.5rem;
-                    }
-
-                    .validation-error.show {
-                        display: flex;
-                    }
-
-                    /* Schedule modal larger */
-                    .schedule-modal {
-                        max-width: 700px;
-                        max-height: 90vh;
-                        display: flex;
-                        flex-direction: column;
-                    }
-
-                    .modal-body {
-                        padding: 0;
-                        overflow-y: auto;
-                        flex: 1;
-                    }
-                </style>
+                <link rel="stylesheet" href="css/work-schedule.css">
             </head>
 
             <body>
@@ -557,12 +32,13 @@
                         <div class="page-body">
                             <div class="ws-page-header">
                                 <div class="ws-page-header-text">
-                                    <h1><i class="fa-regular fa-calendar-days" style="color:var(--primary);"></i> Lịch
+                                    <h1><i class="fa-regular fa-calendar-days icon-primary"></i> Lịch
                                         Làm Việc</h1>
                                     <p>Quản lý lịch làm việc mặc định theo tuần của công ty</p>
                                 </div>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <a href="${pageContext.request.contextPath}/work-schedule/export-attendance" class="btn btn-secondary">
+                                <div class="ws-page-header-actions">
+                                    <a href="${pageContext.request.contextPath}/work-schedule/export-attendance"
+                                        class="btn btn-secondary">
                                         <i class="fa-solid fa-file-excel"></i> Xuất Excel chấm công
                                     </a>
                                     <c:choose>
@@ -607,11 +83,11 @@
                                                             class="fa-solid fa-check-circle"></i> ${workingCount} ngày
                                                         làm việc / tuần</span>
                                                 </div>
-                                                <span style="font-size:0.8rem;color:var(--slate-400);"><i
-                                                        class="fa-regular fa-clock"></i> Cập nhật bởi
+                                                <span class="update-info"><i class="fa-regular fa-clock"></i> Cập nhật
+                                                    bởi
                                                     Administrator</span>
                                             </div>
-                                            <div style="overflow-x:auto;">
+                                            <div class="table-responsive">
                                                 <table class="schedule-table">
                                                     <thead>
                                                         <tr>
@@ -619,7 +95,7 @@
                                                             <th>Bắt Đầu</th>
                                                             <th>Kết Thúc</th>
                                                             <th>Nghỉ Trưa</th>
-                                                            <th style="text-align:center;">Làm Việc</th>
+                                                            <th class="col-working-center">Làm Việc</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -684,13 +160,15 @@
                                                                     </c:choose>
                                                                 </td>
                                                                 <td>
-                                                                    <div style="display: flex; justify-content: center;">
+                                                                    <div class="schedule-working-center">
                                                                         <c:choose>
                                                                             <c:when test="${shift.working}">
-                                                                                <span style="color: var(--primary); font-weight: 600; font-size: 0.9rem;">Làm việc</span>
+                                                                                <span class="status-working">Làm
+                                                                                    việc</span>
                                                                             </c:when>
                                                                             <c:otherwise>
-                                                                                <span style="color: var(--slate-400); font-weight: 500; font-size: 0.9rem;">Ngày nghỉ</span>
+                                                                                <span class="status-off">Ngày
+                                                                                    nghỉ</span>
                                                                             </c:otherwise>
                                                                         </c:choose>
                                                                     </div>
@@ -733,7 +211,7 @@
                                     <div class="effective-banner-icon"><i class="fa-solid fa-calendar-check"></i></div>
                                     <div class="effective-banner-body">
                                         <strong>Ngày bắt đầu áp dụng</strong>
-                                        <span>Lịch hiện tại sẽ được lưu lịch sử tự động — không mất dữ liệu cũ</span>
+                                        <!-- <span>Lịch hiện tại sẽ được lưu lịch sử tự động — không mất dữ liệu cũ</span> -->
                                     </div>
                                     <input type="date" id="effectiveDatePicker" class="effective-date-input"
                                         value="${today}" min="${today}" aria-label="Chọn ngày bắt đầu áp dụng">
@@ -757,9 +235,9 @@
                                                 <div class="rules-container" id="rulesContainer"></div>
 
                                                 <!-- Nút thêm rule -->
-                                                <button type="button" class="btn-add-rule" onclick="addRule()">
+                                                <!-- <button type="button" class="btn-add-rule" onclick="addRule()">
                                                     <i class="fa-solid fa-plus"></i> Thêm khung giờ
-                                                </button>
+                                                </button> -->
 
                                                 <!-- Preview strip -->
                                                 <div class="preview-section">
@@ -1043,7 +521,7 @@
 
                             const canDelete = rules.length > 1;
                             const disAttr = rule.working ? '' : 'disabled';
-                            
+
                             const fi = DAYS.findIndex(d => d.dow === rule.fromDay);
                             const ti = DAYS.findIndex(d => d.dow === rule.toDay);
                             const isWrap = fi > ti;
@@ -1051,67 +529,67 @@
                                 ? '<span class="day-range-wrap-badge"><i class="fa-solid fa-rotate"></i> Qua tuần</span>'
                                 : '';
 
-                            wrap.innerHTML = 
-            '<!-- Header -->' +
-            '<div class="rule-header">' +
-                '<span class="rule-index-badge">' +
-                    '<span class="rule-num">' + index + '</span> Khung giờ' +
-                '</span>' +
-                '<button type="button" class="rule-delete-btn" onclick="removeRule(' + rule.id + ')" ' + (canDelete ? '' : 'disabled') + ' aria-label="Xóa khung giờ ' + index + '">' +
-                    '<i class="fa-solid fa-trash-can"></i> Xóa' +
-                '</button>' +
-            '</div>' +
-            '<!-- Body -->' +
-            '<div class="rule-body">' +
-                '<!-- Ngày áp dụng -->' +
-                '<div class="rule-row">' +
-                    '<span class="rule-row-label">Áp dụng</span>' +
-                    '<div class="day-range-row">' +
-                        '<select class="day-range-select" data-field="fromDay" onchange="onRangeDayChange(' + rule.id + ')" aria-label="Từ ngày">' +
-                            fromOptions +
-                        '</select>' +
-                        '<span class="day-range-sep">→</span>' +
-                        '<select class="day-range-select" data-field="toDay" onchange="onRangeDayChange(' + rule.id + ')" aria-label="Đến ngày">' +
-                            toOptions +
-                        '</select>' +
-                        wrapBadge +
-                    '</div>' +
-                '</div>' +
-                '<!-- Giờ làm + Nghỉ trưa -->' +
-                '<div class="rule-row rule-times-row" style="opacity:' + (rule.working ? '1' : '0.35') + '">' +
-                    '<span class="rule-row-label">Giờ làm</span>' +
-                    '<div class="rule-times">' +
-                        '<div class="rule-time-group">' +
-                            '<input type="time" data-field="start" value="' + rule.start + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Giờ bắt đầu">' +
-                            '<span class="rule-time-sep">→</span>' +
-                            '<input type="time" data-field="end" value="' + rule.end + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Giờ kết thúc">' +
-                        '</div>' +
-                        '<div class="rule-time-divider"></div>' +
-                        '<div class="rule-time-group">' +
-                            '<span class="rule-row-label" style="min-width:auto;font-size:0.7rem;">Nghỉ trưa</span>' +
-                            '<input type="time" data-field="bstart" value="' + rule.bstart + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Bắt đầu nghỉ trưa">' +
-                            '<span class="rule-time-sep">→</span>' +
-                            '<input type="time" data-field="bend" value="' + rule.bend + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Kết thúc nghỉ trưa">' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
-                '<!-- Toggle trạng thái -->' +
-                '<div class="rule-row">' +
-                    '<span class="rule-row-label">Trạng thái</span>' +
-                    '<div class="rule-toggle-row">' +
-                        '<label class="switch" aria-label="Bật/tắt làm việc">' +
-                            '<input type="checkbox" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')">' +
-                            '<span class="slider"></span>' +
-                        '</label>' +
-                        '<span class="rule-working-label' + (rule.working ? '' : ' off') + '">' + (rule.working ? 'Làm việc' : 'Nghỉ') + '</span>' +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-            '<!-- Conflict warning (ẩn mặc định, JS hiện khi cần) -->' +
-            '<div class="rule-conflict-warn" id="conflict-' + rule.id + '">' +
-                '<i class="fa-solid fa-triangle-exclamation"></i>' +
-                '<span id="conflict-msg-' + rule.id + '"></span>' +
-            '</div>';
+                            wrap.innerHTML =
+                                '<!-- Header -->' +
+                                '<div class="rule-header">' +
+                                '<span class="rule-index-badge">' +
+                                '<span class="rule-num">' + index + '</span> Khung giờ' +
+                                '</span>' +
+                                // '<button type="button" class="rule-delete-btn" onclick="removeRule(' + rule.id + ')" ' + (canDelete ? '' : 'disabled') + ' aria-label="Xóa khung giờ ' + index + '">' +
+                                //     '<i class="fa-solid fa-trash-can"></i> Xóa' +
+                                // '</button>' +
+                                '</div>' +
+                                '<!-- Body -->' +
+                                '<div class="rule-body">' +
+                                '<!-- Ngày áp dụng -->' +
+                                '<div class="rule-row">' +
+                                '<span class="rule-row-label">Áp dụng</span>' +
+                                '<div class="day-range-row">' +
+                                '<select class="day-range-select" data-field="fromDay" onchange="onRangeDayChange(' + rule.id + ')" aria-label="Từ ngày">' +
+                                fromOptions +
+                                '</select>' +
+                                '<span class="day-range-sep">→</span>' +
+                                '<select class="day-range-select" data-field="toDay" onchange="onRangeDayChange(' + rule.id + ')" aria-label="Đến ngày">' +
+                                toOptions +
+                                '</select>' +
+                                wrapBadge +
+                                '</div>' +
+                                '</div>' +
+                                '<!-- Giờ làm + Nghỉ trưa -->' +
+                                '<div class="rule-row rule-times-row" style="opacity:' + (rule.working ? '1' : '0.35') + '">' +
+                                '<span class="rule-row-label">Giờ làm</span>' +
+                                '<div class="rule-times">' +
+                                '<div class="rule-time-group">' +
+                                '<input type="time" data-field="start" value="' + rule.start + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Giờ bắt đầu">' +
+                                '<span class="rule-time-sep">→</span>' +
+                                '<input type="time" data-field="end" value="' + rule.end + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Giờ kết thúc">' +
+                                '</div>' +
+                                '<div class="rule-time-divider"></div>' +
+                                '<div class="rule-time-group">' +
+                                '<span class="rule-row-label" style="min-width:auto;font-size:0.7rem;">Nghỉ trưa</span>' +
+                                '<input type="time" data-field="bstart" value="' + rule.bstart + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Bắt đầu nghỉ trưa">' +
+                                '<span class="rule-time-sep">→</span>' +
+                                '<input type="time" data-field="bend" value="' + rule.bend + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Kết thúc nghỉ trưa">' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '<!-- Toggle trạng thái -->' +
+                                '<div class="rule-row">' +
+                                '<span class="rule-row-label">Trạng thái</span>' +
+                                '<div class="rule-toggle-row">' +
+                                '<label class="switch" aria-label="Bật/tắt làm việc">' +
+                                '<input type="checkbox" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')">' +
+                                '<span class="slider"></span>' +
+                                '</label>' +
+                                '<span class="rule-working-label' + (rule.working ? '' : ' off') + '">' + (rule.working ? 'Làm việc' : 'Nghỉ') + '</span>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>' +
+                                '<!-- Conflict warning (ẩn mặc định, JS hiện khi cần) -->' +
+                                '<div class="rule-conflict-warn" id="conflict-' + rule.id + '">' +
+                                '<i class="fa-solid fa-triangle-exclamation"></i>' +
+                                '<span id="conflict-msg-' + rule.id + '"></span>' +
+                                '</div>';
                             return wrap;
                         }
 
@@ -1157,11 +635,11 @@
 
                                 card.className = 'preview-day ' + state;
                                 card.setAttribute('title', d.full);
-                                card.innerHTML = 
-                (isConflict ? '<i class="fa-solid fa-triangle-exclamation preview-conflict-icon" title="Ngày này có trong nhiều khung giờ — khung cuối sẽ được áp dụng"></i>' : '') +
-                '<span class="preview-day-name">' + d.label + '</span>' +
-                '<div class="preview-day-dot"></div>' +
-                '<span class="preview-day-info">' + infoText + '</span>';
+                                card.innerHTML =
+                                    (isConflict ? '<i class="fa-solid fa-triangle-exclamation preview-conflict-icon" title="Ngày này có trong nhiều khung giờ — khung cuối sẽ được áp dụng"></i>' : '') +
+                                    '<span class="preview-day-name">' + d.label + '</span>' +
+                                    '<div class="preview-day-dot"></div>' +
+                                    '<span class="preview-day-info">' + infoText + '</span>';
                                 strip.appendChild(card);
                             });
                         }

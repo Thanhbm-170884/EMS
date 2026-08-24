@@ -495,9 +495,6 @@ public class ShiftAssignmentDAO {
             "  AND COALESCE(b2.EndDate, '9999-12-31') >= ? " +
             "  AND s_old.StartTime < s_new.EndTime " +
             "  AND s_new.StartTime < s_old.EndTime " +
-            // Weekday overlap: nếu batch mới là WEEKLY VÀ batch cũ cũng là WEEKLY
-            // thì bắt buộc phải có ngày trong tuần chung mới tính là conflict.
-            // Nếu bất kỳ bên nào KHÔNG phải WEEKLY → giữ nguyên (không lọc weekday).
             "  AND (" +
             "    ? != 'WEEKLY' OR b2.RecurType != 'WEEKLY'" +
             "    OR EXISTS (" +
@@ -506,7 +503,21 @@ public class ShiftAssignmentDAO {
             "        AND wd_old.DayOfWeek IN (SELECT DayOfWeek FROM shiftassignmentbatch_weekdays WHERE BatchId = -1)" +
             "    )" +
             "  ) " +
-            "ORDER BY u.FullName";
+            "UNION " +
+            "SELECT DISTINCT u.FullName, CONCAT('Lịch cố định: ', s_def.Name) AS OldShiftName, " +
+            "       s_def.StartTime AS OldStart, s_def.EndTime AS OldEnd " +
+            "FROM shifts s_def " +
+            "JOIN shifts s_new                 ON s_new.Id = ? " +
+            "JOIN users u                      ON u.Id IN (" + inClause + ") " +
+            "WHERE s_def.IsDefault = 1 AND s_def.IsActive = 1 " +
+            "  AND s_def.StartTime < s_new.EndTime " +
+            "  AND s_new.StartTime < s_def.EndTime " +
+            "  AND (" +
+            "    (? = 'WEEKLY' AND s_def.DayOfWeek IN (SELECT DayOfWeek FROM shiftassignmentbatch_weekdays WHERE BatchId = -1))" +
+            "    OR (? = 'NONE' AND s_def.DayOfWeek = DAYOFWEEK(?))" +
+            "    OR (? = 'MONTHLY')" +
+            "  ) " +
+            "ORDER BY FullName";
 
         // Thay thế placeholder weekday subquery
         // - WEEKLY + có weekday cụ thể → build UNION ALL SELECT literal
@@ -533,6 +544,8 @@ public class ShiftAssignmentDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int idx = 1;
+            
+            // --- TOP PART (shiftassignmentbatches) ---
             ps.setInt(idx++, newBatch.getShiftId());
 
             for (Integer empId : empIds) {
@@ -555,9 +568,22 @@ public class ShiftAssignmentDAO {
 
             ps.setDate(idx++, Date.valueOf(newBatch.getStartDate()));
 
-            // Tham số RecurType của batch mới (dùng cho điều kiện weekday check)
-            ps.setString(idx++, newBatch.getRecurType() != null ? newBatch.getRecurType() : "NONE");
+            String recurType = newBatch.getRecurType() != null ? newBatch.getRecurType() : "NONE";
+            ps.setString(idx++, recurType);
 
+            // --- BOTTOM PART (default shifts) ---
+            ps.setInt(idx++, newBatch.getShiftId());
+
+            for (Integer empId : empIds) {
+                ps.setInt(idx++, empId);
+            }
+
+            ps.setString(idx++, recurType); // ? = 'WEEKLY'
+            ps.setString(idx++, recurType); // ? = 'NONE'
+            ps.setDate(idx++, Date.valueOf(newBatch.getStartDate())); // DAYOFWEEK(?)
+            ps.setString(idx++, recurType); // ? = 'MONTHLY'
+
+            Map<String, List<String>> empConflicts = new LinkedHashMap<>();
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String name      = rs.getString("FullName");
@@ -567,8 +593,11 @@ public class ShiftAssignmentDAO {
                     String timeRange = (oStart != null && oEnd != null)
                             ? " (" + oStart.toLocalTime() + " – " + oEnd.toLocalTime() + ")"
                             : "";
-                    conflicts.add(name + " [ca: " + shiftName + timeRange + "]");
+                    empConflicts.computeIfAbsent(name, k -> new ArrayList<>()).add(shiftName + timeRange);
                 }
+            }
+            for (Map.Entry<String, List<String>> entry : empConflicts.entrySet()) {
+                conflicts.add(entry.getKey() + " [ca: " + String.join(", ", entry.getValue()) + "]");
             }
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi kiểm tra conflict phân ca: " + e.getMessage(), e);

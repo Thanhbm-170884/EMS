@@ -293,3 +293,182 @@
   align-items: center;
   gap: 6px;
 }
+
+/* ── Inline hint (dòng chưa lưu) ── */
+.holiday-table .row-inline-hint {
+  color: var(--slate-400, #94a3b8);
+  font-size: 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Hàng dirty (có thay đổi chưa lưu) ── */
+.holiday-table tbody tr.is-dirty {
+  background: #fffaf0;
+  box-shadow: inset 3px 0 0 0 #f59e0b;
+}
+.holiday-table tbody tr.is-dirty .stt-cell::after {
+  content: '\f111';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 6px;
+  color: #f59e0b;
+  vertical-align: super;
+  margin-left: 4px;
+}
+
+/* ── Unsaved bar (thanh Lưu toàn cục) ── */
+.unsaved-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-top: 14px;
+  background: #1e2330;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  z-index: 50;
+  animation: unsaved-bar-in .18s ease;
+}
+.unsaved-bar.show { display: flex; }
+@keyframes unsaved-bar-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.unsaved-bar-msg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+.unsaved-bar-msg i { color: #f59e0b; }
+.unsaved-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+.unsaved-bar-actions button {
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-discard-all {
+  background: transparent;
+  border-color: rgba(255,255,255,0.3);
+  color: #fff;
+}
+.btn-discard-all:hover { background: rgba(255,255,255,0.08); }
+.btn-save-all {
+  background: var(--primary, #6d5bd0);
+  color: #fff;
+}
+.btn-save-all:hover { filter: brightness(1.08); }
+.btn-save-all:disabled,
+.btn-discard-all:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* ── Đồng bộ chiều cao hàng bảng ── */
+.holiday-table td {
+  vertical-align: middle;
+  min-height: 52px;
+}
+.holiday-table .date-cell-inner,
+.holiday-table .date-fixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+}
+
+/* ── Lock label (tooltip khóa hệ số) ── */
+.lock-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: help;
+}
+
+/* ── Icon info tiêu đề cột ── */
+.col-info-icon {
+  margin-left: 4px;
+  color: var(--slate-400, #94a3b8);
+  cursor: help;
+  font-size: 0.8rem;
+}
+
+/* ── Toast lưu thành công ── */
+#save-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #16a34a;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 999;
+}
+#save-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+#save-toast.error { background: #dc2626; }
+
+/* ── Field hint trong add-panel-form ── */
+.add-panel-form .field-hint {
+  font-size: 0.72rem;
+  color: var(--slate-400, #94a3b8);
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── Thông báo lỗi tại dòng ── */
+.row-error-msg {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.holiday-table tbody tr.has-error {
+  box-shadow: inset 3px 0 0 0 #dc2626;
+  background: #fef2f2;
+}
+.date-input-sm.field-invalid {
+  border-color: #dc2626 !important;
+  outline: none;
+}
+
+/* ── Badge nhỏ kèm theo tên ngày lễ (Dương lịch cố định / Âm lịch) ── */
+.hol-badge-sm {
+  margin-left: 6px;
+  font-size: 0.7rem;
+}
+
+/* ── Mũi tên phân cách giữa ngày bắt đầu và kết thúc ── */
+.date-arrow-sep {
+  color: var(--slate-400);
+  font-size: 0.8rem;
+}
+

@@ -33,6 +33,14 @@
             <version>3.0.0</version>
         </dependency>
 
+        <!-- JSP API for Tomcat 10/11 (Jakarta) -->
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>4.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
