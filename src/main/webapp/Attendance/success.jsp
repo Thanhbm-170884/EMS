@@ -184,34 +184,66 @@
                 </p>
 
 
-                <!-- Upload file khác -->
-
-                <a href="${pageContext.request.contextPath}/Attendance/upload.jsp"
-                   style="
-                       display: inline-flex;
-                       align-items: center;
-                       gap: 8px;
-                       padding: 10px 20px;
-                       background: #1e3a8a;
-                       color: white;
-                       border-radius: 8px;
-                       font-size: 14px;
-                       font-weight: 600;
-                       text-decoration: none;
-                       transition: background 0.2s;
-                   "
-                   onmouseover="this.style.background='#182e6e'"
-                   onmouseout="this.style.background='#1e3a8a'">
-
-                    <span style="font-size:16px;">
-                        ↑
-                    </span>
-
-                    <span>
-                        Upload file khác
-                    </span>
 
                 </a>
+                <!-- Tìm kiếm -->
+
+                   <!-- Nhóm nút thao tác -->
+                   <div style="
+                       display: flex;
+                       justify-content: center;
+                       align-items: center;
+                       gap: 16px;
+                       margin-top: 20px;
+                   ">
+
+                       <!-- Upload file khác -->
+                       <a href="${pageContext.request.contextPath}/Attendance/upload.jsp"
+                          style="
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 8px;
+                              padding: 10px 20px;
+                              background: #1e3a8a;
+                              color: white;
+                              border-radius: 8px;
+                              font-size: 14px;
+                              font-weight: 600;
+                              text-decoration: none;
+                              transition: background 0.2s;
+                          "
+                          onmouseover="this.style.background='#182e6e'"
+                          onmouseout="this.style.background='#1e3a8a'">
+
+                           <span style="font-size:16px;">↑</span>
+                           <span>Upload file khác</span>
+
+                       </a>
+
+                       <!-- Bảng chấm công -->
+                       <a href="${pageContext.request.contextPath}/Attendance/search-attendance"
+                          style="
+                              display: inline-flex;
+                              align-items: center;
+                              gap: 8px;
+                              padding: 10px 20px;
+                              background: #1e3a8a;
+                              color: white;
+                              border-radius: 8px;
+                              font-size: 14px;
+                              font-weight: 600;
+                              text-decoration: none;
+                              transition: background 0.2s;
+                          "
+                          onmouseover="this.style.background='#182e6e'"
+                          onmouseout="this.style.background='#1e3a8a'">
+
+                           <span style="font-size:16px;">📋</span>
+                           <span>Bảng chấm công</span>
+
+                       </a>
+
+                   </div>
 
             </div>
 
