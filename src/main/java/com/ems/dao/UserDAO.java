@@ -6,6 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Date;
+
+import com.ems.dto.UserProfileDTO;
 
 public class UserDAO {
 
@@ -825,6 +828,70 @@ public class UserDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+    public UserProfileDTO findProfileByAccountId(int accountId) {
+
+        String sql =
+                "SELECT " +
+                        "    u.Id, " +
+                        "    u.EmployeeCode, " +
+                        "    u.FullName, " +
+                        "    u.EmailCompany, " +
+                        "    u.Phone, " +
+                        "    u.Gender, " +
+                        "    u.DateOfBirth, " +
+                        "    u.Status, " +
+                        "    u.DependentsCount, " +
+                        "    d.Name AS DepartmentName, " +
+                        "    p.Name AS PositionName " +
+                        "FROM accounts a " +
+                        "JOIN users u ON a.UserId = u.Id " +
+                        "JOIN departments d ON u.DepartmentId = d.Id " +
+                        "JOIN positions p ON u.PositionId = p.Id " +
+                        "WHERE a.Id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, accountId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    UserProfileDTO dto = new UserProfileDTO();
+
+                    dto.setId(rs.getInt("Id"));
+                    dto.setEmployeeCode(rs.getString("EmployeeCode"));
+                    dto.setFullName(rs.getString("FullName"));
+                    dto.setEmailCompany(rs.getString("EmailCompany"));
+                    dto.setPhone(rs.getString("Phone"));
+
+                    Object gender = rs.getObject("Gender");
+                    if (gender != null) {
+                        dto.setGender(rs.getBoolean("Gender"));
+                    }
+
+                    Date dob = rs.getDate("DateOfBirth");
+                    if (dob != null) {
+                        dto.setDateOfBirth(dob.toLocalDate());
+                    }
+
+                    dto.setStatus(rs.getBoolean("Status"));
+                    dto.setDependentsCount(rs.getInt("DependentsCount"));
+
+                    dto.setDepartmentName(rs.getString("DepartmentName"));
+                    dto.setPositionName(rs.getString("PositionName"));
+
+                    return dto;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 }

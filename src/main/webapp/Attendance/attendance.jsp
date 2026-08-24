@@ -390,6 +390,89 @@
             }
 
         }
+        /* =========================
+           PAGINATION
+           ========================= */
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pagination button {
+            min-width: 36px;
+            height: 36px;
+
+            padding: 0 10px;
+
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+
+            border-radius: 7px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+
+        .pagination button.active {
+            background: #1e3a8a;
+            color: #ffffff;
+            border-color: #1e3a8a;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .pagination-size {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .pagination-size select {
+            height: 36px;
+
+            padding: 0 30px 0 10px;
+
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+
+            background: #ffffff;
+
+            font-size: 13px;
+            color: #334155;
+
+            cursor: pointer;
+        }
 
 
         /* =====================================================
@@ -789,6 +872,12 @@
                 ↻ Upload lại file khác
 
             </a>
+            <a href="${pageContext.request.contextPath}/Attendance/upload.jsp"
+                           class="btn-secondary">
+
+                            Tìm kiếm
+
+            </a>
 
         </div>
 
@@ -1025,6 +1114,35 @@
             </div>
 
         </div>
+        <!-- =========================
+             PAGINATION
+             ========================= -->
+
+        <div class="pagination-container">
+
+            <div class="pagination-info"
+                 id="paginationInfo">
+                Hiển thị 0 - 0 trong tổng số 0 bản ghi
+            </div>
+
+            <div class="pagination-container">
+
+                <div class="pagination-info"
+                     id="paginationInfo">
+                    Hiển thị 0 - 0 trong tổng số 0 bản ghi
+                </div>
+
+                <div class="pagination"
+                     id="pagination">
+                </div>
+
+            </div>
+
+            <div class="pagination"
+                 id="pagination">
+            </div>
+
+        </div>
 
 
         <!-- =====================================================
@@ -1135,7 +1253,8 @@
         <!-- FORM -->
 
         <form action="${pageContext.request.contextPath}/Attendance/edit"
-              method="post">
+              method="post"
+              onsubmit="return validateCheckOutTime();">
 
 
             <input type="hidden"
@@ -1706,6 +1825,417 @@
                 closeExportModal();
 
             }
+
+        }
+    );
+
+    // Validate sửa thời gian check in và check out//
+
+    function validateCheckOutTime() {
+
+        var checkIn = document.getElementById("editCheckIn").value;
+        var checkOut = document.getElementById("editCheckOut").value;
+
+        // Nếu một trong hai ô trống thì chưa kiểm tra
+        if (!checkIn || !checkOut) {
+            return true;
+        }
+
+        if (checkOut < checkIn) {
+
+            alert("Thời gian Check out không được trước thời gian Check in.");
+
+            document.getElementById("editCheckOut").focus();
+
+            return false;
+        }
+
+        return true;
+    }
+
+
+</script>
+<script>
+
+    /* =========================
+       PAGINATION
+       ========================= */
+
+    var currentPage = 1;
+    var pageSize = 8;
+
+    function getAttendanceRows() {
+
+        var table = document.querySelector(".preview-table");
+
+        if (!table) {
+            return [];
+        }
+
+        var tbody = table.querySelector("tbody");
+
+        if (!tbody) {
+            return [];
+        }
+
+        return Array.from(
+            tbody.querySelectorAll("tr")
+        ).filter(function(row) {
+
+            /*
+             * Không tính dòng "Không có dữ liệu"
+             */
+
+            return !row.querySelector("td[colspan]");
+
+        });
+
+    }
+
+
+    function renderPagination() {
+
+        var rows = getAttendanceRows();
+
+        var totalRows = rows.length;
+
+        var totalPages =
+            Math.ceil(totalRows / pageSize);
+
+
+        /*
+         * Nếu không có dữ liệu
+         */
+
+        if (totalRows === 0) {
+
+            document.getElementById("paginationInfo")
+                .textContent =
+                "Không có dữ liệu";
+
+            document.getElementById("pagination")
+                .innerHTML = "";
+
+            return;
+        }
+
+
+        /*
+         * Nếu currentPage vượt quá tổng số trang
+         */
+
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+
+        /*
+         * Xác định dòng bắt đầu
+         */
+
+        var start =
+            (currentPage - 1) * pageSize;
+
+
+        /*
+         * Xác định dòng kết thúc
+         */
+
+        var end =
+            Math.min(
+                start + pageSize,
+                totalRows
+            );
+
+
+        /*
+         * Ẩn tất cả dòng
+         */
+
+        rows.forEach(function(row) {
+
+            row.style.display = "none";
+
+        });
+
+
+        /*
+         * Hiển thị dòng của trang hiện tại
+         */
+
+        for (var i = start; i < end; i++) {
+
+            rows[i].style.display = "";
+
+        }
+
+
+        /*
+         * Thông tin:
+         *
+         * Hiển thị 1 - 20 trong tổng số 127 bản ghi
+         */
+
+        document.getElementById("paginationInfo")
+            .textContent =
+            "Hiển thị " +
+            (start + 1) +
+            " - " +
+            end +
+            " trong tổng số " +
+            totalRows +
+            " bản ghi";
+
+
+        renderPaginationButtons(totalPages);
+
+    }
+
+
+    function renderPaginationButtons(totalPages) {
+
+        var pagination =
+            document.getElementById("pagination");
+
+
+        pagination.innerHTML = "";
+
+
+        /*
+         * Nút Previous
+         */
+
+        var previous =
+            document.createElement("button");
+
+        previous.type = "button";
+
+        previous.innerHTML = "‹";
+
+        previous.title = "Trang trước";
+
+        previous.disabled =
+            currentPage === 1;
+
+        previous.onclick = function() {
+
+            if (currentPage > 1) {
+
+                currentPage--;
+
+                renderPagination();
+
+            }
+
+        };
+
+        pagination.appendChild(previous);
+
+
+        /*
+         * Xác định các trang cần hiển thị
+         */
+
+        var pages = getPageNumbers(totalPages);
+
+
+        pages.forEach(function(page) {
+
+            /*
+             * Dấu ...
+             */
+
+            if (page === "...") {
+
+                var dots =
+                    document.createElement("span");
+
+                dots.textContent = "...";
+
+                dots.style.padding =
+                    "0 5px";
+
+                dots.style.color =
+                    "#94a3b8";
+
+                pagination.appendChild(dots);
+
+                return;
+            }
+
+
+            /*
+             * Nút số trang
+             */
+
+            var button =
+                document.createElement("button");
+
+            button.type = "button";
+
+            button.textContent = page;
+
+
+            if (page === currentPage) {
+
+                button.classList.add("active");
+
+            }
+
+
+            button.onclick = function() {
+
+                currentPage = page;
+
+                renderPagination();
+
+            };
+
+
+            pagination.appendChild(button);
+
+        });
+
+
+        /*
+         * Nút Next
+         */
+
+        var next =
+            document.createElement("button");
+
+        next.type = "button";
+
+        next.innerHTML = "›";
+
+        next.title = "Trang sau";
+
+        next.disabled =
+            currentPage === totalPages;
+
+        next.onclick = function() {
+
+            if (currentPage < totalPages) {
+
+                currentPage++;
+
+                renderPagination();
+
+            }
+
+        };
+
+        pagination.appendChild(next);
+
+    }
+
+
+    /*
+     * Tạo danh sách số trang
+     *
+     * Ví dụ:
+     *
+     * 1 2 3 4 5
+     *
+     * hoặc:
+     *
+     * 1 2 3 ... 10
+     */
+
+    function getPageNumbers(totalPages) {
+
+        var pages = [];
+
+
+        /*
+         * Nếu <= 7 trang
+         * hiển thị toàn bộ
+         */
+
+        if (totalPages <= 7) {
+
+            for (
+                var i = 1;
+                i <= totalPages;
+                i++
+            ) {
+
+                pages.push(i);
+
+            }
+
+            return pages;
+        }
+
+
+        /*
+         * Đang ở những trang đầu
+         */
+
+        if (currentPage <= 4) {
+
+            pages = [
+                1,
+                2,
+                3,
+                4,
+                5,
+                "...",
+                totalPages
+            ];
+
+            return pages;
+        }
+
+
+        /*
+         * Đang ở những trang cuối
+         */
+
+        if (currentPage >= totalPages - 3) {
+
+            pages = [
+                1,
+                "...",
+                totalPages - 4,
+                totalPages - 3,
+                totalPages - 2,
+                totalPages - 1,
+                totalPages
+            ];
+
+            return pages;
+        }
+
+
+        /*
+         * Đang ở giữa
+         */
+
+        pages = [
+            1,
+            "...",
+            currentPage - 1,
+            currentPage,
+            currentPage + 1,
+            "...",
+            totalPages
+        ];
+
+        return pages;
+
+    }
+
+
+    /*
+     * Khởi tạo pagination
+     */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            renderPagination();
 
         }
     );

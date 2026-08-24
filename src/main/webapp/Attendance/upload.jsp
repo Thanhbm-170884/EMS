@@ -9,6 +9,40 @@
 
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/css/ems.css"/>
+    <style>
+        .search-attendance-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 10px 20px;
+
+            background: #1e3a8a;
+            color: white;
+
+            border: none;
+            border-radius: 8px;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            transition: background 0.2s;
+        }
+
+        .search-attendance-btn:hover {
+            background: #172554;
+        }
+
+        .search-attendance-wrapper {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
 </head>
 
 <body>
@@ -200,6 +234,21 @@
             </form>
 
         </div>
+         <!-- =========================
+                 NÚT TÌM KIẾM
+                 ========================= -->
+
+            <a href="${pageContext.request.contextPath}/Attendance/search-attendance"
+               class="btn-primary"
+               style="
+                   display:inline-flex;
+                   align-items:center;
+                   gap:6px;
+                   text-decoration:none;
+               ">
+                🔍 Tìm kiếm
+            </a>
+
 
 
 

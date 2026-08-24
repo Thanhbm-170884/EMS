@@ -71,6 +71,10 @@
                class="nav-link ${pageContext.request.servletPath == '/home.jsp' ? 'active' : ''}">
                 Trang chủ
             </a>
+            <a href="${pageContext.request.contextPath}/profile"
+                           class="nav-link ${pageContext.request.servletPath == '/employee-profile.jsp' ? 'active' : ''}">
+               Thông tin cá nhân
+            </a>
             <div class="nav-section-label">Công việc</div>
             <a href="${pageContext.request.contextPath}/employee-calendar?year=<%=java.time.LocalDate.now().getYear()%>&amp;month=<%=java.time.LocalDate.now().getMonthValue()%>&amp;employeeId=${sessionScope.accountId}"
                class="nav-link ${pageContext.request.servletPath == '/employee-calendar.jsp' ? 'active' : ''}">
