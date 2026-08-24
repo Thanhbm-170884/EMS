@@ -32,10 +32,35 @@
 
             transition: background 0.2s;
         }
+        .search-attendance-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 10px 20px;
+
+            background: #1e3a8a;
+            color: white;
+
+            border: none;
+            border-radius: 999px;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            text-decoration: none;
+            cursor: pointer;
+
+            transition: background 0.2s, transform 0.2s;
+        }
 
         .search-attendance-btn:hover {
             background: #172554;
+            transform: translateY(-1px);
         }
+
+
+        .}
 
         .search-attendance-wrapper {
             margin-top: 20px;
@@ -239,14 +264,9 @@
                  ========================= -->
 
             <a href="${pageContext.request.contextPath}/Attendance/search-attendance"
-               class="btn-primary"
-               style="
-                   display:inline-flex;
-                   align-items:center;
-                   gap:6px;
-                   text-decoration:none;
-               ">
-                🔍 Tìm kiếm
+               class="search-attendance-btn">
+                📋Bảng chấm công
+
             </a>
 
 

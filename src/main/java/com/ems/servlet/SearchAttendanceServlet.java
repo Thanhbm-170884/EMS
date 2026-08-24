@@ -28,20 +28,82 @@ public class SearchAttendanceServlet extends HttpServlet {
         String employeeCode = request.getParameter("employeeCode");
         String date = request.getParameter("date");
 
+        // =========================
+        // PHÂN TRANG
+        // =========================
+
+        int pageSize = 8;
+        int currentPage = 1;
+
+        String pageParam = request.getParameter("page");
+
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+
+        int offset = (currentPage - 1) * pageSize;
+
         List<AttendanceHistoryDTO> results = null;
 
-        // Chỉ tìm kiếm khi người dùng thực sự nhập điều kiện
-        if ((employeeName != null && !employeeName.trim().isEmpty())
-                || (employeeCode != null && !employeeCode.trim().isEmpty())
-                || (date != null && !date.trim().isEmpty())) {
+        int totalRecords = 0;
+        int totalPages = 0;
+
+        // =========================
+        // TÌM KIẾM
+        // =========================
+
+        boolean hasSearchCondition =
+                (employeeName != null && !employeeName.trim().isEmpty())
+                        || (employeeCode != null && !employeeCode.trim().isEmpty())
+                        || (date != null && !date.trim().isEmpty());
+
+        if (hasSearchCondition) {
 
             try {
 
+                // Lấy dữ liệu của trang hiện tại
                 results = attendanceDAO.searchAttendance(
+                        employeeName,
+                        employeeCode,
+                        date,
+                        pageSize,
+                        offset
+                );
+
+                // Đếm tổng số bản ghi
+                totalRecords = attendanceDAO.countAttendance(
                         employeeName,
                         employeeCode,
                         date
                 );
+
+                // Tính tổng số trang
+                totalPages = (int) Math.ceil(
+                        (double) totalRecords / pageSize
+                );
+
+                // Nếu page vượt quá số trang
+                if (totalPages > 0 && currentPage > totalPages) {
+                    currentPage = totalPages;
+
+                    offset = (currentPage - 1) * pageSize;
+
+                    results = attendanceDAO.searchAttendance(
+                            employeeName,
+                            employeeCode,
+                            date,
+                            pageSize,
+                            offset
+                    );
+                }
 
                 request.setAttribute("results", results);
 
@@ -54,9 +116,18 @@ public class SearchAttendanceServlet extends HttpServlet {
             }
         }
 
+        // =========================
+        // GỬI DỮ LIỆU SANG JSP
+        // =========================
+
         request.setAttribute("employeeName", employeeName);
         request.setAttribute("employeeCode", employeeCode);
         request.setAttribute("date", date);
+
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("totalPages", totalPages);
 
         request.getRequestDispatcher(
                 "/Attendance/search-attendance.jsp"
