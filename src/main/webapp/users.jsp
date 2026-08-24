@@ -1,6 +1,10 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List, java.util.Map" %>
 <%
+    if (request.getAttribute("usersList") == null) {
+        response.sendRedirect(request.getContextPath() + "/users");
+        return;
+    }
     List<Map<String, Object>> usersList = (List<Map<String, Object>>) request.getAttribute("usersList");
     Integer totalCount = (Integer) request.getAttribute("totalCount");
     Integer activeCount = (Integer) request.getAttribute("activeCount");
@@ -19,6 +23,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EMS – Quản lý Tài khoản</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -57,18 +62,18 @@
 <body>
 
 <aside class="sidebar">
-  <a href="home" class="sidebar-brand">
+  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
     <div class="brand-dot">E</div>
     <span class="brand-name">EMS</span>
   </a>
   <nav class="nav-group">
     <div class="nav-section-label">Tổng quan</div>
-    <a href="home" class="nav-link">Trang chủ</a>
+    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
     <div class="nav-section-label">Quản trị</div>
-    <a href="users"       class="nav-link active">Tài khoản</a>
-    <a href="employees"   class="nav-link">Nhân viên</a>
-    <a href="departments" class="nav-link">Phòng ban</a>
-    <a href="positions"   class="nav-link">Chức vụ</a>
+    <a href="<%= request.getContextPath() %>/users"       class="nav-link active">Tài khoản</a>
+    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
+    <a href="<%= request.getContextPath() %>/departments" class="nav-link">Phòng ban</a>
+    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
   </nav>
   <div class="sidebar-footer">
     <div class="user-block">
@@ -80,7 +85,7 @@
         <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
       </div>
     </div>
-    <button class="btn-logout" onclick="window.location='logout'">Đăng xuất</button>
+    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
   </div>
 </aside>
 
@@ -200,16 +205,18 @@
                         <%= isCurrentStatus ? "Hoạt động" : "Bị khóa" %>
                       </span>
                     </td>
-                    <td style="padding: 12px 16px;">
-                      <a href="javascript:void(0)" onclick="openEditModal(<%= u.get("accountId") %>, '<%= username %>', '<%= name != null ? name.replace("'", "\\'") : "" %>', '<%= email != null ? email.replace("'", "\\'") : "" %>', '<%= roleName != null ? roleName : "" %>')" style="color: #0d9488; text-decoration: none; font-weight: 600; margin-right: 12px;">Sửa</a>
-                      <form action="users" method="post" style="display:inline;">
-                        <input type="hidden" name="action" value="toggleStatus"/>
-                        <input type="hidden" name="accountId" value="<%= u.get("accountId") %>"/>
-                        <input type="hidden" name="currentStatus" value="<%= isCurrentStatus %>"/>
-                        <button type="submit" style="background: none; border: none; color: <%= isCurrentStatus ? "#dc2626" : "#0d9488" %>; cursor: pointer; font-size: 13.5px; font-weight: 600; padding: 0; font-family: inherit;">
-                          <%= isCurrentStatus ? "Khóa" : "Hiện" %>
-                        </button>
-                      </form>
+                    <td style="padding: 12px 16px; white-space: nowrap;">
+                      <div style="display: flex; gap: 8px; align-items: center;">
+                        <a href="javascript:void(0)" onclick="openEditModal(<%= u.get("accountId") %>, '<%= username %>', '<%= name != null ? name.replace("'", "\\'") : "" %>', '<%= email != null ? email.replace("'", "\\'") : "" %>', '<%= roleName != null ? roleName : "" %>')" class="btn-action-edit">Sửa</a>
+                        <form action="users" method="post" style="display:inline; margin:0;">
+                          <input type="hidden" name="action" value="toggleStatus"/>
+                          <input type="hidden" name="accountId" value="<%= u.get("accountId") %>"/>
+                          <input type="hidden" name="currentStatus" value="<%= isCurrentStatus %>"/>
+                          <button type="submit" class="<%= isCurrentStatus ? "btn-action-lock" : "btn-action-unlock" %>">
+                            <%= isCurrentStatus ? "Khóa" : "Hiện" %>
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
             <%

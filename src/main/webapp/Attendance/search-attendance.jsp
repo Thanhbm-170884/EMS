@@ -15,6 +15,52 @@
           href="${pageContext.request.contextPath}/css/ems.css"/>
 
     <style>
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 20px;
+    }
+
+    .pagination a,
+    .pagination span {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+
+        background: white;
+        color: #475569;
+
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+
+        box-sizing: border-box;
+    }
+
+    .pagination a:hover {
+        background: #f1f5f9;
+    }
+
+    .pagination .active {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+    }
+
+    .pagination .disabled {
+        color: #cbd5e1;
+        background: #f8fafc;
+        cursor: not-allowed;
+    }
     .btn-clear {
         height: 40px;
         box-sizing: border-box;
@@ -606,6 +652,93 @@
                     </tbody>
 
                 </table>
+                <!-- PHÂN TRANG -->
+
+                <c:if test="${totalPages > 1}">
+
+                    <div class="pagination">
+
+                        <!-- Trang trước -->
+
+                        <c:choose>
+
+                            <c:when test="${currentPage > 1}">
+                                <a href="${pageContext.request.contextPath}/Attendance/search-attendance?employeeName=${employeeName}&employeeCode=${employeeCode}&date=${date}&page=${i}">
+                                    ${i}
+                                </a>
+                            </c:when>
+
+                            <c:otherwise>
+                                <span class="disabled">
+                                    ←
+                                </span>
+                            </c:otherwise>
+
+                        </c:choose>
+
+
+                        <!-- Các số trang -->
+
+                        <c:forEach var="i"
+                                   begin="1"
+                                   end="${totalPages}">
+
+                            <c:choose>
+
+                                <c:when test="${i == currentPage}">
+
+                                    <span class="active">
+                                        ${i}
+                                    </span>
+
+                                </c:when>
+
+                                <c:otherwise>
+
+                                    <a href="${pageContext.request.contextPath}/Attendance/search-attendance
+                                        ?employeeName=${employeeName}
+                                        &employeeCode=${employeeCode}
+                                        &date=${date}
+                                        &page=${i}">
+                                        ${i}
+                                    </a>
+
+                                </c:otherwise>
+
+                            </c:choose>
+
+                        </c:forEach>
+
+
+                        <!-- Trang sau -->
+
+                        <c:choose>
+
+                            <c:when test="${currentPage < totalPages}">
+
+                                <a href="${pageContext.request.contextPath}/Attendance/search-attendance
+                                    ?employeeName=${employeeName}
+                                    &employeeCode=${employeeCode}
+                                    &date=${date}
+                                    &page=${currentPage + 1}">
+                                    →
+                                </a>
+
+                            </c:when>
+
+                            <c:otherwise>
+
+                                <span class="disabled">
+                                    →
+                                </span>
+
+                            </c:otherwise>
+
+                        </c:choose>
+
+                    </div>
+
+                </c:if>
 
             </div>
 

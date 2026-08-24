@@ -137,9 +137,7 @@ public class AttendanceDAO {
 
                         ps.setTime(
                                 3,
-                                Time.valueOf(
-                                        r.getCheckIn()
-                                )
+                                Time.valueOf(r.getCheckIn())
                         );
 
                     } else {
@@ -155,9 +153,7 @@ public class AttendanceDAO {
 
                         ps.setTime(
                                 4,
-                                Time.valueOf(
-                                        r.getCheckOut()
-                                )
+                                Time.valueOf(r.getCheckOut())
                         );
 
                     } else {
@@ -202,8 +198,7 @@ public class AttendanceDAO {
             LocalDate toDate) throws Exception {
 
         List<AttendanceHistoryDTO> result =
-                new ArrayList<AttendanceHistoryDTO>();
-
+                new ArrayList<>();
 
         try (Connection conn =
                      DBConnection.getConnection();
@@ -231,7 +226,6 @@ public class AttendanceDAO {
                     Date.valueOf(toDate)
             );
 
-
             try (ResultSet rs =
                          ps.executeQuery()) {
 
@@ -242,16 +236,12 @@ public class AttendanceDAO {
                     // =========================================
 
                     Date sqlDate =
-                            rs.getDate(
-                                    "AttendanceDate"
-                            );
+                            rs.getDate("AttendanceDate");
 
                     LocalDate date = null;
 
                     if (sqlDate != null) {
-
-                        date =
-                                sqlDate.toLocalDate();
+                        date = sqlDate.toLocalDate();
                     }
 
 
@@ -260,14 +250,11 @@ public class AttendanceDAO {
                     // =========================================
 
                     Time checkInTime =
-                            rs.getTime(
-                                    "CheckInTime"
-                            );
+                            rs.getTime("CheckInTime");
 
                     LocalTime checkIn = null;
 
                     if (checkInTime != null) {
-
                         checkIn =
                                 checkInTime.toLocalTime();
                     }
@@ -278,14 +265,11 @@ public class AttendanceDAO {
                     // =========================================
 
                     Time checkOutTime =
-                            rs.getTime(
-                                    "CheckOutTime"
-                            );
+                            rs.getTime("CheckOutTime");
 
                     LocalTime checkOut = null;
 
                     if (checkOutTime != null) {
-
                         checkOut =
                                 checkOutTime.toLocalTime();
                     }
@@ -296,9 +280,7 @@ public class AttendanceDAO {
                     // =========================================
 
                     String employeeCode =
-                            rs.getString(
-                                    "EmployeeCode"
-                            );
+                            rs.getString("EmployeeCode");
 
 
                     // =========================================
@@ -306,9 +288,7 @@ public class AttendanceDAO {
                     // =========================================
 
                     String fullName =
-                            rs.getString(
-                                    "FullName"
-                            );
+                            rs.getString("FullName");
 
 
                     // =========================================
@@ -368,12 +348,10 @@ public class AttendanceDAO {
                                     status
                             );
 
-
                     result.add(dto);
                 }
             }
         }
-
 
         return result;
     }
@@ -392,17 +370,21 @@ public class AttendanceDAO {
      * 2. Mã nhân viên
      * 3. Ngày
      *
-     * Các điều kiện có thể kết hợp.
+     * Có hỗ trợ phân trang.
+     *
+     * pageSize = số dòng mỗi trang
+     * offset   = vị trí bắt đầu lấy dữ liệu
      */
     public List<AttendanceHistoryDTO>
     searchAttendance(
             String employeeName,
             String employeeCode,
-            String date) throws Exception {
-
+            String date,
+            int pageSize,
+            int offset) throws Exception {
 
         List<AttendanceHistoryDTO> results =
-                new ArrayList<AttendanceHistoryDTO>();
+                new ArrayList<>();
 
 
         // =====================================================
@@ -411,7 +393,6 @@ public class AttendanceDAO {
 
         StringBuilder sql =
                 new StringBuilder();
-
 
         sql.append(
                 "SELECT " +
@@ -428,7 +409,7 @@ public class AttendanceDAO {
 
 
         List<Object> params =
-                new ArrayList<Object>();
+                new ArrayList<>();
 
 
         // =====================================================
@@ -487,13 +468,17 @@ public class AttendanceDAO {
 
 
         // =====================================================
-        // ORDER
+        // ORDER + PAGINATION
         // =====================================================
 
         sql.append(
                 "ORDER BY " +
                         "a.AttendanceDate DESC, " +
-                        "u.EmployeeCode ASC"
+                        "u.EmployeeCode ASC "
+        );
+
+        sql.append(
+                "LIMIT ? OFFSET ?"
         );
 
 
@@ -509,20 +494,34 @@ public class AttendanceDAO {
                              sql.toString()
                      )) {
 
-
             // =================================================
-            // SET PARAMETERS
+            // SET FILTER PARAMETERS
             // =================================================
 
-            for (int i = 0;
-                 i < params.size();
-                 i++) {
+            int parameterIndex = 1;
+
+            for (Object param : params) {
 
                 ps.setObject(
-                        i + 1,
-                        params.get(i)
+                        parameterIndex++,
+                        param
                 );
             }
+
+
+            // =================================================
+            // SET PAGINATION PARAMETERS
+            // =================================================
+
+            ps.setInt(
+                    parameterIndex++,
+                    pageSize
+            );
+
+            ps.setInt(
+                    parameterIndex,
+                    offset
+            );
 
 
             // =================================================
@@ -531,7 +530,6 @@ public class AttendanceDAO {
 
             try (ResultSet rs =
                          ps.executeQuery()) {
-
 
                 while (rs.next()) {
 
@@ -666,14 +664,136 @@ public class AttendanceDAO {
                                     status
                             );
 
-
                     results.add(dto);
                 }
             }
         }
 
-
         return results;
+    }
+
+
+    // =========================================================
+    // COUNT ATTENDANCE - PAGINATION
+    // =========================================================
+
+    /**
+     * Đếm tổng số bản ghi chấm công
+     * theo đúng điều kiện tìm kiếm.
+     *
+     * Dùng để tính tổng số trang.
+     */
+    public int countAttendance(
+            String employeeName,
+            String employeeCode,
+            String date) throws Exception {
+
+        StringBuilder sql =
+                new StringBuilder();
+
+        sql.append(
+                "SELECT COUNT(*) " +
+                        "FROM attendance a " +
+                        "JOIN users u " +
+                        "ON a.EmployeeId = u.Id " +
+                        "WHERE 1 = 1 "
+        );
+
+
+        List<Object> params =
+                new ArrayList<>();
+
+
+        // =====================================================
+        // FILTER EMPLOYEE NAME
+        // =====================================================
+
+        if (employeeName != null
+                && !employeeName.trim().isEmpty()) {
+
+            sql.append(
+                    "AND u.FullName LIKE ? "
+            );
+
+            params.add(
+                    "%" +
+                            employeeName.trim() +
+                            "%"
+            );
+        }
+
+
+        // =====================================================
+        // FILTER EMPLOYEE CODE
+        // =====================================================
+
+        if (employeeCode != null
+                && !employeeCode.trim().isEmpty()) {
+
+            sql.append(
+                    "AND u.EmployeeCode LIKE ? "
+            );
+
+            params.add(
+                    "%" +
+                            employeeCode.trim() +
+                            "%"
+            );
+        }
+
+
+        // =====================================================
+        // FILTER DATE
+        // =====================================================
+
+        if (date != null
+                && !date.trim().isEmpty()) {
+
+            sql.append(
+                    "AND a.AttendanceDate = ? "
+            );
+
+            params.add(
+                    Date.valueOf(date)
+            );
+        }
+
+
+        // =====================================================
+        // EXECUTE COUNT
+        // =====================================================
+
+        try (Connection conn =
+                     DBConnection.getConnection();
+
+             PreparedStatement ps =
+                     conn.prepareStatement(
+                             sql.toString()
+                     )) {
+
+            int parameterIndex = 1;
+
+            for (Object param : params) {
+
+                ps.setObject(
+                        parameterIndex++,
+                        param
+                );
+            }
+
+
+            try (ResultSet rs =
+                         ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+
+        return 0;
     }
 
 
@@ -687,7 +807,6 @@ public class AttendanceDAO {
     public Integer findUserIdByAccountId(
             int accountId) throws Exception {
 
-
         String sql =
                 "SELECT UserId " +
                         "FROM accounts " +
@@ -700,7 +819,6 @@ public class AttendanceDAO {
              PreparedStatement ps =
                      conn.prepareStatement(sql)) {
 
-
             ps.setInt(
                     1,
                     accountId
@@ -710,14 +828,12 @@ public class AttendanceDAO {
             try (ResultSet rs =
                          ps.executeQuery()) {
 
-
                 if (rs.next()) {
 
                     return rs.getInt(
                             "UserId"
                     );
                 }
-
 
                 return null;
             }

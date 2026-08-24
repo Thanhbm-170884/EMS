@@ -1,6 +1,10 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List, java.util.Map" %>
 <%
+    if (request.getAttribute("employeeList") == null) {
+        response.sendRedirect(request.getContextPath() + "/employees");
+        return;
+    }
     List<Map<String, Object>> employeeList = (List<Map<String, Object>>) request.getAttribute("employeeList");
     Integer totalEmp   = (Integer) request.getAttribute("totalEmp");
     Integer activeEmp  = (Integer) request.getAttribute("activeEmp");
@@ -16,6 +20,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EMS – Quản lý Nhân viên</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -57,18 +62,18 @@
 <body>
 
 <aside class="sidebar">
-  <a href="home" class="sidebar-brand">
+  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
     <div class="brand-dot">E</div>
     <span class="brand-name">EMS</span>
   </a>
   <nav class="nav-group">
     <div class="nav-section-label">Tổng quan</div>
-    <a href="home" class="nav-link">Trang chủ</a>
+    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
     <div class="nav-section-label">Quản trị</div>
-    <a href="users"       class="nav-link">Tài khoản</a>
-    <a href="employees"   class="nav-link active">Nhân viên</a>
-    <a href="departments" class="nav-link">Phòng ban</a>
-    <a href="positions"   class="nav-link">Chức vụ</a>
+    <a href="<%= request.getContextPath() %>/users"       class="nav-link">Tài khoản</a>
+    <a href="<%= request.getContextPath() %>/employees"   class="nav-link active">Nhân viên</a>
+    <a href="<%= request.getContextPath() %>/departments" class="nav-link">Phòng ban</a>
+    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
   </nav>
   <div class="sidebar-footer">
     <div class="user-block">
@@ -80,7 +85,7 @@
         <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
       </div>
     </div>
-    <button class="btn-logout" onclick="window.location='logout'">Đăng xuất</button>
+    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
   </div>
 </aside>
 
@@ -198,7 +203,7 @@
                 if (salaryObj != null) {
                     java.text.NumberFormat nf = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
                     salaryStr = nf.format(salaryObj) + " VNĐ";
-                    rawSalary = salaryObj.toPlainString();
+                    rawSalary = String.valueOf(salaryObj.longValue());
                 }
                 Integer depCount = (Integer) emp.get("dependentsCount");
                 int rawDepCount = (depCount != null) ? depCount : 0;
@@ -238,19 +243,19 @@
                   <%= isActive ? "Đang làm" : "Nghỉ" %>
                 </span>
               </td>
-              <td>
-                <a href="javascript:void(0)" onclick="openViewEmpModal(this)"
-                   style="color:#6366f1; text-decoration:none; font-weight:600; margin-right:12px;">Xem</a>
-                <a href="javascript:void(0)" onclick="openEditEmpModal(this)"
-                   style="color:#0d9488; text-decoration:none; font-weight:600; margin-right:12px;">Sửa</a>
-                <form action="employees" method="post" style="display:inline;">
-                  <input type="hidden" name="action" value="toggleStatus"/>
-                  <input type="hidden" name="userId" value="<%= emp.get("userId") %>"/>
-                  <input type="hidden" name="currentStatus" value="<%= isActive %>"/>
-                  <button type="submit" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:13.5px; font-weight:600; padding:0; font-family:inherit;">
-                    <%= isActive ? "Dừng" : "Hiện" %>
-                  </button>
-                </form>
+              <td style="white-space: nowrap;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <a href="javascript:void(0)" onclick="openViewEmpModal(this)" class="btn-action-view">Xem</a>
+                  <a href="javascript:void(0)" onclick="openEditEmpModal(this)" class="btn-action-edit">Sửa</a>
+                  <form action="employees" method="post" style="display:inline; margin:0;">
+                    <input type="hidden" name="action" value="toggleStatus"/>
+                    <input type="hidden" name="userId" value="<%= emp.get("userId") %>"/>
+                    <input type="hidden" name="currentStatus" value="<%= isActive %>"/>
+                    <button type="submit" class="<%= isActive ? "btn-action-lock" : "btn-action-unlock" %>">
+                      <%= isActive ? "Dừng" : "Hiện" %>
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
           <%
@@ -440,7 +445,8 @@
           </div>
           <div class="form-group">
             <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Lương cơ bản (VNĐ)</label>
-            <input type="number" name="baseSalary" id="addEmpSalary" min="0" step="100000" value="5000000" class="form-input"
+            <input type="text" name="baseSalary" id="addEmpSalary" value="5.000.000" class="form-input" oninput="formatCurrencyInput(this)"
+                   placeholder="VD: 5.000.000"
                    style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
           </div>
         </div>
@@ -542,7 +548,8 @@
           </div>
           <div class="form-group">
             <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Lương cơ bản (VNĐ)</label>
-            <input type="number" name="baseSalary" id="editEmpSalary" min="0" step="100000" value="5000000" class="form-input"
+            <input type="text" name="baseSalary" id="editEmpSalary" value="5.000.000" class="form-input" oninput="formatCurrencyInput(this)"
+                   placeholder="VD: 5.000.000"
                    style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
           </div>
         </div>
@@ -595,6 +602,15 @@
       inputEl.style.borderColor = "#e5e7eb";
       msgEl.innerHTML = "";
     }
+  }
+
+  function formatCurrencyInput(input) {
+    var raw = input.value.replace(/\D/g, '');
+    if (raw === '') {
+      input.value = '';
+      return;
+    }
+    input.value = Number(raw).toLocaleString('vi-VN');
   }
 
   function openAddEmpModal() {
@@ -1019,7 +1035,12 @@
     document.getElementById('editEmpDept').value       = row.dataset.deptId || '';
     document.getElementById('editEmpPos').value        = row.dataset.posId || '';
     document.getElementById('editEmpDependents').value = row.dataset.dependents || '0';
-    document.getElementById('editEmpSalary').value     = row.dataset.salary || '5000000';
+    var rawSal = (row.dataset.salary || '5000000').replace(/\D/g, '');
+    if (rawSal && rawSal !== '') {
+      document.getElementById('editEmpSalary').value = Number(rawSal).toLocaleString('vi-VN');
+    } else {
+      document.getElementById('editEmpSalary').value = '5.000.000';
+    }
 
     setEmpFieldStatus(document.getElementById('editEmpFullName'), document.getElementById('editEmpFullNameMsg'), null, '');
     setEmpFieldStatus(document.getElementById('editEmpEmail'), document.getElementById('editEmpEmailMsg'), null, '');
