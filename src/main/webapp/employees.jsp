@@ -198,7 +198,7 @@
                 if (salaryObj != null) {
                     java.text.NumberFormat nf = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
                     salaryStr = nf.format(salaryObj) + " VNĐ";
-                    rawSalary = salaryObj.toPlainString();
+                    rawSalary = String.valueOf(salaryObj.longValue());
                 }
                 Integer depCount = (Integer) emp.get("dependentsCount");
                 int rawDepCount = (depCount != null) ? depCount : 0;
@@ -440,7 +440,8 @@
           </div>
           <div class="form-group">
             <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Lương cơ bản (VNĐ)</label>
-            <input type="number" name="baseSalary" id="addEmpSalary" min="0" step="100000" value="5000000" class="form-input"
+            <input type="text" name="baseSalary" id="addEmpSalary" value="5.000.000" class="form-input" oninput="formatCurrencyInput(this)"
+                   placeholder="VD: 5.000.000"
                    style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
           </div>
         </div>
@@ -542,7 +543,8 @@
           </div>
           <div class="form-group">
             <label class="form-label" style="font-size:13px; font-weight:600; color:#374151; margin-bottom:5px; display:block;">Lương cơ bản (VNĐ)</label>
-            <input type="number" name="baseSalary" id="editEmpSalary" min="0" step="100000" value="5000000" class="form-input"
+            <input type="text" name="baseSalary" id="editEmpSalary" value="5.000.000" class="form-input" oninput="formatCurrencyInput(this)"
+                   placeholder="VD: 5.000.000"
                    style="width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13.5px; outline:none; box-sizing:border-box;"/>
           </div>
         </div>
@@ -595,6 +597,15 @@
       inputEl.style.borderColor = "#e5e7eb";
       msgEl.innerHTML = "";
     }
+  }
+
+  function formatCurrencyInput(input) {
+    var raw = input.value.replace(/\D/g, '');
+    if (raw === '') {
+      input.value = '';
+      return;
+    }
+    input.value = Number(raw).toLocaleString('vi-VN');
   }
 
   function openAddEmpModal() {
@@ -1019,7 +1030,12 @@
     document.getElementById('editEmpDept').value       = row.dataset.deptId || '';
     document.getElementById('editEmpPos').value        = row.dataset.posId || '';
     document.getElementById('editEmpDependents').value = row.dataset.dependents || '0';
-    document.getElementById('editEmpSalary').value     = row.dataset.salary || '5000000';
+    var rawSal = (row.dataset.salary || '5000000').replace(/\D/g, '');
+    if (rawSal && rawSal !== '') {
+      document.getElementById('editEmpSalary').value = Number(rawSal).toLocaleString('vi-VN');
+    } else {
+      document.getElementById('editEmpSalary').value = '5.000.000';
+    }
 
     setEmpFieldStatus(document.getElementById('editEmpFullName'), document.getElementById('editEmpFullNameMsg'), null, '');
     setEmpFieldStatus(document.getElementById('editEmpEmail'), document.getElementById('editEmpEmailMsg'), null, '');
