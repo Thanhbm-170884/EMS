@@ -3,9 +3,14 @@ package com.ems.dao;
 import com.ems.model.AttendanceRecord;
 import com.ems.util.DBConnection;
 
+
 import java.sql.*;
 import java.util.List;
-
+import com.ems.dto.AttendanceHistoryDTO;
+import java.time.Duration;
+ import java.time.LocalDate;
+ import java.time.LocalTime;
+ import java.util.ArrayList;
 public class AttendanceDAO {
 
     private static final String FIND_USER_ID_SQL =
@@ -19,6 +24,12 @@ public class AttendanceDAO {
             "INSERT INTO attendance (EmployeeId, AttendanceDate, CheckInTime, CheckOutTime) " +
                     "VALUES (?, ?, ?, ?) " +
                     "ON DUPLICATE KEY UPDATE CheckInTime = VALUES(CheckInTime), CheckOutTime = VALUES(CheckOutTime)";
+    private static final LocalTime STANDARD_CHECKIN = LocalTime.of(8, 0);
+
+    private static final String FIND_HISTORY_SQL =
+            "SELECT AttendanceDate, CheckInTime, CheckOutTime FROM attendance " +
+                    "WHERE EmployeeId = ? AND AttendanceDate BETWEEN ? AND ? " +
+                    "ORDER BY AttendanceDate DESC";
 
     /**
      * Tra cứu EmployeeId (khóa chính bảng users) từ Mã nhân viên (EmployeeCode) đọc từ Excel.
@@ -54,6 +65,51 @@ public class AttendanceDAO {
             } catch (Exception e) {
                 conn.rollback();
                 throw e;
+            }
+        }
+    }
+    public List<AttendanceHistoryDTO> findByEmployeeAndDateRange(
+            int employeeId, LocalDate fromDate, LocalDate toDate) throws Exception {
+
+        List<AttendanceHistoryDTO> result = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(FIND_HISTORY_SQL)) {
+            ps.setInt(1, employeeId);
+            ps.setDate(2, java.sql.Date.valueOf(fromDate));
+            ps.setDate(3, java.sql.Date.valueOf(toDate));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    LocalDate date = rs.getDate("AttendanceDate").toLocalDate();
+                    Time ciTime = rs.getTime("CheckInTime");
+                    Time coTime = rs.getTime("CheckOutTime");
+
+                    LocalTime checkIn = ciTime != null ? ciTime.toLocalTime() : null;
+                    LocalTime checkOut = coTime != null ? coTime.toLocalTime() : null;
+
+                    long lateMinutes = 0;
+                    if (checkIn != null && checkIn.isAfter(STANDARD_CHECKIN)) {
+                        lateMinutes = Duration.between(STANDARD_CHECKIN, checkIn).toMinutes();
+                    }
+
+                    result.add(new AttendanceHistoryDTO(date, checkIn, checkOut, lateMinutes));
+                }
+            }
+        }
+
+        return result;
+    }
+    /**
+     * Tra Id thật trong bảng users (= EmployeeId dùng trong bảng attendance)
+     * từ accountId đang lưu trong session.
+     */
+    public Integer findUserIdByAccountId(int accountId) throws Exception {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT UserId FROM accounts WHERE Id = ?")) {
+            ps.setInt(1, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("UserId") : null;
             }
         }
     }

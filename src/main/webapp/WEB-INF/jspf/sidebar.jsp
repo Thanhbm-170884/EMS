@@ -88,6 +88,10 @@
                class="nav-link ${pageContext.request.servletPath == '/my-payslip.jsp' || fn:contains(pageContext.request.requestURI, '/my-payslip') ? 'active' : ''}">
                 Xem lương
             </a>
+            <a href="${pageContext.request.contextPath}/Attendance/my-attendance.jsp"
+                           class="nav-link ${pageContext.request.servletPath == '/my-attendance.jsp' || fn:contains(pageContext.request.requestURI, '/my-attendance') ? 'active' : ''}">
+                            Xem điểm danh
+            </a>
 
 
         </c:if>
