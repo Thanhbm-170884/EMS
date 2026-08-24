@@ -19,23 +19,27 @@
                         startItem=totalFilteredItems> 0 ? (currentPage - 1) * pageSize + 1 : 0;
                         int endItem = Math.min(currentPage * pageSize, totalFilteredItems);
                         %>
-<%! 
-    private String buildPageUrl(Integer periodId, String search, Integer deptId, int page, int pageSize) { 
-        StringBuilder sb = new StringBuilder("payslips?page=").append(page).append("&pageSize=").append(pageSize);
-        if (periodId != null && periodId > 0) {
-            sb.append("&periodId=").append(periodId);
-        }
-        if (search != null && !search.trim().isEmpty()) {
-            try {
-                sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8")); 
-            } catch (Exception ignored) {} 
-        } 
-        if (deptId != null && deptId > 0) {
-            sb.append("&departmentId=").append(deptId);
-        }
-        return sb.toString();
-    }
-%>
+                        <%! 
+                        private String buildPageUrl(Integer periodId, String search, Integer deptId, int page, int pageSize) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("payslips?page=");
+                            sb.append(page);
+                            sb.append("&pageSize=");
+                            sb.append(pageSize);
+                            if (periodId != null && periodId > 0) {
+                                sb.append("&periodId=").append(periodId);
+                            }
+                            if (search != null && !search.trim().isEmpty()) {
+                                try {
+                                    sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
+                                } catch (Exception ignored) {} 
+                            }
+                            if (deptId != null && deptId > 0) {
+                                sb.append("&departmentId=").append(deptId);
+                            }
+                            return sb.toString();
+                        }
+                        %>
 
                             <!DOCTYPE html>
                             <html lang="vi">
@@ -250,29 +254,42 @@
                                                         </div>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <form action="payslips" method="POST" style="margin: 0;">
-                                                            <input type="hidden" name="action" value="generate">
-                                                            <input type="hidden" name="periodId"
-                                                                value="${selectedPeriodId}">
-
-                                                            <button type="submit" class="btn-success-run"
-                                                                onclick="return confirm('Bạn có chắc chắn muốn chạy tính toán bảng lương cho kỳ này? Quá trình này có thể mất vài giây.');">
-                                                                Tính Lương Tháng Này
-                                                            </button>
-                                                        </form>
-
-                                                        <c:if test="${not empty payslips}">
+                                                        <div style="display:flex; gap: 10px;">
                                                             <form action="payslips" method="POST" style="margin: 0;">
-                                                                <input type="hidden" name="action" value="confirm">
+                                                                <input type="hidden" name="action" value="generate">
+                                                                <input type="hidden" name="periodId"
+                                                                    value="${selectedPeriodId}">
+                                                                <button type="submit" class="btn-success-run"
+                                                                    onclick="return confirm('Bạn muốn tính bổ sung lương cho nhân viên chưa có phiếu?');">
+                                                                    Tính Lương Tháng Này
+                                                                </button>
+                                                            </form>
+
+                                                            <form action="payslips" method="POST" style="margin: 0;">
+                                                                <input type="hidden" name="action" value="recalculate">
                                                                 <input type="hidden" name="periodId"
                                                                     value="${selectedPeriodId}">
                                                                 <button type="submit"
-                                                                    style="background:#3b82f6; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px;"
-                                                                    onclick="return confirm('XÁC NHẬN CHỐT BẢNG LƯƠNG?\nSau khi chốt, trạng thái sẽ chuyển sang Đã chốt và bạn không thể sửa đổi số liệu được nữa!');">
-                                                                    Chốt Bảng Lương
+                                                                    style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px;"
+                                                                    onclick="return confirm('Hành động này sẽ XÓA SẠCH toàn bộ bản nháp và Tính lại từ đầu!\nBạn có muốn tiếp tục?');">
+                                                                    Tính Lại Toàn Bộ
                                                                 </button>
                                                             </form>
-                                                        </c:if>
+
+                                                            <c:if test="${not empty payslips}">
+                                                                <form action="payslips" method="POST"
+                                                                    style="margin: 0;">
+                                                                    <input type="hidden" name="action" value="confirm">
+                                                                    <input type="hidden" name="periodId"
+                                                                        value="${selectedPeriodId}">
+                                                                    <button type="submit"
+                                                                        style="background:#3b82f6; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px;"
+                                                                        onclick="return confirm('XÁC NHẬN CHỐT BẢNG LƯƠNG?\nSau khi chốt, trạng thái sẽ chuyển sang Đã chốt và bạn không thể sửa đổi số liệu được nữa!');">
+                                                                        Chốt Bảng Lương
+                                                                    </button>
+                                                                </form>
+                                                            </c:if>
+                                                        </div>
                                                     </c:otherwise>
                                                 </c:choose>
 
@@ -748,18 +765,21 @@
                                                     </div>
                                                     <div class="ps-pagination-controls">
                                                         <!-- Previous page button -->
+                                                        <% String btnPrevClass = currentPage <= 1 ? "disabled" : ""; %>
                                                         <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, currentPage - 1, pageSize) %>"
-                                                            class="ps-page-nav-btn <%= currentPage <= 1 ? "disabled" : "" %>">&lt;</a>
+                                                            class="ps-page-nav-btn <%= btnPrevClass %>">&lt;</a>
 
                                                         <!-- Page numbers -->
-                                                        <% for (int p = 1; p <= totalPages; p++) { %>
+                                                        <% for (int p=1; p <=totalPages; p++) { %>
+                                                            <% String btnActiveClass = p == currentPage ? "active" : ""; %>
                                                             <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, p, pageSize) %>"
-                                                                class="ps-page-btn <%= p == currentPage ? "active" : "" %>"><%= p %></a>
+                                                                class="ps-page-btn <%= btnActiveClass %>"><%= p %></a>
                                                         <% } %>
 
                                                         <!-- Next page button -->
+                                                        <% String btnNextClass = currentPage >= totalPages ? "disabled" : ""; %>
                                                         <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, currentPage + 1, pageSize) %>"
-                                                            class="ps-page-nav-btn <%= currentPage >= totalPages ? "disabled" : "" %>">&gt;</a>
+                                                            class="ps-page-nav-btn <%= btnNextClass %>">&gt;</a>
                                                     </div>
                                                 </div>
                                             </div>
