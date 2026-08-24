@@ -24,6 +24,35 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/ems.css?v=3.0"/>
   <link rel="stylesheet" href="css/users.css?v=3.0"/>
+  <style>
+    .page-nav-btn, .page-num-btn {
+      padding: 6px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      outline: none;
+      font-family: inherit;
+    }
+    .page-nav-btn:hover:not(:disabled), .page-num-btn:hover:not(.active) {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+    .page-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-num-btn.active {
+      background: #0d9488;
+      color: #ffffff;
+      border-color: #0d9488;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
 
@@ -192,6 +221,12 @@
               </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Pagination Container -->
+      <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-top: 1px solid #f3f4f6; font-size: 13px; color: #6b7280; flex-wrap: wrap; gap: 10px;">
+        <div id="userPaginationInfo">Hiển thị 0 - 0 / 0 người dùng</div>
+        <div id="userPaginationControls" style="display: flex; gap: 6px; align-items: center;"></div>
       </div>
     </div>
   </div>
@@ -511,14 +546,19 @@
     if (e.target === this) closeEditModal();
   });
 
-  // Tìm kiếm và lọc tài khoản
+  // Phân trang & Tìm kiếm tài khoản
+  const USER_PAGE_SIZE = 10;
+  let currentUserPage = 1;
+  let filteredUserRows = [];
+
   function filterUsers() {
     const searchVal = (document.getElementById('userSearchInput') ? document.getElementById('userSearchInput').value : '').toLowerCase().trim();
     const roleVal   = (document.getElementById('userRoleFilter') ? document.getElementById('userRoleFilter').value : '').toLowerCase().trim();
     const statusVal = (document.getElementById('userStatusFilter') ? document.getElementById('userStatusFilter').value : '').toLowerCase().trim();
 
     const allRows = document.querySelectorAll('.user-row');
-    let visibleCount = 0;
+    filteredUserRows = [];
+
     allRows.forEach(function(row) {
       const name = (row.getAttribute('data-name') || '').toLowerCase();
       const un   = (row.getAttribute('data-username') || '').toLowerCase();
@@ -531,18 +571,117 @@
       const matchStatus = !statusVal || st === statusVal;
 
       if (matchSearch && matchRole && matchStatus) {
-        row.style.display = '';
-        visibleCount++;
+        filteredUserRows.push(row);
       } else {
         row.style.display = 'none';
       }
     });
 
-    const emptyRow = document.getElementById('userEmptyRow');
-    if (emptyRow) {
-      emptyRow.style.display = visibleCount === 0 ? '' : 'none';
-    }
+    currentUserPage = 1;
+    renderUserPagination();
   }
+
+  function renderUserPagination() {
+    const allRows = document.querySelectorAll('.user-row');
+    allRows.forEach(function(row) { row.style.display = 'none'; });
+
+    const total = filteredUserRows.length;
+    const emptyRow = document.getElementById('userEmptyRow');
+
+    if (total === 0) {
+      if (emptyRow) emptyRow.style.display = '';
+    } else {
+      if (emptyRow) emptyRow.style.display = 'none';
+    }
+
+    const totalPages = Math.ceil(total / USER_PAGE_SIZE) || 1;
+    if (currentUserPage > totalPages) currentUserPage = totalPages;
+    if (currentUserPage < 1) currentUserPage = 1;
+
+    const startIdx = (currentUserPage - 1) * USER_PAGE_SIZE;
+    const endIdx   = Math.min(startIdx + USER_PAGE_SIZE, total);
+
+    for (let i = startIdx; i < endIdx; i++) {
+      filteredUserRows[i].style.display = '';
+    }
+
+    // Cập nhật thông tin phân trang
+    const infoEl = document.getElementById('userPaginationInfo');
+    if (infoEl) {
+      if (total === 0) {
+        infoEl.textContent = 'Không tìm thấy người dùng nào phù hợp';
+      } else {
+        infoEl.textContent = 'Hiển thị ' + (startIdx + 1) + ' - ' + endIdx + ' trên tổng số ' + total + ' người dùng';
+      }
+    }
+
+    // Vẽ các nút điều khiển phân trang
+    const controlsEl = document.getElementById('userPaginationControls');
+    if (!controlsEl) return;
+    controlsEl.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    // Nút Trước
+    const prevBtn = document.createElement('button');
+    prevBtn.innerHTML = '&laquo; Trước';
+    prevBtn.className = 'page-nav-btn';
+    prevBtn.type = 'button';
+    prevBtn.disabled = currentUserPage === 1;
+    prevBtn.onclick = function() {
+      if (currentUserPage > 1) {
+        currentUserPage--;
+        renderUserPagination();
+      }
+    };
+    controlsEl.appendChild(prevBtn);
+
+    // Các nút số trang
+    for (let p = 1; p <= totalPages; p++) {
+      if (totalPages > 7) {
+        if (p !== 1 && p !== totalPages && Math.abs(p - currentUserPage) > 2) {
+          if (p === 2 || p === totalPages - 1) {
+            const dots = document.createElement('span');
+            dots.textContent = '...';
+            dots.style.padding = '0 4px';
+            dots.style.color = '#9ca3af';
+            controlsEl.appendChild(dots);
+          }
+          continue;
+        }
+      }
+      const pageBtn = document.createElement('button');
+      pageBtn.textContent = p;
+      pageBtn.type = 'button';
+      pageBtn.className = 'page-num-btn' + (p === currentUserPage ? ' active' : '');
+      pageBtn.onclick = (function(page) {
+        return function() {
+          currentUserPage = page;
+          renderUserPagination();
+        };
+      })(p);
+      controlsEl.appendChild(pageBtn);
+    }
+
+    // Nút Tiếp
+    const nextBtn = document.createElement('button');
+    nextBtn.innerHTML = 'Tiếp &raquo;';
+    nextBtn.className = 'page-nav-btn';
+    nextBtn.type = 'button';
+    nextBtn.disabled = currentUserPage === totalPages;
+    nextBtn.onclick = function() {
+      if (currentUserPage < totalPages) {
+        currentUserPage++;
+        renderUserPagination();
+      }
+    };
+    controlsEl.appendChild(nextBtn);
+  }
+
+  // Kích hoạt phân trang ngay khi tải xong DOM
+  document.addEventListener('DOMContentLoaded', function() {
+    filterUsers();
+  });
 
   // Tự động ẩn thông báo sau đúng 2 giây
   setTimeout(function() {
