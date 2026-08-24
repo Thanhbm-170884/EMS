@@ -576,12 +576,9 @@
                                 '<!-- Toggle trạng thái -->' +
                                 '<div class="rule-row">' +
                                 '<span class="rule-row-label">Trạng thái</span>' +
-                                '<div class="rule-toggle-row">' +
-                                '<label class="switch" aria-label="Bật/tắt làm việc">' +
-                                '<input type="checkbox" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')">' +
-                                '<span class="slider"></span>' +
-                                '</label>' +
-                                '<span class="rule-working-label' + (rule.working ? '' : ' off') + '">' + (rule.working ? 'Làm việc' : 'Nghỉ') + '</span>' +
+                                '<div class="rule-toggle-row" style="display: flex; align-items: center; gap: 8px;">' +
+                                '<input type="checkbox" id="working-checkbox-' + rule.id + '" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')" style="width: 18px; height: 18px; cursor: pointer;">' +
+                                '<label for="working-checkbox-' + rule.id + '" class="rule-working-label' + (rule.working ? '' : ' off') + '" style="cursor: pointer;">' + (rule.working ? 'Làm việc' : 'Nghỉ') + '</label>' +
                                 '</div>' +
                                 '</div>' +
                                 '</div>' +
