@@ -117,14 +117,14 @@
             <td>
               <span class="holiday-name"><c:out value="${h.holidayName}" /></span>
               <c:if test="${h.recurType == 'FIXED_SOLAR'}">
-                              <span class="hol-badge badge-passed hol-badge-sm">
-                                <i class="fa-solid fa-sun"></i> Dương lịch cố định
-                              </span>
+<%--                              <span class="hol-badge badge-passed hol-badge-sm">--%>
+<%--                                <i class="fa-solid fa-sun"></i> Dương lịch cố định--%>
+<%--                              </span>--%>
               </c:if>
               <c:if test="${h.recurType == 'LUNAR'}">
-                              <span class="hol-badge badge-upcoming hol-badge-sm">
-                                <i class="fa-solid fa-moon"></i> Âm lịch
-                              </span>
+<%--                              <span class="hol-badge badge-upcoming hol-badge-sm">--%>
+<%--                                <i class="fa-solid fa-moon"></i> Âm lịch--%>
+<%--                              </span>--%>
               </c:if>
             </td>
 
@@ -153,10 +153,10 @@
                       <input type="date" class="date-input-sm js-track-dirty" name="endDate"
                              value="${h.endDateIso}" autocomplete="off" required>
                       <c:if test="${h.startDate == ''}">
-                                      <span class="badge-missing">
-                                        <i class="fa-solid fa-triangle-exclamation"></i>
-                                        Chưa có dữ liệu ${year}
-                                      </span>
+<%--                                      <span class="badge-missing">--%>
+<%--                                        <i class="fa-solid fa-triangle-exclamation"></i>--%>
+<%--                                        Chưa có dữ liệu ${year}--%>
+<%--                                      </span>--%>
                       </c:if>
                     </div>
                     <div class="row-error-msg" style="display:none;"></div>
@@ -192,11 +192,11 @@
                   <input type="number" step="0.1" min="0" class="coef-input js-track-dirty"
                          name="coefficient" value="${h.coefficient}" autocomplete="off"
                     ${h.coefficientLocked ? 'readonly' : '' }>
-                  <label class="lock-label" title="Khi bật, hệ số này sẽ không thể chỉnh sửa cho đến khi mở khóa lại">
-                    <input type="checkbox" name="locked" class="js-track-dirty"
-                      ${h.coefficientLocked ? 'checked' : '' }>
-                    <i class="fa-solid fa-lock"></i> Khóa hệ số
-                  </label>
+<%--                  <label class="lock-label" title="Khi bật, hệ số này sẽ không thể chỉnh sửa cho đến khi mở khóa lại">--%>
+<%--                    <input type="checkbox" name="locked" class="js-track-dirty"--%>
+<%--                      ${h.coefficientLocked ? 'checked' : '' }>--%>
+<%--&lt;%&ndash;                    <i class="fa-solid fa-lock"></i> Khóa hệ số&ndash;%&gt;--%>
+<%--                  </label>--%>
                 </div>
                 <div class="row-error-msg" style="display:none;"></div>
               </form>
@@ -255,8 +255,8 @@
           <input type="text" name="name" placeholder="Tên ngày nghỉ lễ" required maxlength="100">
 
           <select name="recurType" id="recurTypeSelect" onchange="toggleFixedFields()">
-            <option value="FIXED_SOLAR">📅 Cố định theo dương lịch</option>
-            <option value="LUNAR">🌙 Theo âm lịch (nhập tay mỗi năm)</option>
+            <option value="FIXED_SOLAR"> Cố định theo dương lịch</option>
+            <option value="LUNAR"> Theo âm lịch (nhập tay mỗi năm)</option>
           </select>
 
           <span id="fixedFields" class="fixed-field-label">
