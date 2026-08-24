@@ -31,18 +31,18 @@
 
 <!-- Sidebar -->
 <aside class="sidebar">
-  <a href="home" class="sidebar-brand">
+  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
     <div class="brand-dot">E</div>
     <span class="brand-name">EMS</span>
   </a>
   <nav class="nav-group">
     <div class="nav-section-label">Tổng quan</div>
-    <a href="home" class="nav-link active">Trang chủ</a>
+    <a href="<%= request.getContextPath() %>/home" class="nav-link active">Trang chủ</a>
     <div class="nav-section-label">Quản trị</div>
-    <a href="users"       class="nav-link">Tài khoản</a>
-    <a href="employees"   class="nav-link">Nhân viên</a>
-    <a href="departments" class="nav-link">Phòng ban</a>
-    <a href="positions"   class="nav-link">Chức vụ</a>
+    <a href="<%= request.getContextPath() %>/users"       class="nav-link">Tài khoản</a>
+    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
+    <a href="<%= request.getContextPath() %>/departments" class="nav-link">Phòng ban</a>
+    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
   </nav>
   <div class="sidebar-footer">
     <div class="user-block">
@@ -54,7 +54,7 @@
         <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
       </div>
     </div>
-    <button class="btn-logout" onclick="window.location='logout'">Đăng xuất</button>
+    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
   </div>
 </aside>
 
