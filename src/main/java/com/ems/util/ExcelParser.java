@@ -19,6 +19,7 @@ import java.util.List;
 public class ExcelParser {
 
     private static final LocalTime STANDARD_CHECKIN = LocalTime.of(8, 0); // mốc 8h sáng
+    private static final LocalTime STANDARD_CHECKOUT = LocalTime.of(17, 0);
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("H:mm");
     private static final DataFormatter DATA_FORMATTER = new DataFormatter();
 
@@ -42,13 +43,23 @@ public class ExcelParser {
                 LocalTime checkIn = readTimeCell(row.getCell(4));
                 LocalTime checkOut = readTimeCell(row.getCell(5));
 
+
                 long lateMinutes = 0;
                 if (checkIn != null && checkIn.isAfter(STANDARD_CHECKIN)) {
                     lateMinutes = Duration.between(STANDARD_CHECKIN, checkIn).toMinutes();
                 }
+                long earlyLeaveMinutes = 0;
+                if (checkOut != null && checkOut.isBefore(STANDARD_CHECKOUT)) {
+                    earlyLeaveMinutes = Duration.between(checkOut, STANDARD_CHECKOUT).toMinutes();
+                }
+                System.out.println(
+                        "DEBUG: Check-out = " + checkOut
+                                + " | Standard = " + STANDARD_CHECKOUT
+                                + " | EarlyLeave = " + earlyLeaveMinutes
+                );
 
                 result.add(new AttendanceRecord(date, employeeCode, fullName,
-                        department, checkIn, checkOut, lateMinutes));
+                        department, checkIn, checkOut, lateMinutes, earlyLeaveMinutes));
             }
         }
 
