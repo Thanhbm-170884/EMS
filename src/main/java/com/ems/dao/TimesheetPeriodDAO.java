@@ -196,6 +196,36 @@ public class TimesheetPeriodDAO {
         return getCountByQuery("SELECT COUNT(*) FROM timesheetperiods WHERE IsLocked = 1");
     }
 
+    public boolean isDuplicatePeriod(String name, Date startDate, Date endDate, Integer excludeId) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT COUNT(*) FROM timesheetperiods WHERE (Name = ? OR (StartDate <= ? AND EndDate >= ?))");
+        
+        if (excludeId != null) {
+            sql.append(" AND Id != ?");
+        }
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            ps.setString(1, name);
+            ps.setDate(2, endDate);
+            ps.setDate(3, startDate);
+            
+            if (excludeId != null) {
+                ps.setInt(4, excludeId);
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     private int getCountByQuery(String sql) {
         try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement();
