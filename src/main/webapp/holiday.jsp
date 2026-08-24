@@ -19,178 +19,7 @@
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!--
-    GHI CHÚ CHO DEV: các style dưới đây là phần BỔ SUNG cho holiday.css hiện có.
-    Nên chuyển toàn bộ khối này vào file holiday.css thật để tránh style trùng lặp
-    và để các trang khác dùng chung component (btn-ghost, toast, badge-locked...) nếu cần.
-    Mình giữ inline ở đây vì không có quyền truy cập file holiday.css gốc.
-  -->
-  <style>
-    /* ===== Bỏ nút "Lưu" lặp lại ở từng hàng: chỉ còn input, không có button riêng ===== */
-    .holiday-table .row-inline-hint {
-      color: var(--slate-400, #94a3b8);
-      font-size: 0.78rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
 
-    /* Hàng có thay đổi chưa lưu -> viền trái cảnh báo nhẹ, không dùng màu đỏ (không phải lỗi) */
-    .holiday-table tbody tr.is-dirty {
-      background: #fffaf0;
-      box-shadow: inset 3px 0 0 0 #f59e0b;
-    }
-    .holiday-table tbody tr.is-dirty .stt-cell::after {
-      content: '\f111';
-      font-family: 'Font Awesome 6 Free';
-      font-weight: 900;
-      font-size: 6px;
-      color: #f59e0b;
-      vertical-align: super;
-      margin-left: 4px;
-    }
-
-    /* ===== Thanh "Lưu thay đổi" toàn cục — thay thế toàn bộ nút Lưu từng hàng ===== */
-    .unsaved-bar {
-      position: sticky;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      margin-top: 14px;
-      background: #1e2330;
-      color: #fff;
-      border-radius: 12px;
-      padding: 12px 18px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      z-index: 50;
-      animation: unsaved-bar-in .18s ease;
-    }
-    .unsaved-bar.show { display: flex; }
-    @keyframes unsaved-bar-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .unsaved-bar-msg {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.9rem;
-    }
-    .unsaved-bar-msg i { color: #f59e0b; }
-    .unsaved-bar-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .unsaved-bar-actions button {
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-    }
-    .btn-discard-all {
-      background: transparent;
-      border-color: rgba(255,255,255,0.3);
-      color: #fff;
-    }
-    .btn-discard-all:hover { background: rgba(255,255,255,0.08); }
-    .btn-save-all {
-      background: var(--primary, #6d5bd0);
-      color: #fff;
-    }
-    .btn-save-all:hover { filter: brightness(1.08); }
-    .btn-save-all:disabled, .btn-discard-all:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    /* Đồng bộ chiều cao mọi dòng trong bảng, tránh lệch layout giữa các loại ngày lễ */
-    .holiday-table td {
-      vertical-align: middle;
-      min-height: 52px;
-    }
-    .holiday-table .date-cell-inner,
-    .holiday-table .date-fixed {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 34px;
-    }
-
-    /* Nhãn "Cố định" cho hệ số dễ gây nhầm với badge "Dương lịch cố định" ở cột Tên
-       -> đổi nhãn + thêm icon khóa + tooltip giải thích rõ nghĩa */
-    .lock-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: help;
-    }
-
-    /* Icon info cạnh tiêu đề cột, thay cho dòng chú thích bị chìm ở cuối bảng */
-    .col-info-icon {
-      margin-left: 4px;
-      color: var(--slate-400, #94a3b8);
-      cursor: help;
-      font-size: 0.8rem;
-    }
-
-    /* Toast lưu thành công, thay thế việc reload cả trang mỗi lần bấm Lưu */
-    #save-toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #16a34a;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0;
-      transform: translateY(8px);
-      pointer-events: none;
-      transition: opacity .2s ease, transform .2s ease;
-      z-index: 999;
-    }
-    #save-toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    #save-toast.error { background: #dc2626; }
-
-    .add-panel-form .field-hint {
-      font-size: 0.72rem;
-      color: var(--slate-400, #94a3b8);
-      margin-top: 4px;
-      display: block;
-    }
-
-    /* ===== Thông báo lỗi ngay tại dòng bị lỗi (validate hoặc lưu thất bại) ===== */
-    .row-error-msg {
-      color: #dc2626;
-      font-size: 0.75rem;
-      margin-top: 4px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .holiday-table tbody tr.has-error {
-      box-shadow: inset 3px 0 0 0 #dc2626;
-      background: #fef2f2;
-    }
-    .date-input-sm.field-invalid {
-      border-color: #dc2626 !important;
-      outline: none;
-    }
-  </style>
 </head>
 
 <body>
@@ -288,12 +117,12 @@
             <td>
               <span class="holiday-name"><c:out value="${h.holidayName}" /></span>
               <c:if test="${h.recurType == 'FIXED_SOLAR'}">
-                              <span class="hol-badge badge-passed" style="margin-left:6px;font-size:0.7rem;">
+                              <span class="hol-badge badge-passed hol-badge-sm">
                                 <i class="fa-solid fa-sun"></i> Dương lịch cố định
                               </span>
               </c:if>
               <c:if test="${h.recurType == 'LUNAR'}">
-                              <span class="hol-badge badge-upcoming" style="margin-left:6px;font-size:0.7rem;">
+                              <span class="hol-badge badge-upcoming hol-badge-sm">
                                 <i class="fa-solid fa-moon"></i> Âm lịch
                               </span>
               </c:if>
@@ -320,7 +149,7 @@
                     <div class="date-form date-cell-inner">
                       <input type="date" class="date-input-sm js-track-dirty" name="startDate"
                              value="${h.startDateIso}" autocomplete="off" required>
-                      <span style="color:var(--slate-400);font-size:0.8rem;">→</span>
+                      <span class="date-arrow-sep">→</span>
                       <input type="date" class="date-input-sm js-track-dirty" name="endDate"
                              value="${h.endDateIso}" autocomplete="off" required>
                       <c:if test="${h.startDate == ''}">
