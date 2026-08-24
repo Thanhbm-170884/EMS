@@ -46,6 +46,10 @@ public class TimesheetPeriodService {
         return periodDAO.updatePeriodLockStatus(id, isLocked);
     }
 
+    public boolean isDuplicatePeriod(String name, java.sql.Date startDate, java.sql.Date endDate, Integer excludeId) {
+        return periodDAO.isDuplicatePeriod(name, startDate, endDate, excludeId);
+    }
+
     public int getTotalPeriodsCount() {
         return periodDAO.getTotalPeriodsCount();
     }

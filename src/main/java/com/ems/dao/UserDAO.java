@@ -812,6 +812,24 @@ public class UserDAO {
         return list;
     }
 
+    public java.util.List<com.ems.model.Users> getUsersWithoutPayslip(int periodId) {
+        java.util.List<com.ems.model.Users> list = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM users WHERE Status = 1 AND Id NOT IN (SELECT UserId FROM payslips WHERE PeriodId = ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, periodId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    com.ems.model.Users u = new com.ems.model.Users();
+                    u.setId(rs.getInt("Id"));
+                    u.setDependentscount(rs.getInt("DependentsCount"));
+                    list.add(u);
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
     public Integer getUserIdByAccountId(int accountId) {
         String query = "SELECT UserId FROM accounts WHERE Id = ?";
         try (Connection conn = DBConnection.getConnection();
