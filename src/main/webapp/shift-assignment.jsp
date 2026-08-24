@@ -14,6 +14,15 @@
     }
 %>
 
+<c:set var="hasError" value="${not empty error}"/>
+<c:set var="isEditing" value="${batch != null || (hasError && not empty editingId)}"/>
+
+<c:set var="recurTypeVal"       value="${hasError ? param.recurType       : (batch != null ? batch.recurType       : 'WEEKLY')}"/>
+<c:set var="monthlyTypeVal"     value="${hasError ? param.monthlyType     : (batch != null ? batch.monthlyType     : 'WEEKDAY')}"/>
+<c:set var="mWeekdayVal"        value="${hasError ? param.monthlyWeekday  : (batch != null ? batch.monthlyWeekday  : null)}"/>
+<c:set var="mOccurrenceVal"     value="${hasError ? param.monthlyOccurrence : (batch != null ? batch.monthlyOccurrence : null)}"/>
+<c:set var="scopeVal"           value="${hasError ? param.scope : null}"/>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -70,14 +79,14 @@
         </c:if>
 
         <!-- ── Layout 2 cột: Form + Calendar (n panel ẩn mặc định) ── -->
-        <div id="formPanel" style="${(batch != null || not empty error) ? '' : 'display:none;'}">
+        <div id="formPanel" style="${(isEditing || not empty error) ? '' : 'display:none;'}">
             <div class="sa-layout">
                 <!-- CỘT TRÁI: Form -->
                 <div class="sa-form-card">
                     <form id="saForm" method="post" action="${pageContext.request.contextPath}/shift-assignment">
-                        <input type="hidden" name="action" id="saAction" value="${batch != null ? 'update' : 'create'}">
-                        <c:if test="${batch != null}">
-                            <input type="hidden" name="id" value="${batch.id}">
+                        <input type="hidden" name="action" id="saAction" value="${isEditing ? 'update' : 'create'}">
+                        <c:if test="${isEditing}">
+                            <input type="hidden" name="id" value="${batch != null ? batch.id : editingId}">
                         </c:if>
 
                         <!-- Thông tin chung -->
@@ -87,7 +96,7 @@
                             <label for="saName">Tên bảng phân ca <span class="req">*</span></label>
                             <input type="text" id="saName" name="name" maxlength="100"
                                    placeholder="VD: Lịch T2-T6 tháng 8, Làm bù 26/12…"
-                                   value="${batch != null ? fn:escapeXml(batch.name) : ''}" required>
+                                   value="${hasError ? fn:escapeXml(param.name) : (batch != null ? fn:escapeXml(batch.name) : '')}" required>
                         </div>
 
                         <div class="sa-field">
@@ -98,7 +107,9 @@
                                     <option value="${s.id}"
                                             data-time="${s.starttime} - ${s.endtime}"
                                             data-abbr="${fn:substring(s.name,0,2)}"
-                                        ${batch != null && batch.shiftId == s.id ? 'selected' : ''}>
+                                        ${hasError
+                                                ? (param.shiftId == s.id ? 'selected' : '')
+                                                : (batch != null && batch.shiftId == s.id ? 'selected' : '')}>
                                             ${fn:escapeXml(s.name)}
                                         <c:if test="${s.starttime != null}"> (${s.starttime} - ${s.endtime})</c:if>
                                     </option>
@@ -120,13 +131,13 @@
                             <div class="sa-field">
                                 <label for="saStartDate">Ngày bắt đầu <span class="req">*</span></label>
                                 <input type="date" id="saStartDate" name="startDate"
-                                       value="${batch != null ? batch.startDate : ''}" required
+                                       value="${hasError ? param.startDate : (batch != null ? batch.startDate : '')}" required
                                        onchange="triggerPreview()">
                             </div>
                             <div class="sa-field">
                                 <label for="saEndDate">Ngày kết thúc</label>
                                 <input type="date" id="saEndDate" name="endDate"
-                                       value="${batch != null ? batch.endDate : ''}" onchange="triggerPreview()">
+                                       value="${hasError ? param.endDate : (batch != null ? batch.endDate : '')}" onchange="triggerPreview()">
                             </div>
                         </div>
 
@@ -138,19 +149,20 @@
                                 <div class="recur-row">
                                     <select id="recurType" name="recurType"
                                             onchange="onRecurTypeChange(); triggerPreview();">
-                                        <option value="NONE"    ${batch != null && batch.recurType == 'NONE'    ? 'selected' : ''}>
+                                        <option value="NONE"    ${recurTypeVal == 'NONE'    ? 'selected' : ''}>
                                             Không lặp
                                         </option>
-                                        <option value="WEEKLY"  ${batch == null || batch.recurType == 'WEEKLY'  ? 'selected' : ''}>
+                                        <option value="WEEKLY"  ${recurTypeVal == 'WEEKLY' || empty recurTypeVal ? 'selected' : ''}>
                                             Tuần
                                         </option>
-                                        <option value="MONTHLY" ${batch != null && batch.recurType == 'MONTHLY' ? 'selected' : ''}>
+                                        <option value="MONTHLY" ${recurTypeVal == 'MONTHLY' ? 'selected' : ''}>
                                             Tháng
                                         </option>
                                     </select>
                                     <span id="intervalLabel" style="font-size:13px;">Chu kỳ lặp</span>
                                     <input type="number" id="recurInterval" name="recurInterval" min="1" max="52"
-                                           style="width:60px;" value="${batch != null ? batch.recurInterval : 1}"
+                                           style="width:60px;"
+                                           value="${hasError ? param.recurInterval : (batch != null ? batch.recurInterval : 1)}"
                                            onchange="triggerPreview()">
                                     <span id="intervalUnit" style="font-size:13px;">Tuần</span>
                                 </div>
@@ -162,12 +174,17 @@
                                             <label class="day-check-label">
                                                 <input type="checkbox" name="weekdays" value="${day}"
                                                        onchange="triggerPreview()"
-                                                <c:if test="${batch != null}">
+                                                <c:if test="${hasError}">
+                                                <c:forEach var="wd" items="${paramValues.weekdays}">
+                                                    ${wd == day ? 'checked' : ''}
+                                                </c:forEach>
+                                                </c:if>
+                                                <c:if test="${!hasError && batch != null}">
                                                 <c:forEach var="wd" items="${batch.weekdays}">
                                                     ${wd == day ? 'checked' : ''}
                                                 </c:forEach>
                                                 </c:if>
-                                                <c:if test="${batch == null}">
+                                                <c:if test="${!hasError && batch == null}">
                                                     ${day >= 2 && day <= 6 ? 'checked' : ''}
                                                 </c:if>
                                                 >
@@ -189,54 +206,54 @@
                                 <div id="monthlyPanel" style="display:none;">
                                     <div class="recur-row">
                                         <label><input type="radio" name="monthlyType" value="WEEKDAY"
-                                        ${batch == null || batch.monthlyType == 'WEEKDAY' || batch.monthlyType == null ? 'checked' : ''}
+                                        ${monthlyTypeVal == 'WEEKDAY' || empty monthlyTypeVal ? 'checked' : ''}
                                                       onchange="onMonthlyTypeChange(); triggerPreview();"> Vào</label>
                                         <select id="mWeekday" name="monthlyWeekday" onchange="triggerPreview()">
-                                            <option value="2" ${batch != null && batch.monthlyWeekday == 2 ? 'selected':''}>
+                                            <option value="2" ${mWeekdayVal == 2 ? 'selected':''}>
                                                 Thứ Hai
                                             </option>
-                                            <option value="3" ${batch != null && batch.monthlyWeekday == 3 ? 'selected':''}>
+                                            <option value="3" ${mWeekdayVal == 3 ? 'selected':''}>
                                                 Thứ Ba
                                             </option>
-                                            <option value="4" ${batch != null && batch.monthlyWeekday == 4 ? 'selected':''}>
+                                            <option value="4" ${mWeekdayVal == 4 ? 'selected':''}>
                                                 Thứ Tư
                                             </option>
-                                            <option value="5" ${batch != null && batch.monthlyWeekday == 5 ? 'selected':''}>
+                                            <option value="5" ${mWeekdayVal == 5 ? 'selected':''}>
                                                 Thứ Năm
                                             </option>
-                                            <option value="6" ${batch != null && batch.monthlyWeekday == 6 ? 'selected':''}>
+                                            <option value="6" ${mWeekdayVal == 6 ? 'selected':''}>
                                                 Thứ Sáu
                                             </option>
-                                            <option value="7" ${batch != null && batch.monthlyWeekday == 7 ? 'selected':''}>
+                                            <option value="7" ${mWeekdayVal == 7 ? 'selected':''}>
                                                 Thứ Bảy
                                             </option>
-                                            <option value="1" ${batch != null && batch.monthlyWeekday == 1 ? 'selected':''}>
+                                            <option value="1" ${mWeekdayVal == 1 ? 'selected':''}>
                                                 Chủ Nhật
                                             </option>
                                         </select>
                                         <select id="mOccurrence" name="monthlyOccurrence" onchange="triggerPreview()">
-                                            <option value="1"  ${batch != null && batch.monthlyOccurrence == 1  ? 'selected':''}>
+                                            <option value="1"  ${mOccurrenceVal == 1  ? 'selected':''}>
                                                 Đầu tiên của tháng
                                             </option>
-                                            <option value="2"  ${batch != null && batch.monthlyOccurrence == 2  ? 'selected':''}>
+                                            <option value="2"  ${mOccurrenceVal == 2  ? 'selected':''}>
                                                 Thứ hai của tháng
                                             </option>
-                                            <option value="3"  ${batch != null && batch.monthlyOccurrence == 3  ? 'selected':''}>
+                                            <option value="3"  ${mOccurrenceVal == 3  ? 'selected':''}>
                                                 Thứ ba của tháng
                                             </option>
-                                            <option value="-1" ${batch != null && batch.monthlyOccurrence == -1 ? 'selected':''}>
+                                            <option value="-1" ${mOccurrenceVal == -1 ? 'selected':''}>
                                                 Cuối cùng của tháng
                                             </option>
                                         </select>
                                     </div>
                                     <div class="recur-row">
                                         <label><input type="radio" name="monthlyType" value="DATE"
-                                        ${batch != null && batch.monthlyType == 'DATE' ? 'checked' : ''}
+                                        ${monthlyTypeVal == 'DATE' ? 'checked' : ''}
                                                       onchange="onMonthlyTypeChange(); triggerPreview();"> Vào
                                             ngày</label>
                                         <input type="number" id="mDay" name="monthlyDay" min="1" max="31"
                                                style="width:60px;"
-                                               value="${batch != null && batch.monthlyDay != null ? batch.monthlyDay : 1}"
+                                               value="${hasError ? param.monthlyDay : (batch != null && batch.monthlyDay != null ? batch.monthlyDay : 1)}"
                                                onchange="triggerPreview()">
                                         <span style="font-size:13px;">trong tháng</span>
                                     </div>
@@ -250,15 +267,19 @@
                         <div class="scope-options">
                             <label class="scope-opt">
                                 <input type="radio" name="scope" value="employees" id="scopeEmp"
-                                ${batch == null || batch.employeeCount > 0 ? 'checked' : ''}
+                                ${hasError
+                                        ? (empty scopeVal || scopeVal == 'employees' ? 'checked' : '')
+                                        : (batch == null || batch.employeeCount > 0 ? 'checked' : '')}
                                        onchange="onScopeChange()"> Danh sách nhân viên
                             </label>
                             <label class="scope-opt">
                                 <input type="radio" name="scope" value="dept" id="scopeDept"
+                                ${hasError && scopeVal == 'dept' ? 'checked' : ''}
                                        onchange="onScopeChange()"> Theo phòng ban
                             </label>
                             <label class="scope-opt">
                                 <input type="radio" name="scope" value="all" id="scopeAll"
+                                ${hasError && scopeVal == 'all' ? 'checked' : ''}
                                        onchange="onScopeChange()"> Toàn bộ nhân viên
                             </label>
                         </div>
@@ -269,7 +290,7 @@
                             <select id="deptSelect" name="deptId" onchange="loadDeptEmployees()">
                                 <option value="">-- Chọn phòng ban --</option>
                                 <c:forEach var="d" items="${departments}">
-                                    <option value="${d.id}">${fn:escapeXml(d.name)}</option>
+                                    <option value="${d.id}" ${hasError && param.deptId == d.id ? 'selected' : ''}>${fn:escapeXml(d.name)}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -297,7 +318,12 @@
                                         <tr>
                                             <td><input type="checkbox" name="employeeIds" value="${emp.id}"
                                                        class="emp-checkbox"
-                                            <c:if test="${batch != null}">
+                                            <c:if test="${hasError}">
+                                            <c:forEach var="eid" items="${paramValues.employeeIds}">
+                                                ${eid == emp.id ? 'checked' : ''}
+                                            </c:forEach>
+                                            </c:if>
+                                            <c:if test="${!hasError && batch != null}">
                                             <c:forEach var="eid" items="${batch.employeeIds}">
                                                 ${eid == emp.id ? 'checked' : ''}
                                             </c:forEach>
@@ -326,7 +352,7 @@
                         <!-- Buttons -->
                         <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;">
                             <c:choose>
-                                <c:when test="${batch != null}">
+                                <c:when test="${isEditing}">
                                     <a href="${pageContext.request.contextPath}/shift-assignment"
                                        class="btn btn-secondary">
                                         <i class="fa-solid fa-xmark"></i> Hủy
@@ -340,7 +366,7 @@
                             </c:choose>
                             <button type="submit" class="btn btn-success" id="btnSave">
                                 <i class="fa-solid fa-floppy-disk"></i>
-                                ${batch != null ? 'Cập nhật phân ca' : 'Lưu phân ca'}
+                                ${isEditing ? 'Cập nhật phân ca' : 'Lưu phân ca'}
                             </button>
                         </div>
                     </form>
@@ -393,7 +419,7 @@
                                 <th>Ca làm việc</th>
                                 <th>Từ ngày</th>
                                 <th>Đến ngày</th>
-                                <th>Lặp theo</th>
+                                <th>Ngày</th>
                                 <th>Số NV</th>
                                 <th style="text-align:right;">Hành động</th>
                             </tr>
@@ -424,7 +450,7 @@
                                                 <span class="recur-badge recur-none">Không lặp</span>
                                             </c:when>
                                             <c:when test="${b.recurType == 'WEEKLY'}">
-                                                <span class="recur-badge recur-weekly">Mỗi ${b.recurInterval} tuần</span>
+                                                <%--                                                <span class="recur-badge recur-weekly">Mỗi ${b.recurInterval} tuần</span>--%>
                                                 <c:if test="${not empty b.weekdays}">
                                                     <div class="recur-detail">
                                                         <c:forEach var="wd" items="${b.weekdays}" varStatus="st">
@@ -443,10 +469,10 @@
                                                 </c:if>
                                             </c:when>
                                             <c:when test="${b.recurType == 'MONTHLY'}">
-                                                <span class="recur-badge recur-monthly">Mỗi ${b.recurInterval} tháng</span>
+                                                <%--                                                <span class="recur-badge recur-monthly">Mỗi ${b.recurInterval} tháng</span>--%>
                                                 <c:choose>
                                                     <c:when test="${b.monthlyType == 'DATE'}">
-                                                        <div class="recur-detail">Vào ngày ${b.monthlyDay}</div>
+                                                        <div class="recur-detail">${b.monthlyDay}</div>
                                                     </c:when>
                                                     <c:when test="${b.monthlyType == 'WEEKDAY'}">
                                                         <div class="recur-detail">
@@ -478,7 +504,7 @@
                                     </td>
                                     <td style="text-align:right;">
                                         <div class="action-btns">
-                                            <%-- Tính xem batch này có active hôm nay không --%>
+                                                <%-- Tính xem batch này có active hôm nay không --%>
                                             <c:set var="bActive" value="false"/>
                                             <c:if test="${b.endDate != null}">
                                                 <c:if test="${!today.isBefore(b.startDate) && !today.isAfter(b.endDate)}">
@@ -556,130 +582,130 @@
 
 <!-- ── Modal Conflict Ca ── -->
 <style>
-.conflict-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 9000;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    backdrop-filter: blur(3px);
-}
-.conflict-modal-overlay.open { display: flex; }
-.conflict-modal {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
-    width: 100%;
-    max-width: 560px;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    animation: conflictSlideIn .22s cubic-bezier(.4,0,.2,1);
-    overflow: hidden;
-}
-@keyframes conflictSlideIn {
-    from { transform: translateY(-24px); opacity: 0; }
-    to   { transform: translateY(0);     opacity: 1; }
-}
-.conflict-modal-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 20px 22px 16px;
-    border-bottom: 1px solid #fee2e2;
-    background: linear-gradient(135deg,#fff5f5 0%,#fff 100%);
-    flex-shrink: 0;
-}
-.conflict-modal-icon {
-    width: 46px; height: 46px;
-    border-radius: 12px;
-    background: rgba(239,68,68,0.12);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #dc2626;
-    flex-shrink: 0;
-}
-.conflict-modal-title { font-size: 16px; font-weight: 700; color: #1e293b; }
-.conflict-modal-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-.conflict-modal-close {
-    margin-left: auto;
-    background: none; border: none;
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #94a3b8;
-    font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    transition: background .15s, color .15s;
-}
-.conflict-modal-close:hover { background: #f1f5f9; color: #ef4444; }
-.conflict-modal-body {
-    padding: 18px 22px;
-    overflow-y: auto;
-    flex: 1;
-}
-.conflict-intro {
-    font-size: 13.5px;
-    color: #475569;
-    margin-bottom: 14px;
-    line-height: 1.6;
-}
-.conflict-intro strong { color: #dc2626; }
-.conflict-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 320px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-.conflict-list::-webkit-scrollbar { width: 4px; }
-.conflict-list::-webkit-scrollbar-track { background: #f8fafc; }
-.conflict-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.conflict-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 13px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 10px;
-    font-size: 13px;
-}
-.conflict-item-icon {
-    color: #ef4444;
-    font-size: 14px;
-    margin-top: 1px;
-    flex-shrink: 0;
-}
-.conflict-item-name { font-weight: 600; color: #1e293b; }
-.conflict-item-shift {
-    font-size: 11.5px;
-    color: #64748b;
-    margin-top: 2px;
-}
-.conflict-hint {
-    margin-top: 14px;
-    padding: 10px 13px;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-radius: 10px;
-    font-size: 12.5px;
-    color: #92400e;
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-}
-.conflict-modal-foot {
-    padding: 14px 22px;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: flex-end;
-    flex-shrink: 0;
-    background: #fafafa;
-}
+    .conflict-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 9000;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        backdrop-filter: blur(3px);
+    }
+    .conflict-modal-overlay.open { display: flex; }
+    .conflict-modal {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+        width: 100%;
+        max-width: 560px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        animation: conflictSlideIn .22s cubic-bezier(.4,0,.2,1);
+        overflow: hidden;
+    }
+    @keyframes conflictSlideIn {
+        from { transform: translateY(-24px); opacity: 0; }
+        to   { transform: translateY(0);     opacity: 1; }
+    }
+    .conflict-modal-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px 22px 16px;
+        border-bottom: 1px solid #fee2e2;
+        background: linear-gradient(135deg,#fff5f5 0%,#fff 100%);
+        flex-shrink: 0;
+    }
+    .conflict-modal-icon {
+        width: 46px; height: 46px;
+        border-radius: 12px;
+        background: rgba(239,68,68,0.12);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; color: #dc2626;
+        flex-shrink: 0;
+    }
+    .conflict-modal-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+    .conflict-modal-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .conflict-modal-close {
+        margin-left: auto;
+        background: none; border: none;
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #94a3b8;
+        font-size: 16px;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .15s, color .15s;
+    }
+    .conflict-modal-close:hover { background: #f1f5f9; color: #ef4444; }
+    .conflict-modal-body {
+        padding: 18px 22px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    .conflict-intro {
+        font-size: 13.5px;
+        color: #475569;
+        margin-bottom: 14px;
+        line-height: 1.6;
+    }
+    .conflict-intro strong { color: #dc2626; }
+    .conflict-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .conflict-list::-webkit-scrollbar { width: 4px; }
+    .conflict-list::-webkit-scrollbar-track { background: #f8fafc; }
+    .conflict-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .conflict-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 13px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+    .conflict-item-icon {
+        color: #ef4444;
+        font-size: 14px;
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+    .conflict-item-name { font-weight: 600; color: #1e293b; }
+    .conflict-item-shift {
+        font-size: 11.5px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    .conflict-hint {
+        margin-top: 14px;
+        padding: 10px 13px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 10px;
+        font-size: 12.5px;
+        color: #92400e;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    .conflict-modal-foot {
+        padding: 14px 22px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: flex-end;
+        flex-shrink: 0;
+        background: #fafafa;
+    }
 </style>
 
 <div class="conflict-modal-overlay" id="conflictModal">
@@ -1045,8 +1071,8 @@
                 item.innerHTML =
                     '<i class="fa-solid fa-user-clock conflict-item-icon"></i>' +
                     '<div>' +
-                        '<div class="conflict-item-name">' + escHtml(name) + '</div>' +
-                        (shift ? '<div class="conflict-item-shift"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>' + escHtml(shift) + '</div>' : '') +
+                    '<div class="conflict-item-name">' + escHtml(name) + '</div>' +
+                    (shift ? '<div class="conflict-item-shift"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>' + escHtml(shift) + '</div>' : '') +
                     '</div>';
                 listEl.appendChild(item);
             });
@@ -1136,8 +1162,8 @@
     onScopeChange();
     updateEmpCount();
     renderCalendar();
-    // Auto-preview nếu đang ở chế độ sửa
-    <c:if test="${batch != null}">
+    // Auto-preview nếu đang ở chế độ sửa (kể cả khi vừa lỗi lúc đang sửa)
+    <c:if test="${isEditing}">
     // Đang ở chế độ edit: cập nhật nút và auto-preview
     (function () {
         var btn = document.getElementById('btnToggleForm');

@@ -71,6 +71,10 @@
                class="nav-link ${pageContext.request.servletPath == '/home.jsp' ? 'active' : ''}">
                 Trang chủ
             </a>
+            <a href="${pageContext.request.contextPath}/profile"
+                           class="nav-link ${pageContext.request.servletPath == '/employee-profile.jsp' ? 'active' : ''}">
+               Thông tin cá nhân
+            </a>
             <div class="nav-section-label">Công việc</div>
             <a href="${pageContext.request.contextPath}/employee-calendar?year=<%=java.time.LocalDate.now().getYear()%>&amp;month=<%=java.time.LocalDate.now().getMonthValue()%>&amp;employeeId=${sessionScope.accountId}"
                class="nav-link ${pageContext.request.servletPath == '/employee-calendar.jsp' ? 'active' : ''}">
@@ -87,6 +91,10 @@
             <a href="${pageContext.request.contextPath}/my-payslip"
                class="nav-link ${pageContext.request.servletPath == '/my-payslip.jsp' || fn:contains(pageContext.request.requestURI, '/my-payslip') ? 'active' : ''}">
                 Xem lương
+            </a>
+            <a href="${pageContext.request.contextPath}/Attendance/my-attendance.jsp"
+                           class="nav-link ${pageContext.request.servletPath == '/my-attendance.jsp' || fn:contains(pageContext.request.requestURI, '/my-attendance') ? 'active' : ''}">
+                            Xem điểm danh
             </a>
 
 
@@ -111,7 +119,7 @@
             <div>
                 <div class="user-name"><%= session.getAttribute("username") != null ? session.getAttribute("username") : "Manager" %>
                 </div>
-                <div class="user-role">Quản lý</div>
+                <div class="user-role"><%= session.getAttribute("role")%>></div>
             </div>
         </div>
         <button class="btn-logout" onclick="window.location='${pageContext.request.contextPath}/logout'">Đăng xuất</button>

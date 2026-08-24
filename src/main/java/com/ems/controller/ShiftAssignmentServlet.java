@@ -109,9 +109,7 @@ public class ShiftAssignmentServlet extends HttpServlet {
             // Giữ lại id nếu đang sửa (để form hiển thị đúng chế độ update)
             String idParam = req.getParameter("id");
             if (idParam != null && !idParam.isBlank()) {
-                try {
-                    req.setAttribute("batch", service.getById(Integer.parseInt(idParam)));
-                } catch (Exception ignored) { }
+                req.setAttribute("editingId", idParam);
             }
             req.getRequestDispatcher("/shift-assignment.jsp").forward(req, resp);
         }

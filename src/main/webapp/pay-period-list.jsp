@@ -39,22 +39,18 @@
                 int startItem = totalFilteredItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
                 int endItem = Math.min(currentPage * pageSize, totalFilteredItems);
                 %>
-                <%!
-                    private String buildPageUrl(String search, String status, int page, int pageSize) {
-                        StringBuilder sb = new StringBuilder("pay-periods?page=").append(page).append("&pageSize=").append(pageSize);
+                <%! private String buildPageUrl(String search, String status, int page, int pageSize) { StringBuilder
+                  sb=new StringBuilder("pay-periods?page=").append(page).append(" &pageSize=").append(pageSize);
                         if (search != null && !search.trim().isEmpty()) {
                             try {
-                                sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
-                            } catch (Exception ignored) {}
-                        }
-                        if (status != null && !status.trim().isEmpty()) {
-                            sb.append("&status=").append(status);
+                                sb.append(" &search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8")); }
+                  catch (Exception ignored) {} } if (status !=null && !status.trim().isEmpty()) { sb.append("&status=").append(status);
                         }
                         return sb.toString();
                     }
 %>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang=" vi">
 
                   <head>
                     <meta charset="UTF-8" />
@@ -75,7 +71,7 @@
                       <!-- TOAST ALERT CONTAINER -->
                       <% if (toastMessage !=null && !toastMessage.trim().isEmpty()) { %>
                         <div class="toast-container" id="toastBox">
-                          <div class="toast <%= " error".equals(toastType) ? "toast-error" : "toast-success" %>">
+                          <div class="toast show <%= " error".equals(toastType) ? "toast-error" : "toast-success" %>">
                             <% if ("error".equals(toastType)) { %>
                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444"
                                 stroke-width="2">
@@ -371,7 +367,8 @@
                                 <div class="modal-form-group">
                                   <label>Tên kỳ lương <span style="color:#ef4444;">*</span></label>
                                   <input type="text" name="name" id="createName"
-                                    placeholder="VD: Kỳ lương Tháng 09/2026" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" />
+                                    placeholder="VD: Kỳ lương Tháng 09/2026" required pattern=".*\S+.*"
+                                    title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" />
                                 </div>
 
                                 <div class="modal-form-group modal-date-grid">
@@ -415,7 +412,8 @@
 
                                 <div class="modal-form-group">
                                   <label>Tên kỳ lương <span style="color:#ef4444;">*</span></label>
-                                  <input type="text" name="name" id="editName" required pattern=".*\S+.*" title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" />
+                                  <input type="text" name="name" id="editName" required pattern=".*\S+.*"
+                                    title="Vui lòng nhập định dạng hợp lệ, không thể chỉ chứa khoảng trắng" />
                                 </div>
 
                                 <div class="modal-form-group modal-date-grid">
@@ -456,10 +454,10 @@
                               var toastBox = document.getElementById('toastBox');
                               if (toastBox) {
                                 toastBox.style.opacity = '0';
-                                toastBox.style.transition = 'opacity 0.5s ease';
-                                setTimeout(function () { toastBox.remove(); }, 500);
+                                toastBox.style.transition = 'opacity 0.8s ease';
+                                setTimeout(function () { toastBox.remove(); }, 800);
                               }
-                            }, 4000);
+                            }, 10000);
 
                             function changePageSize(newSize) {
                               var url = new URL(window.location.href);

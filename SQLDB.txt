@@ -29,18 +29,38 @@ create table departments
         foreign key (HeadAccountId) references accounts (Id)
 );
 
-create table holidays
+CREATE TABLE holidaytemplates
 (
-    Id          int auto_increment
-        primary key,
-    HolidayName varchar(100) not null,
-    StartDate   date         not null,
-    EndDate     date         not null,
-    CreatedBy   int          null,
-    constraint FK_Holidays_Accounts
-        foreign key (CreatedBy) references accounts (Id),
-    constraint CHK_Holidays_DateRange
-        check (`StartDate` <= `EndDate`)
+    Id                   INT AUTO_INCREMENT PRIMARY KEY,
+    HolidayName          VARCHAR(100) CHARSET utf8mb3 NOT NULL,
+    RecurType            ENUM('FIXED_SOLAR', 'LUNAR') NOT NULL,
+    FixedMonth           TINYINT NULL,              -- chỉ dùng khi FIXED_SOLAR
+    FixedDay             TINYINT NULL,              -- chỉ dùng khi FIXED_SOLAR
+    FixedDurationDays     TINYINT DEFAULT 1 NOT NULL,-- số ngày nghỉ liên tiếp
+    DefaultCoefficient   DECIMAL(3,1) DEFAULT 1.0 NOT NULL,
+    IsCoefficientLocked  BIT DEFAULT b'0' NOT NULL, -- checkbox "Cố định hệ số giữa các năm"
+    IsActive             BIT DEFAULT b'1' NOT NULL,
+    CreatedBy            INT NULL,
+    CONSTRAINT FK_HolidayTemplates_Accounts
+        FOREIGN KEY (CreatedBy) REFERENCES accounts (Id)
+);
+
+CREATE TABLE holidayyearinstances
+(
+    Id           INT AUTO_INCREMENT PRIMARY KEY,
+    TemplateId   INT NOT NULL,
+    Year         INT NOT NULL,
+    StartDate    DATE NOT NULL,
+    EndDate      DATE NOT NULL,
+    Coefficient  DECIMAL(3,1) NOT NULL,
+    CreatedBy    INT NULL,
+    CreatedAt    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT UQ_HYI_Template_Year UNIQUE (TemplateId, Year),
+    CONSTRAINT FK_HYI_Template
+        FOREIGN KEY (TemplateId) REFERENCES holidaytemplates (Id) ON DELETE CASCADE,
+    CONSTRAINT FK_HYI_Accounts
+        FOREIGN KEY (CreatedBy) REFERENCES accounts (Id),
+    CONSTRAINT CHK_HYI_DateRange CHECK (StartDate <= EndDate)
 );
 
 create table requesttypes
@@ -113,7 +133,9 @@ create table shifts
     LateCheckOutMinute  int default 0                not null,
     IsActive            bit default b'1'             not null,
     IsDefault           bit default b'0'             not null,
-    DayOfWeek           tinyint                      null
+    DayOfWeek           tinyint                      null,
+    EffectiveStartDate  date                         not null default '2026-01-01',
+    EffectiveEndDate    date                         null
 );
 
 create table positions
@@ -421,4 +443,6 @@ create index idx_sab_dates
 create index idx_sab_shift
     on shiftassignmentbatches (ShiftId);
 
-
+ALTER TABLE shifts
+  ADD COLUMN EffectiveStartDate DATE NOT NULL DEFAULT '2026-01-01',
+  ADD COLUMN EffectiveEndDate   DATE NULL;

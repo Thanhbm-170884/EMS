@@ -14,6 +14,7 @@ public class AttendanceRecord {
     private LocalTime checkIn;
     private LocalTime checkOut;
     private long lateMinutes;
+    private long earlyLeaveMinutes;
     private Integer employeeId; // Id thật trong bảng users, tra cứu từ employeeCode
 
     private int rowNumber; // số dòng trong bảng, để báo lỗi rõ ràng
@@ -46,7 +47,7 @@ public class AttendanceRecord {
 
     public AttendanceRecord(LocalDate date, String employeeCode, String fullName,
                             String department, LocalTime checkIn, LocalTime checkOut,
-                            long lateMinutes) {
+                            long lateMinutes, long earlyLeaveMinutes) {
         this.date = date;
         this.employeeCode = employeeCode;
         this.fullName = fullName;
@@ -54,6 +55,7 @@ public class AttendanceRecord {
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.lateMinutes = lateMinutes;
+        this.earlyLeaveMinutes = earlyLeaveMinutes;
     }
 
     public LocalDate getDate() { return date; }
@@ -76,4 +78,12 @@ public class AttendanceRecord {
 
     public long getLateMinutes() { return lateMinutes; }
     public void setLateMinutes(long lateMinutes) { this.lateMinutes = lateMinutes; }
+
+    public long getEarlyLeaveMinutes() {
+        return earlyLeaveMinutes;
+    }
+
+    public void setEarlyLeaveMinutes(long earlyLeaveMinutes) {
+        this.earlyLeaveMinutes = earlyLeaveMinutes;
+    }
 }

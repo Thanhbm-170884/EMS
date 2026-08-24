@@ -130,8 +130,12 @@ public class PayPeriodServlet extends HttpServlet {
                             session.setAttribute("toastMessage", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!");
                             session.setAttribute("toastType", "error");
                         } else {
-                            TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
-                            dto.setName(name.trim());
+                            if (periodService.isDuplicatePeriod(name.trim(), startDate, endDate, null)) {
+                                session.setAttribute("toastMessage", "Kỳ lương đã tồn tại hoặc bị trùng lặp thời gian!");
+                                session.setAttribute("toastType", "error");
+                            } else {
+                                TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
+                                dto.setName(name.trim());
                             dto.setStartDate(startDate);
                             dto.setEndDate(endDate);
                             dto.setLocked("true".equalsIgnoreCase(isLockedStr) || "on".equalsIgnoreCase(isLockedStr) || "1".equals(isLockedStr));
@@ -145,6 +149,7 @@ public class PayPeriodServlet extends HttpServlet {
                                 session.setAttribute("toastType", "error");
                             }
                         }
+                    }
                     }
                     break;
                 }
@@ -167,9 +172,13 @@ public class PayPeriodServlet extends HttpServlet {
                             session.setAttribute("toastMessage", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!");
                             session.setAttribute("toastType", "error");
                         } else {
-                            TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
-                            dto.setId(id);
-                            dto.setName(name.trim());
+                            if (periodService.isDuplicatePeriod(name.trim(), startDate, endDate, id)) {
+                                session.setAttribute("toastMessage", "Kỳ lương đã tồn tại hoặc bị trùng lặp thời gian!");
+                                session.setAttribute("toastType", "error");
+                            } else {
+                                TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
+                                dto.setId(id);
+                                dto.setName(name.trim());
                             dto.setStartDate(startDate);
                             dto.setEndDate(endDate);
                             dto.setLocked("true".equalsIgnoreCase(isLockedStr) || "on".equalsIgnoreCase(isLockedStr) || "1".equals(isLockedStr));
@@ -183,6 +192,7 @@ public class PayPeriodServlet extends HttpServlet {
                                 session.setAttribute("toastType", "error");
                             }
                         }
+                    }
                     }
                     break;
                 }

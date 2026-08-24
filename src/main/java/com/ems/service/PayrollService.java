@@ -174,11 +174,6 @@ public class PayrollService {
     // Chay tinh luong cho ca cong ty
     public String generatePayrollMonth(int periodId, int managerId) {
 
-        // Kiem tra trung lap
-        if (payslipDAO.checkPayrollExists(periodId)) {
-            return "Kỳ lương này đã được tính toán rồi. Không thể chạy trùng!";
-        }
-
         // Lay cau hinh luong
         Payrollconfigs config = configDAO.getActiveConfig();
         if (config == null)
@@ -187,10 +182,10 @@ public class PayrollService {
         // Lay danh sach phu cap
         List<Allowancetypes> activeAllowances = allowanceDAO.getAllActive();
 
-        // Lay danh sach nhan vien active
-        List<Users> users = userDAO.getAllActiveUsers();
+        // Lay danh sach nhan vien chua co phieu luong de tinh bo sung
+        List<Users> users = userDAO.getUsersWithoutPayslip(periodId);
         if (users == null || users.isEmpty())
-            return "Error: Không có nhân viên nào trong hệ thống!";
+            return "Không có nhân viên nào cần bổ sung tính lương trong kỳ này!";
 
         int successCount = 0;
 
@@ -234,14 +229,28 @@ public class PayrollService {
         return "SUCCESS:" + successCount;
     }
 
+    // Chạy lại tính lương từ đầu cho kỳ này
+    public String recalculatePayrollMonth(int periodId, int managerId) {
+        int deletedCount = payslipDAO.deleteDraftPayslips(periodId);
+        if (deletedCount < 0) {
+            return "Lỗi. Vui lòng thử lại!";
+        }
+
+        // Gọi lại hàm chạy lương bổ sung
+        String result = generatePayrollMonth(periodId, managerId);
+        if (result.startsWith("SUCCESS:")) {
+            return "SUCCESS: Đã tính lại " + deletedCount + " bản nháp cũ và ghi đè tạo mới " + result.substring(8);
+        }
+        return result;
+    }
+
     public String updateManualPayslip(int payslipId, BigDecimal bonus, BigDecimal penalty, BigDecimal advance,
             String note, int managerId) {
         Payslips oldPayslip = payslipDAO.getPayslipById(payslipId);
         if (oldPayslip == null)
             return "Không tìm thấy phiếu lương này!";
-        if (!"Draft".equals(oldPayslip.getStatus()))
-            return "Error: Chỉ được phép chỉnh sửa Bản nháp!";
 
+        //
         Payslips updatedPayslip = calculatePayslip(
                 oldPayslip.getUserid(),
                 oldPayslip.getPeriodid(),
