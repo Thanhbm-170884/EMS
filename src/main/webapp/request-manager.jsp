@@ -28,6 +28,7 @@
     String filterTypeEnc = java.net.URLEncoder.encode(filterType, "UTF-8");
 %>
 <%!
+
     private String formatValue(double val, int typeId) {
         if (typeId == 3) {
             return java.text.NumberFormat.getIntegerInstance(new java.util.Locale("vi", "VN")).format(val) + " đ";
@@ -74,6 +75,37 @@
         .filter-bar input { width: 220px; }
         .filter-bar select { cursor: pointer; }
         @media (max-width: 800px) { .sidebar { position: static; width: 100%; min-height: auto; } body { display: block; } .main-content { margin-left: 0; } .table-wrap { overflow-x: auto; } th, td { white-space: nowrap; } }
+        
+        /* Pagination CSS */
+        .page-nav-btn, .page-num-btn {
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #ffffff;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            display: inline-block;
+            line-height: 1.2;
+        }
+        .page-nav-btn:hover:not(.disabled), .page-num-btn:hover:not(.active) {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        .page-nav-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .page-num-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -99,8 +131,8 @@
                 <input type="hidden" name="tab" id="formTabValue" value="<%= tab %>">
                 
                 <input type="text" name="searchName" placeholder="🔍 Tìm theo tên nhân viên..."
-                       value="<%= escapeAttr(searchName) %>" onchange="this.form.submit()">
-                <select name="filterType" onchange="this.form.submit()">
+                       value="<%= escapeAttr(searchName) %>" onchange="resetPageAndSubmit()">
+                <select name="filterType" onchange="resetPageAndSubmit()">
                     <option value="">-- Tất cả loại đơn --</option>
                     <%
                         if (allRequestTypes != null) {
@@ -127,14 +159,14 @@
                         if ("Approved".equalsIgnoreCase(status)) badgeClass = "badge-approved";
                         else if ("Rejected".equalsIgnoreCase(status)) badgeClass = "badge-rejected";
                     %>
-                        <tr style="cursor: pointer;" onclick="if (!event.target.closest('form') && !event.target.closest('a')) window.location.href='requests?action=pending&id=<%= item.getId() %>&tab=<%= tab %>&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>';">
+                        <tr class="request-row" style="cursor: pointer;" onclick="if (!event.target.closest('form') && !event.target.closest('a')) window.location.href='requests?action=pending&id=<%= item.getId() %>&tab=<%= tab %>&page=' + currentPage + '&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>';">
                             <td><span class="request-name"><%= item.getCreatedByName() %></span></td>
                             <td><div class="request-name"><%= item.getTitle() %></div></td>
                             <td><%= item.getRequestTypeName() %></td>
                             <td><%= item.getCreatedAt() == null ? "-" : dateFormat.format(item.getCreatedAt()) %></td>
                             <td>
                                 <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
-                                    <a href="requests?action=pending&id=<%= item.getId() %>&tab=<%= tab %>&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>" class="btn-view" style="text-decoration:none;">Chi tiết</a>
+                                    <a href="#" onclick="window.location.href='requests?action=pending&id=<%= item.getId() %>&tab=<%= tab %>&page=' + currentPage + '&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>'; return false;" class="btn-view" style="text-decoration:none;">Chi tiết</a>
                                     <% if ("Pending".equalsIgnoreCase(status)) { %>
                                         <form class="decision-form" method="post" action="<%= request.getContextPath() %>/requests" onsubmit="return confirm('Duyệt đơn này?');">
                                             <input type="hidden" name="action" value="approve">
@@ -164,6 +196,13 @@
                     <% } %>
                     </tbody>
                 </table></div>
+                <!-- Thanh phân trang -->
+                <div class="hol-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid #e5e7eb; flex-wrap: wrap; gap: 10px;">
+                    <div class="hol-page-info" style="font-size: 0.84rem; color: #6b7280;">
+                        <span id="paginationInfo">Hiển thị 0 - 0 / 0 đơn</span>
+                    </div>
+                    <div id="paginationControls" style="display: flex; align-items: center; gap: 4px;"></div>
+                </div>
             <% } %>
         </section>
     </div>
@@ -202,7 +241,7 @@
           <div class="modal-subtitle">Gửi lúc <%= selectedRequest.getCreatedAt() != null ? dateFormat.format(selectedRequest.getCreatedAt()) : "-" %></div>
         </div>
       </div>
-      <a class="modal-close" style="text-decoration: none;" href="requests?action=pending&tab=<%= tab %>&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>">✕</a>
+      <a class="modal-close" style="text-decoration: none;" href="#" onclick="window.location.href='requests?action=pending&tab=<%= tab %>&page=' + currentPage + '&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>'; return false;">✕</a>
     </div>
     <div class="modal-body" style="padding: 20px; overflow-y: auto;">
       <table style="width: 100%; border-collapse: collapse;">
@@ -281,7 +320,7 @@
               <button class="btn btn-primary" style="background:#dc2626; border-color:#dc2626; color:#fff;" type="submit">Từ chối</button>
           </form>
       <% } %>
-      <a class="btn btn-secondary" style="text-decoration: none; text-align: center; border: 1px solid #d1d5db; display: inline-block; padding: 8px 16px; border-radius: 6px; color:#374151; background:#fff;" href="requests?action=pending&tab=<%= tab %>&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>">Đóng</a>
+      <a class="btn btn-secondary" style="text-decoration: none; text-align: center; border: 1px solid #d1d5db; display: inline-block; padding: 8px 16px; border-radius: 6px; color:#374151; background:#fff;" href="#" onclick="window.location.href='requests?action=pending&tab=<%= tab %>&page=' + currentPage + '&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>'; return false;">Đóng</a>
     </div>
   </div>
 </div>
@@ -292,20 +331,147 @@
 
     function submitTab(tabName) {
         document.getElementById('formTabValue').value = tabName;
-        document.getElementById('filterForm').submit();
+        // Reset page back to 1 on tab change
+        var form = document.getElementById('filterForm');
+        var pageInput = document.createElement('input');
+        pageInput.type = 'hidden';
+        pageInput.name = 'page';
+        pageInput.value = '1';
+        form.appendChild(pageInput);
+        form.submit();
     }
+
+    function resetPageAndSubmit() {
+        var form = document.getElementById('filterForm');
+        var pageInput = document.createElement('input');
+        pageInput.type = 'hidden';
+        pageInput.name = 'page';
+        pageInput.value = '1';
+        form.appendChild(pageInput);
+        form.submit();
+    }
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let allRows = [];
+
+    function initPagination() {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentPage = parseInt(urlParams.get('page')) || 1;
+        allRows = Array.from(document.querySelectorAll('tbody .request-row'));
+        renderPagination();
+    }
+
+    function renderPagination() {
+        allRows.forEach(function(r) { r.style.display = 'none'; });
+
+        var total = allRows.length;
+        var totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        var startIdx = (currentPage - 1) * PAGE_SIZE;
+        var endIdx = Math.min(startIdx + PAGE_SIZE, total);
+
+        for (var i = startIdx; i < endIdx; i++) {
+            allRows[i].style.display = '';
+        }
+
+        // Update badge count
+        var badge = document.getElementById('requestCountBadge');
+        if (badge) {
+            badge.textContent = total + ' đơn';
+        }
+
+        var infoEl = document.getElementById('paginationInfo');
+        if (infoEl) {
+            if (total === 0) {
+                infoEl.textContent = 'Không tìm thấy yêu cầu nào phù hợp';
+            } else {
+                infoEl.innerHTML = 'Hiển thị <strong>' + (startIdx + 1) + '-' + endIdx + '</strong> / ' + total + ' đơn';
+            }
+        }
+
+        var controlsEl = document.getElementById('paginationControls');
+        if (!controlsEl) return;
+        controlsEl.innerHTML = '';
+
+        if (totalPages <= 1) {
+            return;
+        }
+
+        // Nút Trước
+        var prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '&laquo; Trước';
+        prevBtn.className = 'page-nav-btn';
+        prevBtn.type = 'button';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPagination();
+            }
+        };
+        controlsEl.appendChild(prevBtn);
+
+        // Các số trang
+        for (var p = 1; p <= totalPages; p++) {
+            if (totalPages > 7) {
+                if (p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 2) {
+                    if (p === 2 || p === totalPages - 1) {
+                        var dots = document.createElement('span');
+                        dots.textContent = '...';
+                        dots.style.padding = '0 4px';
+                        dots.style.color = '#9ca3af';
+                        controlsEl.appendChild(dots);
+                    }
+                    continue;
+                }
+            }
+            var pageBtn = document.createElement('button');
+            pageBtn.textContent = p;
+            pageBtn.type = 'button';
+            pageBtn.className = 'page-num-btn' + (p === currentPage ? ' active' : '');
+            pageBtn.onclick = (function(page) {
+                return function() {
+                    currentPage = page;
+                    renderPagination();
+                };
+            })(p);
+            controlsEl.appendChild(pageBtn);
+        }
+
+        // Nút Tiếp
+        var nextBtn = document.createElement('button');
+        nextBtn.innerHTML = 'Tiếp &raquo;';
+        nextBtn.className = 'page-nav-btn';
+        nextBtn.type = 'button';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPagination();
+            }
+        };
+        controlsEl.appendChild(nextBtn);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initPagination();
+    });
 
     <% if (selectedRequest != null) { %>
     window.addEventListener('click', function(event) {
         var modal = document.getElementById('requestDetailModal');
         if (event.target === modal) {
-            window.location.href = 'requests?action=pending&tab=<%= tab %>&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>';
+            window.location.href = 'requests?action=pending&tab=<%= tab %>&page=' + currentPage + '&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>';
         }
     });
 
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
-            window.location.href = 'requests?action=pending&tab=<%= tab %>&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>';
+            window.location.href = 'requests?action=pending&tab=<%= tab %>&page=' + currentPage + '&searchName=<%= searchNameEnc %>&filterType=<%= filterTypeEnc %>';
         }
     });
     <% } %>
