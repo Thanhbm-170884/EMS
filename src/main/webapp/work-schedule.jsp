@@ -163,8 +163,7 @@
                                                                     <div class="schedule-working-center">
                                                                         <c:choose>
                                                                             <c:when test="${shift.working}">
-                                                                                <span class="status-working">Làm
-                                                                                    việc</span>
+                                                                                <span class="status-working">Ngày làm</span>
                                                                             </c:when>
                                                                             <c:otherwise>
                                                                                 <span class="status-off">Ngày
@@ -462,7 +461,7 @@
                             el.querySelectorAll('[data-field="start"],[data-field="end"],[data-field="bstart"],[data-field="bend"]')
                                 .forEach(inp => inp.disabled = !rule.working);
                             if (label) {
-                                label.textContent = rule.working ? 'Làm việc' : 'Nghỉ';
+                                label.textContent = rule.working ? 'Ngày làm' : 'Nghỉ';
                                 label.className = 'rule-working-label' + (rule.working ? '' : ' off');
                             }
                         }
@@ -578,7 +577,7 @@
                                 '<span class="rule-row-label">Trạng thái</span>' +
                                 '<div class="rule-toggle-row" style="display: flex; align-items: center; gap: 8px;">' +
                                 '<input type="checkbox" id="working-checkbox-' + rule.id + '" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')" style="width: 18px; height: 18px; cursor: pointer;">' +
-                                '<label for="working-checkbox-' + rule.id + '" class="rule-working-label' + (rule.working ? '' : ' off') + '" style="cursor: pointer;">' + (rule.working ? 'Làm việc' : 'Nghỉ') + '</label>' +
+                                '<label for="working-checkbox-' + rule.id + '" class="rule-working-label' + (rule.working ? '' : ' off') + '" style="cursor: pointer;">' + (rule.working ? 'Ngày Làm' : 'Nghỉ') + '</label>' +
                                 '</div>' +
                                 '</div>' +
                                 '</div>' +
