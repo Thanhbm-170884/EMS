@@ -1,8 +1,6 @@
 package com.ems.controller;
 
-import com.ems.dao.PositionDAO;
-import com.ems.util.DBConnection;
-
+import com.ems.service.PositionManageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,16 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
 @WebServlet(name = "PositionServlet", urlPatterns = {"/positions"})
 public class PositionServlet extends HttpServlet {
 
-    private final PositionDAO positionDAO = new PositionDAO();
+    private final PositionManageService positionService = new PositionManageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -42,32 +37,17 @@ public class PositionServlet extends HttpServlet {
         }
 
         String username = (String) session.getAttribute("username");
-        String adminFullName = "";
-        String adminDeptName = "";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "SELECT u.FullName, d.Name AS deptName FROM accounts a " +
-                 "JOIN users u ON a.UserId = u.Id " +
-                 "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
-                 "WHERE a.Username = ?")) {
-            ps.setString(1, username);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    adminFullName = rs.getString("FullName");
-                    adminDeptName = rs.getString("deptName");
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        Map<String, String> adminInfo = positionService.getAdminHeaderInfo(username);
 
-        request.setAttribute("fullName", adminFullName);
-        request.setAttribute("deptName", adminDeptName);
+        request.setAttribute("fullName", adminInfo.get("fullName"));
+        request.setAttribute("deptName", adminInfo.get("deptName"));
 
-        List<Map<String, Object>> positionsList = positionDAO.getAllPositionsWithStats();
-        Map<Integer, List<Map<String, Object>>> posEmployeesMap = positionDAO.getAllEmployeesGroupedByPosition();
+        List<Map<String, Object>> positionsList = positionService.getAllPositionsWithStats();
+        Map<Integer, List<Map<String, Object>>> posEmployeesMap = positionService.getAllEmployeesGroupedByPosition();
 
-        int totalPositions = positionsList != null ? positionsList.size() : 0;
+        Map<String, Integer> stats = positionService.getPositionStats(positionsList);
+        int totalPositions = stats.getOrDefault("total", 0);
+
         int assignedPositions = 0;
         if (positionsList != null) {
             for (Map<String, Object> p : positionsList) {
@@ -159,13 +139,13 @@ public class PositionServlet extends HttpServlet {
         code = code.trim().toUpperCase();
         name = name.trim();
 
-        if (positionDAO.isCodeExists(code, 0)) {
+        if (positionService.isCodeExists(code, 0)) {
             session.setAttribute("errorMsg", "Mã chức vụ '" + code + "' đã tồn tại!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
         }
 
-        if (positionDAO.isNameExists(name, 0)) {
+        if (positionService.isNameExists(name, 0)) {
             session.setAttribute("errorMsg", "Tên chức vụ '" + name + "' đã tồn tại!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
@@ -185,7 +165,7 @@ public class PositionServlet extends HttpServlet {
             }
         } catch (NumberFormatException ignored) {}
 
-        boolean ok = positionDAO.addPosition(code, name, jobLevel, defaultShiftId);
+        boolean ok = positionService.createPosition(code, name, jobLevel, defaultShiftId);
         if (ok) {
             session.setAttribute("successMsg", "Thêm mới chức vụ thành công!");
         } else {
@@ -219,7 +199,7 @@ public class PositionServlet extends HttpServlet {
 
         name = name.trim();
 
-        if (positionDAO.isNameExists(name, id)) {
+        if (positionService.isNameExists(name, id)) {
             session.setAttribute("errorMsg", "Tên chức vụ '" + name + "' đã tồn tại!");
             response.sendRedirect(request.getContextPath() + "/positions");
             return;
@@ -239,7 +219,7 @@ public class PositionServlet extends HttpServlet {
             }
         } catch (NumberFormatException ignored) {}
 
-        boolean ok = positionDAO.updatePosition(id, name, jobLevel, defaultShiftId);
+        boolean ok = positionService.updatePosition(id, name, jobLevel, defaultShiftId);
         if (ok) {
             session.setAttribute("successMsg", "Cập nhật chức vụ thành công!");
         } else {
@@ -261,7 +241,14 @@ public class PositionServlet extends HttpServlet {
             return;
         }
 
-        boolean ok = positionDAO.deletePosition(id);
+        int count = positionService.countEmployees(id);
+        if (count > 0) {
+            session.setAttribute("errorMsg", "Không thể xóa! Đang có " + count + " nhân viên giữ chức vụ này.");
+            response.sendRedirect(request.getContextPath() + "/positions");
+            return;
+        }
+
+        boolean ok = positionService.deletePosition(id);
         if (ok) {
             session.setAttribute("successMsg", "Xóa chức vụ thành công!");
         } else {

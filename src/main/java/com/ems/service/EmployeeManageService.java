@@ -110,6 +110,30 @@ public class EmployeeManageService {
         return userDAO.updateEmployeeFull(userId, fullName.trim(), emailTrimmed, phoneTrimmed, gender, dob, deptId, posId, dependentsCount, baseSalary);
     }
 
+    /** Kiểm tra email đã tồn tại trong hệ thống chưa */
+    public boolean isEmailExists(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return userDAO.isEmailExists(email.trim().toLowerCase());
+    }
+
+    /** Kiểm tra số điện thoại đã tồn tại trong hệ thống chưa */
+    public boolean isPhoneExists(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        return userDAO.isPhoneExists(phone.trim());
+    }
+
+    /** Kiểm tra email có trùng với nhân viên khác không */
+    public boolean isEmailExistsForOtherUserId(String email, int userId) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return userDAO.isEmailExistsForOtherUserId(email.trim().toLowerCase(), userId);
+    }
+
+    /** Kiểm tra số điện thoại có trùng với nhân viên khác không */
+    public boolean isPhoneExistsForOtherUserId(String phone, int userId) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        return userDAO.isPhoneExistsForOtherUserId(phone.trim(), userId);
+    }
+
     /**
      * Thay đổi trạng thái làm việc của nhân viên (Đang làm <-> Nghỉ)
      */
@@ -117,5 +141,35 @@ public class EmployeeManageService {
         if (userId <= 0) return false;
         userDAO.updateEmployeeStatus(userId, !currentStatus);
         return true;
+    }
+
+    /**
+     * Lấy thông tin Admin đăng nhập để hiển thị Topbar
+     */
+    public Map<String, String> getAdminHeaderInfo(String username) {
+        Map<String, String> info = new HashMap<>();
+        info.put("fullName", "Admin");
+        info.put("deptName", "Quản trị viên");
+        if (username == null || username.trim().isEmpty()) return info;
+
+        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(
+                     "SELECT u.FullName, d.Name as deptName FROM accounts a " +
+                     "JOIN users u ON a.UserId = u.Id " +
+                     "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                     "WHERE a.Username = ?")) {
+            ps.setString(1, username.trim());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fn = rs.getString("FullName");
+                    String dn = rs.getString("deptName");
+                    if (fn != null && !fn.isEmpty()) info.put("fullName", fn);
+                    if (dn != null && !dn.isEmpty()) info.put("deptName", dn);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return info;
     }
 }

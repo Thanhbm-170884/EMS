@@ -45,6 +45,24 @@ public class PositionManageService {
         return positionDAO.getAllShifts();
     }
 
+    /** Kiểm tra mã chức vụ tồn tại */
+    public boolean isCodeExists(String code, int excludeId) {
+        if (code == null || code.trim().isEmpty()) return false;
+        return positionDAO.isCodeExists(code.trim().toUpperCase(), excludeId);
+    }
+
+    /** Kiểm tra tên chức vụ tồn tại */
+    public boolean isNameExists(String name, int excludeId) {
+        if (name == null || name.trim().isEmpty()) return false;
+        return positionDAO.isNameExists(name.trim(), excludeId);
+    }
+
+    /** Đếm số lượng nhân viên giữ chức vụ */
+    public int countEmployees(int positionId) {
+        if (positionId <= 0) return 0;
+        return positionDAO.countEmployees(positionId);
+    }
+
     /**
      * Tạo mới chức vụ
      */
@@ -92,5 +110,35 @@ public class PositionManageService {
     /** Lấy danh sách nhân sự gom nhóm theo chức vụ */
     public Map<Integer, List<Map<String, Object>>> getAllEmployeesGroupedByPosition() {
         return positionDAO.getAllEmployeesGroupedByPosition();
+    }
+
+    /**
+     * Lấy thông tin Admin đăng nhập để hiển thị Topbar
+     */
+    public Map<String, String> getAdminHeaderInfo(String username) {
+        Map<String, String> info = new HashMap<>();
+        info.put("fullName", "Admin");
+        info.put("deptName", "Quản trị viên");
+        if (username == null || username.trim().isEmpty()) return info;
+
+        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(
+                     "SELECT u.FullName, d.Name AS deptName FROM accounts a " +
+                     "JOIN users u ON a.UserId = u.Id " +
+                     "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                     "WHERE a.Username = ?")) {
+            ps.setString(1, username.trim());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fn = rs.getString("FullName");
+                    String dn = rs.getString("deptName");
+                    if (fn != null && !fn.isEmpty()) info.put("fullName", fn);
+                    if (dn != null && !dn.isEmpty()) info.put("deptName", dn);
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return info;
     }
 }
