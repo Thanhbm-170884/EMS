@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.ems.dto.RequestDTO" %>
 <%@ page import="java.text.SimpleDateFormat" %>
@@ -75,24 +75,7 @@
     </style>
 </head>
 <body>
-<aside class="sidebar">
-    <a href="home" class="sidebar-brand"><div class="brand-dot">E</div><span class="brand-name">EMS</span></a>
-    <nav class="nav-group">
-        <div class="nav-section-label">Menu chính</div>
-        <a href="home" class="nav-link">Trang chủ</a>
-        <a href="#" class="nav-link">Lịch trình</a>
-        <div class="nav-section-label">Công việc</div>
-        <a href="<%= request.getContextPath() %>/requests?action=myRequests" class="nav-link active">Yêu cầu</a>
-        <a href="#" class="nav-link">Bảng lương</a>
-    </nav>
-    <div class="sidebar-footer">
-        <div class="user-block">
-            <div class="user-avatar"><%= username != null && !username.isEmpty() ? username.substring(0, 1).toUpperCase() : "N" %></div>
-            <div><div class="user-name"><%= username != null ? username : "Nhân viên" %></div><div class="user-role">Nhân viên</div></div>
-        </div>
-        <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/login'">Đăng xuất</button>
-    </div>
-</aside>
+<%@include file="/WEB-INF/jspf/sidebar.jsp"%>
 
 <main class="main-content">
     <div class="topbar"><span class="topbar-left">Yêu cầu của tôi</span><span class="topbar-right" id="topbar-date"></span></div>

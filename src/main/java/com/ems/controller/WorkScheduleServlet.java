@@ -32,7 +32,7 @@ public class WorkScheduleServlet extends HttpServlet {
         request.setAttribute("shifts", shifts);
         request.setAttribute("hasSchedule", hasSchedule);
         // Gửi ngày hiện tại để form hiển thị effectiveDate mặc định
-        request.setAttribute("today", LocalDate.now().toString());
+        request.setAttribute("today", shifts.get(0).getEffectiveDate().toString());
         request.getRequestDispatcher("/work-schedule.jsp").forward(request, response);
     }
 

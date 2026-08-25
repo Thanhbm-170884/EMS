@@ -83,9 +83,7 @@
                                                             class="fa-solid fa-check-circle"></i> ${workingCount} ngày
                                                         làm việc / tuần</span>
                                                 </div>
-                                                <span class="update-info"><i class="fa-regular fa-clock"></i> Cập nhật
-                                                    bởi
-                                                    Administrator</span>
+
                                             </div>
                                             <div class="table-responsive">
                                                 <table class="schedule-table">
@@ -95,7 +93,7 @@
                                                             <th>Bắt Đầu</th>
                                                             <th>Kết Thúc</th>
                                                             <th>Nghỉ Trưa</th>
-                                                            <th class="col-working-center">Làm Việc</th>
+                                                            <th class="col-working-center">Trạng Thái</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -163,8 +161,7 @@
                                                                     <div class="schedule-working-center">
                                                                         <c:choose>
                                                                             <c:when test="${shift.working}">
-                                                                                <span class="status-working">Làm
-                                                                                    việc</span>
+                                                                                <span class="status-working">Ngày làm</span>
                                                                             </c:when>
                                                                             <c:otherwise>
                                                                                 <span class="status-off">Ngày
@@ -349,20 +346,25 @@
                             if (_hasSchedule && _existingShifts.length > 0) {
                                 const groups = new Map();
                                 _existingShifts.forEach(s => {
+                                    if (!s.working) return; // ngày nghỉ không cần tạo rule, mặc định đã là OFF
                                     const start = s.start.substring(0, 5);
                                     const end = s.end.substring(0, 5);
                                     const bstart = s.bstart.substring(0, 5);
                                     const bend = s.bend.substring(0, 5);
-                                    const key = s.working + '|' + start + '|' + end + '|' + bstart + '|' + bend;
+                                    const key = start + '|' + end + '|' + bstart + '|' + bend;
                                     if (!groups.has(key)) {
-                                        groups.set(key, { days: new Set(), start, end, bstart, bend, working: s.working });
+                                        groups.set(key, { days: new Set(), start, end, bstart, bend, working: true });
                                     }
                                     groups.get(key).days.add(s.dow);
                                 });
-                                groups.forEach(g => pushRule(g));
+                                if (groups.size > 0) {
+                                    groups.forEach(g => pushRule(g));
+                                } else {
+                                    pushRule({ days: new Set([2, 3, 4, 5, 6]), start: '08:00', end: '17:00', bstart: '12:00', bend: '13:00', working: true });
+                                }
                             } else {
                                 pushRule({ days: new Set([2, 3, 4, 5, 6]), start: '08:00', end: '17:00', bstart: '12:00', bend: '13:00', working: true });
-                                pushRule({ days: new Set([7, 1]), start: '', end: '', bstart: '', bend: '', working: false });
+                                // ĐÃ BỎ dòng pushRule cho T7–CN "Nghỉ" — không cần thiết vì mặc định là OFF
                             }
                             renderAll();
                         }
@@ -462,7 +464,7 @@
                             el.querySelectorAll('[data-field="start"],[data-field="end"],[data-field="bstart"],[data-field="bend"]')
                                 .forEach(inp => inp.disabled = !rule.working);
                             if (label) {
-                                label.textContent = rule.working ? 'Làm việc' : 'Nghỉ';
+                                label.textContent = rule.working ? 'Ngày làm' : 'Nghỉ';
                                 label.className = 'rule-working-label' + (rule.working ? '' : ' off');
                             }
                         }
@@ -576,12 +578,9 @@
                                 '<!-- Toggle trạng thái -->' +
                                 '<div class="rule-row">' +
                                 '<span class="rule-row-label">Trạng thái</span>' +
-                                '<div class="rule-toggle-row">' +
-                                '<label class="switch" aria-label="Bật/tắt làm việc">' +
-                                '<input type="checkbox" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')">' +
-                                '<span class="slider"></span>' +
-                                '</label>' +
-                                '<span class="rule-working-label' + (rule.working ? '' : ' off') + '">' + (rule.working ? 'Làm việc' : 'Nghỉ') + '</span>' +
+                                '<div class="rule-toggle-row" style="display: flex; align-items: center; gap: 8px;">' +
+                                '<input type="checkbox" id="working-checkbox-' + rule.id + '" data-field="working" ' + (rule.working ? 'checked' : '') + ' onchange="syncAndRenderPreview(' + rule.id + ')" style="width: 18px; height: 18px; cursor: pointer;">' +
+                                '<label for="working-checkbox-' + rule.id + '" class="rule-working-label' + (rule.working ? '' : ' off') + '" style="cursor: pointer;">' + (rule.working ? 'Ngày Làm' : 'Nghỉ') + '</label>' +
                                 '</div>' +
                                 '</div>' +
                                 '</div>' +
