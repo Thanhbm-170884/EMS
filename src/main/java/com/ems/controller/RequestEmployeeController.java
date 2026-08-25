@@ -150,8 +150,15 @@ public class RequestEmployeeController {
 
         dto.setTitle(title);
         dto.setReason(reason);
-        dto.setStartDate(parseTimestamp(startDate));
-        dto.setEndDate(parseTimestamp(endDate));
+        
+        if (requestTypeId == 3) {
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            dto.setStartDate(now);
+            dto.setEndDate(now);
+        } else {
+            dto.setStartDate(parseTimestamp(startDate));
+            dto.setEndDate(parseTimestamp(endDate));
+        }
 
         String value = request.getParameter("value");
         dto.setValue(value == null || value.isBlank() ? 1 : Double.parseDouble(value));

@@ -88,7 +88,6 @@ public class RequestManagerController {
                 return tabOk && nameOk && typeOk;
             }).collect(java.util.stream.Collectors.toList());
         }
-
         request.setAttribute("requests", filteredList);
         request.setAttribute("allRequestTypes", allRequestTypes);
         request.setAttribute("tab", tab);
@@ -163,9 +162,17 @@ public class RequestManagerController {
             rejectionReason = rejectionReason.trim();
         }
 
+        RequestDTO req = dao.getById(id);
+
         if (!dao.updateStatusForApprover(id, accountId, status, rejectionReason)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
+        }
+
+        if ("Approved".equalsIgnoreCase(status) && req != null) {
+            if (req.getRequestTypeId() == 1) {
+                balanceDao.deductLeaveDays(req.getCreatedByAccountId(), req.getValue());
+            }
         }
 
         response.sendRedirect(

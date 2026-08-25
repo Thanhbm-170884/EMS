@@ -10,12 +10,13 @@ public class EmployeeBalanceDTO {
     private int usedDays;
     private int remainingDays;
     private double advancedThisMonth;
+    private double baseSalary;
 
     public EmployeeBalanceDTO() {
     }
 
-    public EmployeeBalanceDTO(int userId, String employeeName, String departmentName, 
-                              int totalDays, int usedDays, int remainingDays, double advancedThisMonth) {
+    public EmployeeBalanceDTO(int userId, String employeeName, String departmentName,
+            int totalDays, int usedDays, int remainingDays, double advancedThisMonth, double baseSalary) {
         this.userId = userId;
         this.employeeName = employeeName;
         this.departmentName = departmentName;
@@ -23,6 +24,7 @@ public class EmployeeBalanceDTO {
         this.usedDays = usedDays;
         this.remainingDays = remainingDays;
         this.advancedThisMonth = advancedThisMonth;
+        this.baseSalary = baseSalary;
     }
 
     public int getUserId() {
@@ -79,5 +81,13 @@ public class EmployeeBalanceDTO {
 
     public void setAdvancedThisMonth(double advancedThisMonth) {
         this.advancedThisMonth = advancedThisMonth;
+    }
+
+    public double getBaseSalary() {
+        return baseSalary;
+    }
+
+    public void setBaseSalary(double baseSalary) {
+        this.baseSalary = baseSalary;
     }
 }

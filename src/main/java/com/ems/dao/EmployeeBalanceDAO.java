@@ -19,14 +19,14 @@ public class EmployeeBalanceDAO {
 
         List<EmployeeBalanceDTO> list = new ArrayList<>();
 
-        String sql =
-                "SELECT " +
+        String sql = "SELECT " +
                 "    u.Id AS UserId, " +
                 "    u.FullName AS EmployeeName, " +
                 "    d.Name AS DepartmentName, " +
                 "    COALESCE(lb.TotalDays, 12) AS TotalDays, " +
                 "    COALESCE(lb.UsedDays, 0) AS UsedDays, " +
                 "    COALESCE(lb.RemainingDays, 12) AS RemainingDays, " +
+                "    COALESCE(ebs.BaseSalary, 0) AS BaseSalary, " +
                 "    ( " +
                 "        SELECT COALESCE(SUM(r.Value), 0) " +
                 "        FROM Requests r " +
@@ -46,25 +46,26 @@ public class EmployeeBalanceDAO {
                 "LEFT JOIN leavebalances lb " +
                 "    ON u.Id = lb.UserId " +
                 "    AND lb.Year = YEAR(CURDATE()) " +
+                "LEFT JOIN employmentbasesalarys ebs " +
+                "    ON u.Id = ebs.UserId " +
                 "WHERE acc.Id IS NOT NULL " +
                 "ORDER BY u.FullName ASC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
 
-                EmployeeBalanceDTO employeeBalance =
-                        new EmployeeBalanceDTO(
-                                rs.getInt("UserId"),
-                                rs.getString("EmployeeName"),
-                                rs.getString("DepartmentName"),
-                                rs.getInt("TotalDays"),
-                                rs.getInt("UsedDays"),
-                                rs.getInt("RemainingDays"),
-                                rs.getDouble("AdvancedThisMonth")
-                        );
+                EmployeeBalanceDTO employeeBalance = new EmployeeBalanceDTO(
+                        rs.getInt("UserId"),
+                        rs.getString("EmployeeName"),
+                        rs.getString("DepartmentName"),
+                        rs.getInt("TotalDays"),
+                        rs.getInt("UsedDays"),
+                        rs.getInt("RemainingDays"),
+                        rs.getDouble("AdvancedThisMonth"),
+                        rs.getDouble("BaseSalary"));
 
                 list.add(employeeBalance);
             }
@@ -81,14 +82,14 @@ public class EmployeeBalanceDAO {
      */
     public EmployeeBalanceDTO getEmployeeBalanceByUserId(int userId) {
 
-        String sql =
-                "SELECT " +
+        String sql = "SELECT " +
                 "    u.Id AS UserId, " +
                 "    u.FullName AS EmployeeName, " +
                 "    d.Name AS DepartmentName, " +
                 "    COALESCE(lb.TotalDays, 12) AS TotalDays, " +
                 "    COALESCE(lb.UsedDays, 0) AS UsedDays, " +
                 "    COALESCE(lb.RemainingDays, 12) AS RemainingDays, " +
+                "    COALESCE(ebs.BaseSalary, 0) AS BaseSalary, " +
                 "    ( " +
                 "        SELECT COALESCE(SUM(r.Value), 0) " +
                 "        FROM Requests r " +
@@ -106,10 +107,12 @@ public class EmployeeBalanceDAO {
                 "LEFT JOIN leavebalances lb " +
                 "    ON u.Id = lb.UserId " +
                 "    AND lb.Year = YEAR(CURDATE()) " +
+                "LEFT JOIN employmentbasesalarys ebs " +
+                "    ON u.Id = ebs.UserId " +
                 "WHERE u.Id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
 
@@ -124,8 +127,8 @@ public class EmployeeBalanceDAO {
                             rs.getInt("TotalDays"),
                             rs.getInt("UsedDays"),
                             rs.getInt("RemainingDays"),
-                            rs.getDouble("AdvancedThisMonth")
-                    );
+                            rs.getDouble("AdvancedThisMonth"),
+                            rs.getDouble("BaseSalary"));
                 }
             }
 
@@ -141,13 +144,12 @@ public class EmployeeBalanceDAO {
      */
     public boolean existsBalance(int userId, int year) {
 
-        String sql =
-                "SELECT COUNT(*) " +
+        String sql = "SELECT COUNT(*) " +
                 "FROM leavebalances " +
                 "WHERE UserId = ? AND Year = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
             ps.setInt(2, year);
@@ -172,16 +174,14 @@ public class EmployeeBalanceDAO {
     public boolean addEmployeeBalance(
             int userId,
             int year,
-            int totalDays
-    ) {
+            int totalDays) {
 
-        String sql =
-                "INSERT INTO leavebalances " +
+        String sql = "INSERT INTO leavebalances " +
                 "(UserId, Year, TotalDays, UsedDays, RemainingDays) " +
                 "VALUES (?, ?, ?, 0, ?)";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
             ps.setInt(2, year);
@@ -204,13 +204,11 @@ public class EmployeeBalanceDAO {
             int userId,
             int year,
             int totalDays,
-            int usedDays
-    ) {
+            int usedDays) {
 
         int remainingDays = totalDays - usedDays;
 
-        String sql =
-                "UPDATE leavebalances " +
+        String sql = "UPDATE leavebalances " +
                 "SET TotalDays = ?, " +
                 "    UsedDays = ?, " +
                 "    RemainingDays = ? " +
@@ -218,7 +216,7 @@ public class EmployeeBalanceDAO {
                 "AND Year = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, totalDays);
             ps.setInt(2, usedDays);
@@ -241,18 +239,16 @@ public class EmployeeBalanceDAO {
     public boolean updateUsedDays(
             int userId,
             int year,
-            int usedDays
-    ) {
+            int usedDays) {
 
-        String sql =
-                "UPDATE leavebalances " +
+        String sql = "UPDATE leavebalances " +
                 "SET UsedDays = ?, " +
                 "    RemainingDays = TotalDays - ? " +
                 "WHERE UserId = ? " +
                 "AND Year = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, usedDays);
             ps.setInt(2, usedDays);
@@ -265,6 +261,39 @@ public class EmployeeBalanceDAO {
             e.printStackTrace();
         }
 
+        return false;
+    }
+
+    /**
+     * Trừ số ngày phép của nhân viên khi đơn nghỉ phép được duyệt.
+     */
+    public boolean deductLeaveDays(int createdByAccountId, double days) {
+        String userSql = "SELECT UserId FROM accounts WHERE Id = ?";
+        String updateSql = "UPDATE leavebalances " +
+                "SET UsedDays = UsedDays + ?, " +
+                "    RemainingDays = RemainingDays - ? " +
+                "WHERE UserId = ? AND Year = YEAR(CURDATE())";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement psUser = conn.prepareStatement(userSql)) {
+            
+            psUser.setInt(1, createdByAccountId);
+            try (ResultSet rs = psUser.executeQuery()) {
+                if (rs.next()) {
+                    int userId = rs.getInt("UserId");
+                    
+                    try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                        psUpdate.setDouble(1, days);
+                        psUpdate.setDouble(2, days);
+                        psUpdate.setInt(3, userId);
+                        
+                        return psUpdate.executeUpdate() > 0;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 }
