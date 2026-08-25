@@ -419,7 +419,7 @@
                                 <th>Ca làm việc</th>
                                 <th>Từ ngày</th>
                                 <th>Đến ngày</th>
-                                <th>Ngày</th>
+                                <th>Ngày Làm Việc</th>
                                 <th>Số NV</th>
                                 <th style="text-align:right;">Hành động</th>
                             </tr>
@@ -531,10 +531,10 @@
                                                class="btn btn-sm btn-secondary" title="Sửa">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <button class="btn btn-sm btn-danger" title="Xóa"
-                                                    onclick="confirmDelete(${b.id},'${fn:escapeXml(b.name)}')">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
+<%--                                            <button class="btn btn-sm btn-danger" title="Xóa"--%>
+<%--                                                    onclick="confirmDelete(${b.id},'${fn:escapeXml(b.name)}')">--%>
+<%--                                                <i class="fa-solid fa-trash"></i>--%>
+<%--                                            </button>--%>
                                         </div>
                                     </td>
                                 </tr>
