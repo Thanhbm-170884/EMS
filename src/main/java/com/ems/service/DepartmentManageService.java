@@ -44,6 +44,24 @@ public class DepartmentManageService {
         return departmentDAO.getActiveEmployeesForHead();
     }
 
+    /** Kiểm tra mã phòng ban tồn tại */
+    public boolean isCodeExists(String code, Integer excludeId) {
+        if (code == null || code.trim().isEmpty()) return false;
+        return departmentDAO.isCodeExists(code.trim().toUpperCase(), excludeId);
+    }
+
+    /** Kiểm tra tên phòng ban tồn tại */
+    public boolean isNameExists(String name, Integer excludeId) {
+        if (name == null || name.trim().isEmpty()) return false;
+        return departmentDAO.isNameExists(name.trim(), excludeId);
+    }
+
+    /** Đếm số lượng nhân viên trong phòng ban */
+    public int countEmployees(int departmentId) {
+        if (departmentId <= 0) return 0;
+        return departmentDAO.countEmployees(departmentId);
+    }
+
     /**
      * Tạo mới phòng ban
      */
@@ -92,5 +110,35 @@ public class DepartmentManageService {
     /** Lấy danh sách nhân viên nhóm theo phòng ban */
     public Map<Integer, List<Map<String, Object>>> getAllEmployeesGroupedByDepartment() {
         return departmentDAO.getAllEmployeesGroupedByDepartment();
+    }
+
+    /**
+     * Lấy thông tin Admin đăng nhập để hiển thị Topbar
+     */
+    public Map<String, String> getAdminHeaderInfo(String username) {
+        Map<String, String> info = new HashMap<>();
+        info.put("fullName", "Admin");
+        info.put("deptName", "Quản trị viên");
+        if (username == null || username.trim().isEmpty()) return info;
+
+        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(
+                     "SELECT u.FullName, d.Name as deptName FROM accounts a " +
+                     "JOIN users u ON a.UserId = u.Id " +
+                     "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                     "WHERE a.Username = ?")) {
+            ps.setString(1, username.trim());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fn = rs.getString("FullName");
+                    String dn = rs.getString("deptName");
+                    if (fn != null && !fn.isEmpty()) info.put("fullName", fn);
+                    if (dn != null && !dn.isEmpty()) info.put("deptName", dn);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return info;
     }
 }

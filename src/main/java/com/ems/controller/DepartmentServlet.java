@@ -1,7 +1,6 @@
 package com.ems.controller;
 
-import com.ems.dao.DepartmentDAO;
-import com.ems.util.DBConnection;
+import com.ems.service.DepartmentManageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,16 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
 @WebServlet(name = "DepartmentServlet", urlPatterns = {"/departments"})
 public class DepartmentServlet extends HttpServlet {
 
-    private final DepartmentDAO departmentDAO = new DepartmentDAO();
+    private final DepartmentManageService departmentService = new DepartmentManageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -40,44 +36,21 @@ public class DepartmentServlet extends HttpServlet {
             return;
         }
 
-        // Lấy thông tin Admin đang đăng nhập để hiển thị trên Topbar / Sidebar
+        // Lấy thông tin Admin đang đăng nhập via Service
         String username = (String) session.getAttribute("username");
-        String adminFullName = "";
-        String adminDeptName = "";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "SELECT u.FullName, d.Name as deptName FROM accounts a " +
-                 "JOIN users u ON a.UserId = u.Id " +
-                 "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
-                 "WHERE a.Username = ?")) {
-            ps.setString(1, username);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    adminFullName = rs.getString("FullName");
-                    adminDeptName = rs.getString("deptName");
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        Map<String, String> adminInfo = departmentService.getAdminHeaderInfo(username);
 
-        request.setAttribute("fullName", adminFullName);
-        request.setAttribute("deptName", adminDeptName);
+        request.setAttribute("fullName", adminInfo.get("fullName"));
+        request.setAttribute("deptName", adminInfo.get("deptName"));
 
-        // Lấy danh sách phòng ban và danh sách nhân sự ứng viên làm Trưởng phòng
-        List<Map<String, Object>> departmentsList = departmentDAO.getAllDepartmentsWithStats();
-        List<Map<String, Object>> headCandidatesList = departmentDAO.getActiveEmployeesForHead();
-        Map<Integer, List<Map<String, Object>>> deptEmployeesMap = departmentDAO.getAllEmployeesGroupedByDepartment();
+        // Lấy danh sách phòng ban và danh sách nhân sự ứng viên làm Trưởng phòng via Service
+        List<Map<String, Object>> departmentsList = departmentService.getAllDepartmentsWithStats();
+        List<Map<String, Object>> headCandidatesList = departmentService.getActiveEmployeesForHead();
+        Map<Integer, List<Map<String, Object>>> deptEmployeesMap = departmentService.getAllEmployeesGroupedByDepartment();
 
-        int totalDepts = departmentsList != null ? departmentsList.size() : 0;
-        int assignedHeadCount = 0;
-        if (departmentsList != null) {
-            for (Map<String, Object> d : departmentsList) {
-                if (d.get("headAccountId") != null) {
-                    assignedHeadCount++;
-                }
-            }
-        }
+        Map<String, Integer> stats = departmentService.getDepartmentStats(departmentsList);
+        int totalDepts = stats.getOrDefault("total", 0);
+        int assignedHeadCount = stats.getOrDefault("withHead", 0);
 
         // Flash messages
         String successMsg = (String) session.getAttribute("successMsg");
@@ -145,12 +118,12 @@ public class DepartmentServlet extends HttpServlet {
                     code = code.trim().toUpperCase();
                     name = name.trim();
 
-                    if (departmentDAO.isCodeExists(code, null)) {
+                    if (departmentService.isCodeExists(code, null)) {
                         session.setAttribute("errorMsg", "Mã phòng ban '" + code + "' đã tồn tại trong hệ thống!");
                         break;
                     }
 
-                    if (departmentDAO.isNameExists(name, null)) {
+                    if (departmentService.isNameExists(name, null)) {
                         session.setAttribute("errorMsg", "Tên phòng ban '" + name + "' đã tồn tại trong hệ thống!");
                         break;
                     }
@@ -160,7 +133,7 @@ public class DepartmentServlet extends HttpServlet {
                         headAccountId = Integer.parseInt(headStr);
                     }
 
-                    boolean ok = departmentDAO.addDepartment(code, name, headAccountId);
+                    boolean ok = departmentService.createDepartment(code, name, headAccountId);
                     if (ok) {
                         session.setAttribute("successMsg", "Thêm mới phòng ban thành công!");
                     } else {
@@ -182,7 +155,7 @@ public class DepartmentServlet extends HttpServlet {
                     int id = Integer.parseInt(idStr);
                     name = name.trim();
 
-                    if (departmentDAO.isNameExists(name, id)) {
+                    if (departmentService.isNameExists(name, id)) {
                         session.setAttribute("errorMsg", "Tên phòng ban '" + name + "' đã tồn tại trong hệ thống!");
                         break;
                     }
@@ -192,7 +165,7 @@ public class DepartmentServlet extends HttpServlet {
                         headAccountId = Integer.parseInt(headStr);
                     }
 
-                    boolean ok = departmentDAO.updateDepartment(id, name, headAccountId);
+                    boolean ok = departmentService.updateDepartment(id, name, headAccountId);
                     if (ok) {
                         session.setAttribute("successMsg", "Cập nhật thông tin phòng ban thành công!");
                     } else {
@@ -205,11 +178,11 @@ public class DepartmentServlet extends HttpServlet {
                     String idStr = request.getParameter("id");
                     if (idStr != null && !idStr.trim().isEmpty()) {
                         int id = Integer.parseInt(idStr);
-                        int count = departmentDAO.countEmployees(id);
+                        int count = departmentService.countEmployees(id);
                         if (count > 0) {
                             session.setAttribute("errorMsg", "Không thể xóa! Phòng ban này hiện đang có " + count + " nhân sự làm việc.");
                         } else {
-                            boolean ok = departmentDAO.deleteDepartment(id);
+                            boolean ok = departmentService.deleteDepartment(id);
                             if (ok) {
                                 session.setAttribute("successMsg", "Đã xóa phòng ban thành công!");
                             } else {

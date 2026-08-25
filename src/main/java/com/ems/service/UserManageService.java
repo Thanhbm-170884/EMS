@@ -64,6 +64,18 @@ public class UserManageService {
         return userDAO.getEmployeesWithoutAccount();
     }
 
+    /** Kiểm tra username đã tồn tại chưa */
+    public boolean isUsernameExists(String username) {
+        if (username == null || username.trim().isEmpty()) return false;
+        return userDAO.isUsernameExists(username.trim());
+    }
+
+    /** Kiểm tra email có trùng với tài khoản khác không */
+    public boolean isEmailExistsForOther(String email, int accountId) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return userDAO.isEmailExistsForOther(email.trim(), accountId);
+    }
+
     /**
      * Cấp tài khoản mới cho nhân viên đã có hồ sơ
      */
@@ -100,11 +112,51 @@ public class UserManageService {
     }
 
     /**
+     * Cập nhật vai trò người dùng
+     */
+    public boolean updateAccountRole(int accountId, String roleName) {
+        if (accountId <= 0 || roleName == null || roleName.trim().isEmpty()) return false;
+        userDAO.updateAccountRole(accountId, roleName.trim());
+        return true;
+    }
+
+    /**
      * Khóa / Mở khóa tài khoản (Toggle Status)
      */
     public boolean toggleAccountStatus(int accountId, boolean currentStatus) {
         if (accountId <= 0) return false;
         userDAO.updateAccountStatus(accountId, !currentStatus);
         return true;
+    }
+
+    /**
+     * Lấy thông tin Admin đăng nhập để hiển thị Topbar
+     */
+    public Map<String, String> getAdminHeaderInfo(String username) {
+        Map<String, String> info = new HashMap<>();
+        info.put("fullName", "Admin");
+        info.put("deptName", "Quản trị viên");
+        if (username == null || username.trim().isEmpty()) return info;
+
+        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(
+                     "SELECT u.FullName, d.Name as DeptName " +
+                     "FROM accounts a " +
+                     "JOIN users u ON a.UserId = u.Id " +
+                     "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                     "WHERE a.Username = ?")) {
+            ps.setString(1, username.trim());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fn = rs.getString("FullName");
+                    String dn = rs.getString("DeptName");
+                    if (fn != null && !fn.isEmpty()) info.put("fullName", fn);
+                    if (dn != null && !dn.isEmpty()) info.put("deptName", dn);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return info;
     }
 }

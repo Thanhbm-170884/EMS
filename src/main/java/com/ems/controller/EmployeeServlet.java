@@ -1,6 +1,6 @@
 package com.ems.controller;
 
-import com.ems.dao.UserDAO;
+import com.ems.service.EmployeeManageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +15,7 @@ import java.util.Map;
 @WebServlet("/employees")
 public class EmployeeServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final EmployeeManageService employeeService = new EmployeeManageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,42 +33,21 @@ public class EmployeeServlet extends HttpServlet {
             return;
         }
 
-        // Lấy danh sách nhân viên đầy đủ
-        List<Map<String, Object>> employeeList = userDAO.getAllEmployees();
+        // Lấy danh sách nhân viên đầy đủ via Service
+        List<Map<String, Object>> employeeList = employeeService.getAllEmployees();
 
-        // Thống kê
-        int totalEmp = employeeList.size();
-        int activeEmp = 0;
-        for (Map<String, Object> e : employeeList) {
-            Boolean status = (Boolean) e.get("userStatus");
-            if (status != null && status) activeEmp++;
-        }
+        // Thống kê via Service
+        Map<String, Integer> stats = employeeService.getEmployeeStats(employeeList);
+        int totalEmp = stats.getOrDefault("total", 0);
+        int activeEmp = stats.getOrDefault("active", 0);
 
-        // Lấy thông tin Admin đang đăng nhập
+        // Lấy thông tin Admin đang đăng nhập via Service
         String username = (String) session.getAttribute("username");
-        String adminFullName = "";
-        String adminDeptName = "";
-        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(
-                 "SELECT u.FullName, d.Name as deptName FROM accounts a " +
-                 "JOIN users u ON a.UserId = u.Id " +
-                 "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
-                 "WHERE a.Username = ?")) {
-            ps.setString(1, username);
-            try (java.sql.ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    adminFullName = rs.getString("FullName");
-                    adminDeptName = rs.getString("deptName");
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        Map<String, String> adminInfo = employeeService.getAdminHeaderInfo(username);
 
-        // Lấy danh sách phòng ban để lọc
-        List<Map<String, Object>> deptsList = userDAO.getDepartments();
-        // Lấy danh sách chức vụ để sửa
-        List<Map<String, Object>> positionsList = userDAO.getPositions();
+        // Lấy danh sách phòng ban và chức vụ via Service
+        List<Map<String, Object>> deptsList = employeeService.getDepartments();
+        List<Map<String, Object>> positionsList = employeeService.getPositions();
 
         // Flash messages
         String successMsg = (String) session.getAttribute("successMessage");
@@ -87,8 +66,8 @@ public class EmployeeServlet extends HttpServlet {
         request.setAttribute("activeEmp", activeEmp);
         request.setAttribute("deptsList", deptsList);
         request.setAttribute("positionsList", positionsList);
-        request.setAttribute("fullName", adminFullName);
-        request.setAttribute("deptName", adminDeptName);
+        request.setAttribute("fullName", adminInfo.get("fullName"));
+        request.setAttribute("deptName", adminInfo.get("deptName"));
 
         request.getRequestDispatcher("/employees.jsp").forward(request, response);
     }
@@ -138,9 +117,9 @@ public class EmployeeServlet extends HttpServlet {
                     error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
                 } else if (!phone.matches("^0[0-9]{9}$")) {
                     error = "Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng số 0 (ví dụ: 0912345678)!";
-                } else if (userDAO.isEmailExists(email)) {
+                } else if (employeeService.isEmailExists(email)) {
                     error = "Email công ty '" + email + "' đã tồn tại trong hệ thống!";
-                } else if (userDAO.isPhoneExists(phone)) {
+                } else if (employeeService.isPhoneExists(phone)) {
                     error = "Số điện thoại '" + phone + "' đã tồn tại trong hệ thống!";
                 }
 
@@ -192,7 +171,7 @@ public class EmployeeServlet extends HttpServlet {
                     } catch (Exception ignored) {}
                 }
 
-                boolean success = userDAO.createEmployee(fullName, email, phone, gender, dob, departmentId, positionId, dependentsCount, baseSalary);
+                boolean success = employeeService.createEmployee(fullName, email, phone, gender, dob, departmentId, positionId, dependentsCount, baseSalary);
                 if (success) {
                     session.setAttribute("successMessage", "Thêm mới nhân viên thành công!");
                 } else {
@@ -237,9 +216,9 @@ public class EmployeeServlet extends HttpServlet {
                     error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
                 } else if (!phone.matches("^0[0-9]{9}$")) {
                     error = "Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng số 0 (ví dụ: 0912345678)!";
-                } else if (userDAO.isEmailExistsForOtherUserId(email, userId)) {
+                } else if (employeeService.isEmailExistsForOtherUserId(email, userId)) {
                     error = "Email công ty '" + email + "' đã được sử dụng bởi nhân viên khác!";
-                } else if (userDAO.isPhoneExistsForOtherUserId(phone, userId)) {
+                } else if (employeeService.isPhoneExistsForOtherUserId(phone, userId)) {
                     error = "Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!";
                 }
 
@@ -301,7 +280,7 @@ public class EmployeeServlet extends HttpServlet {
                     } catch (Exception ignored) {}
                 }
 
-                boolean success = userDAO.updateEmployeeFull(userId, fullName, email, phone, gender, dob, departmentId, positionId, dependentsCount, baseSalary);
+                boolean success = employeeService.updateEmployee(userId, fullName, email, phone, gender, dob, departmentId, positionId, dependentsCount, baseSalary);
                 if (success) {
                     session.setAttribute("successMessage", "Cập nhật thông tin nhân viên thành công!");
                 } else {
@@ -316,7 +295,7 @@ public class EmployeeServlet extends HttpServlet {
             try {
                 int userId         = Integer.parseInt(request.getParameter("userId"));
                 boolean currStatus = Boolean.parseBoolean(request.getParameter("currentStatus"));
-                userDAO.updateEmployeeStatus(userId, !currStatus);
+                employeeService.toggleEmployeeStatus(userId, currStatus);
                 session.setAttribute("successMessage", "Cập nhật trạng thái nhân viên thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
