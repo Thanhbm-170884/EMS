@@ -83,9 +83,7 @@
                                                             class="fa-solid fa-check-circle"></i> ${workingCount} ngày
                                                         làm việc / tuần</span>
                                                 </div>
-                                                <span class="update-info"><i class="fa-regular fa-clock"></i> Cập nhật
-                                                    bởi
-                                                    Administrator</span>
+
                                             </div>
                                             <div class="table-responsive">
                                                 <table class="schedule-table">
@@ -348,20 +346,25 @@
                             if (_hasSchedule && _existingShifts.length > 0) {
                                 const groups = new Map();
                                 _existingShifts.forEach(s => {
+                                    if (!s.working) return; // ngày nghỉ không cần tạo rule, mặc định đã là OFF
                                     const start = s.start.substring(0, 5);
                                     const end = s.end.substring(0, 5);
                                     const bstart = s.bstart.substring(0, 5);
                                     const bend = s.bend.substring(0, 5);
-                                    const key = s.working + '|' + start + '|' + end + '|' + bstart + '|' + bend;
+                                    const key = start + '|' + end + '|' + bstart + '|' + bend;
                                     if (!groups.has(key)) {
-                                        groups.set(key, { days: new Set(), start, end, bstart, bend, working: s.working });
+                                        groups.set(key, { days: new Set(), start, end, bstart, bend, working: true });
                                     }
                                     groups.get(key).days.add(s.dow);
                                 });
-                                groups.forEach(g => pushRule(g));
+                                if (groups.size > 0) {
+                                    groups.forEach(g => pushRule(g));
+                                } else {
+                                    pushRule({ days: new Set([2, 3, 4, 5, 6]), start: '08:00', end: '17:00', bstart: '12:00', bend: '13:00', working: true });
+                                }
                             } else {
                                 pushRule({ days: new Set([2, 3, 4, 5, 6]), start: '08:00', end: '17:00', bstart: '12:00', bend: '13:00', working: true });
-                                pushRule({ days: new Set([7, 1]), start: '', end: '', bstart: '', bend: '', working: false });
+                                // ĐÃ BỎ dòng pushRule cho T7–CN "Nghỉ" — không cần thiết vì mặc định là OFF
                             }
                             renderAll();
                         }
