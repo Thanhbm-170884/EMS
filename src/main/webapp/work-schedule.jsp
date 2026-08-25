@@ -95,7 +95,7 @@
                                                             <th>Bắt Đầu</th>
                                                             <th>Kết Thúc</th>
                                                             <th>Nghỉ Trưa</th>
-                                                            <th class="col-working-center">Làm Việc</th>
+                                                            <th class="col-working-center">Trạng Thái</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
