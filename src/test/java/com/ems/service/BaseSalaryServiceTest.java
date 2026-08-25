@@ -4,6 +4,7 @@ import com.ems.dto.BaseSalaryDTO;
 import com.ems.dto.SalarySummaryDTO;
 import com.ems.dto.EmployeeBalanceDTO;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -48,6 +49,7 @@ public class BaseSalaryServiceTest {
     }
 
     @Test
+    @Disabled("Yêu cầu kết nối CSDL MySQL cục bộ")
     public void printRequestTypes() throws java.sql.SQLException {
         try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement("SELECT * FROM requesttypes");
@@ -60,6 +62,7 @@ public class BaseSalaryServiceTest {
     }
 
     @Test
+    @Disabled("Yêu cầu kết nối CSDL MySQL cục bộ")
     public void printRequests() throws java.sql.SQLException {
         try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement("SELECT r.Id, r.RequestTypeId, r.Status, r.Value, r.StartDate, r.EndDate, rt.Name FROM requests r JOIN requesttypes rt ON r.RequestTypeId = rt.Id ORDER BY r.Id DESC LIMIT 10");
@@ -72,6 +75,7 @@ public class BaseSalaryServiceTest {
     }
 
     @Test
+    @Disabled("Yêu cầu kết nối CSDL MySQL cục bộ")
     public void testDeductLeaveDaysAndRemainingSalaryAdvance() throws java.sql.SQLException {
         com.ems.dao.RequestDAO requestDao = new com.ems.dao.RequestDAO();
         com.ems.dao.EmployeeBalanceDAO balanceDao = new com.ems.dao.EmployeeBalanceDAO();
