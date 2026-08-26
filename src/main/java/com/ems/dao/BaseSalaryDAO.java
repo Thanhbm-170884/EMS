@@ -225,11 +225,10 @@ public class BaseSalaryDAO {
         return 0;
     }
 
-    public boolean updateBaseSalaryAndDependents(int userId, BigDecimal baseSalary, int dependentsCount) {
+    public boolean updateBaseSalary(int userId, BigDecimal baseSalary) {
         String sqlCheck = "SELECT COUNT(*) FROM employmentbasesalarys WHERE UserId = ?";
         String sqlUpdateSalary = "UPDATE employmentbasesalarys SET BaseSalary = ? WHERE UserId = ?";
         String sqlInsertSalary = "INSERT INTO employmentbasesalarys (BaseSalary, UserId) VALUES (?, ?)";
-        String sqlUpdateUser = "UPDATE users SET DependentsCount = ? WHERE Id = ?";
 
         Connection conn = null;
         try {
@@ -258,12 +257,6 @@ public class BaseSalaryDAO {
                     ps1.setInt(2, userId);
                     ps1.executeUpdate();
                 }
-            }
-
-            try (PreparedStatement ps2 = conn.prepareStatement(sqlUpdateUser)) {
-                ps2.setInt(1, dependentsCount);
-                ps2.setInt(2, userId);
-                ps2.executeUpdate();
             }
 
             conn.commit();

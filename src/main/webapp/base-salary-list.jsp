@@ -41,21 +41,22 @@
                               int startItem = totalFilteredItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
                               int endItem = Math.min(currentPage * pageSize, totalFilteredItems);
                               %>
-                              <%! private String buildPageUrl(String search, Integer deptId, Integer posId, int page,
-                                int pageSize) { StringBuilder sb=new
-                                StringBuilder("base-salaries?page=").append(page).append(" &pageSize=").append(pageSize);
-        if (search != null && !search.trim().isEmpty()) {
-            try {
-                sb.append(" &search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8")); } catch (Exception
-                                ignored) {} } if (deptId !=null && deptId> 0) {
-                                sb.append("&departmentId=").append(deptId);
-                                }
-                                if (posId != null && posId > 0) {
-                                sb.append("&positionId=").append(posId);
-                                }
-                                return sb.toString();
-                                }
-                                %>
+                              <%! private String buildPageUrl(String search, Integer deptId, Integer posId, int page, int pageSize) {
+    StringBuilder sb = new StringBuilder("base-salaries?page=").append(page).append("&pageSize=").append(pageSize);
+    if (search != null && !search.trim().isEmpty()) {
+        try {
+            sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8")); 
+        } catch (Exception ignored) {} 
+    } 
+    if (deptId != null && deptId > 0) {
+        sb.append("&departmentId=").append(deptId);
+    }
+    if (posId != null && posId > 0) {
+        sb.append("&positionId=").append(posId);
+    }
+    return sb.toString();
+}
+%>
                                 <!DOCTYPE html>
                                 <html lang="vi">
 

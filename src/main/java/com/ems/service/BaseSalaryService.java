@@ -46,7 +46,7 @@ public class BaseSalaryService {
         return baseSalaryDAO.getTotalEmployeeCount();
     }
 
-    public boolean updateBaseSalaryAndDependents(int userId, java.math.BigDecimal baseSalary, int dependentsCount) {
-        return baseSalaryDAO.updateBaseSalaryAndDependents(userId, baseSalary, dependentsCount);
+    public boolean updateBaseSalary(int userId, java.math.BigDecimal baseSalary) {
+        return baseSalaryDAO.updateBaseSalary(userId, baseSalary);
     }
 }

@@ -114,21 +114,13 @@ public class BaseSalaryServlet extends HttpServlet {
 
         String userIdParam = request.getParameter("userId");
         String baseSalaryParam = request.getParameter("baseSalary");
-        String dependentsCountParam = request.getParameter("dependentsCount");
-
         if (userIdParam != null && baseSalaryParam != null) {
             try {
                 int userId = Integer.parseInt(userIdParam);
                 String cleanSalaryStr = baseSalaryParam.replaceAll("[^0-9.eE+\\-]", "");
                 java.math.BigDecimal baseSalary = new java.math.BigDecimal(cleanSalaryStr);
-                
-                int dependentsCount = 0;
-                if (dependentsCountParam != null && !dependentsCountParam.trim().isEmpty()) {
-                    dependentsCount = Integer.parseInt(dependentsCountParam);
-                }
-                if (dependentsCount < 0) dependentsCount = 0;
 
-                baseSalaryService.updateBaseSalaryAndDependents(userId, baseSalary, dependentsCount);
+                baseSalaryService.updateBaseSalary(userId, baseSalary);
             } catch (Exception e) {
                 e.printStackTrace();
             }
