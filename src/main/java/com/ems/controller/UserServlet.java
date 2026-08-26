@@ -1,6 +1,6 @@
 package com.ems.controller;
 
-import com.ems.dao.UserDAO;
+import com.ems.service.UserManageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +15,7 @@ import java.util.Map;
 @WebServlet("/users")
 public class UserServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final UserManageService userService = new UserManageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,47 +33,22 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        // Fetch User list & stats
-        List<Map<String, Object>> usersList = userDAO.getAllUsers();
-        int totalCount = usersList.size();
-        int activeCount = 0;
-        int lockedCount = 0;
-        for (Map<String, Object> u : usersList) {
-            Boolean status = (Boolean) u.get("accountStatus");
-            if (status != null && status) {
-                activeCount++;
-            } else {
-                lockedCount++;
-            }
-        }
+        // Fetch User list & stats via Service
+        List<Map<String, Object>> usersList = userService.getAllUsers();
+        Map<String, Integer> stats = userService.getAccountStats(usersList);
+        int totalCount = stats.getOrDefault("total", 0);
+        int activeCount = stats.getOrDefault("active", 0);
+        int lockedCount = stats.getOrDefault("locked", 0);
 
-        // Fetch list of roles, departments, positions
-        List<String> rolesList = userDAO.getAllRoles();
-        List<Map<String, Object>> deptsList = userDAO.getDepartments();
-        List<Map<String, Object>> positionsList = userDAO.getPositions();
-        List<Map<String, Object>> employeesWithoutAccount = userDAO.getEmployeesWithoutAccount();
+        // Fetch list of roles, departments, positions via Service
+        List<String> rolesList = userService.getAllRoles();
+        List<Map<String, Object>> deptsList = userService.getDepartments();
+        List<Map<String, Object>> positionsList = userService.getPositions();
+        List<Map<String, Object>> employeesWithoutAccount = userService.getEmployeesWithoutAccount();
 
-        // Fetch fullName of logged in Admin
+        // Fetch header info of logged in Admin
         String username = (String) session.getAttribute("username");
-        String adminFullName = "";
-        String adminDeptName = "";
-        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(
-                     "SELECT u.FullName, d.Name as DeptName " +
-                     "FROM accounts a " +
-                     "JOIN users u ON a.UserId = u.Id " +
-                     "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
-                     "WHERE a.Username = ?")) {
-            ps.setString(1, username);
-            try (java.sql.ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    adminFullName = rs.getString("FullName");
-                    adminDeptName = rs.getString("DeptName");
-                }
-            }
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-        }
+        Map<String, String> adminInfo = userService.getAdminHeaderInfo(username);
 
         // Flash messages
         String successMsg = (String) session.getAttribute("successMessage");
@@ -96,8 +71,8 @@ public class UserServlet extends HttpServlet {
         request.setAttribute("positionsList", positionsList);
         request.setAttribute("employeesWithoutAccount", employeesWithoutAccount);
         request.setAttribute("adminUsername", username);
-        request.setAttribute("fullName", adminFullName);
-        request.setAttribute("deptName", adminDeptName);
+        request.setAttribute("fullName", adminInfo.get("fullName"));
+        request.setAttribute("deptName", adminInfo.get("deptName"));
 
         request.getRequestDispatcher("/users.jsp").forward(request, response);
     }
@@ -125,7 +100,7 @@ public class UserServlet extends HttpServlet {
             try {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 boolean currentStatus = Boolean.parseBoolean(request.getParameter("currentStatus"));
-                userDAO.updateAccountStatus(accountId, !currentStatus);
+                userService.toggleAccountStatus(accountId, currentStatus);
                 session.setAttribute("successMessage", "Cập nhật trạng thái tài khoản thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -135,7 +110,7 @@ public class UserServlet extends HttpServlet {
             try {
                 int accountId = Integer.parseInt(request.getParameter("accountId"));
                 String roleName = request.getParameter("roleName");
-                userDAO.updateAccountRole(accountId, roleName);
+                userService.updateAccountRole(accountId, roleName);
                 session.setAttribute("successMessage", "Cập nhật vai trò thành công!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -166,7 +141,7 @@ public class UserServlet extends HttpServlet {
                     error = "Tên tài khoản phải có ít nhất 3 ký tự!";
                 } else if (password.length() < 6) {
                     error = "Mật khẩu phải có ít nhất 6 ký tự!";
-                } else if (userDAO.isUsernameExists(username)) {
+                } else if (userService.isUsernameExists(username)) {
                     error = "Tên tài khoản (Username) '" + username + "' đã tồn tại! Vui lòng chọn tên khác.";
                 }
 
@@ -177,7 +152,7 @@ public class UserServlet extends HttpServlet {
                 }
 
                 int userId = Integer.parseInt(userIdStr.trim());
-                boolean success = userDAO.createAccountForUser(userId, username, password, role);
+                boolean success = userService.createAccountForEmployee(userId, username, password, role);
                 if (success) {
                     session.setAttribute("successMessage", "Cấp tài khoản đăng nhập thành công!");
                 } else {
@@ -199,7 +174,7 @@ public class UserServlet extends HttpServlet {
 
                 String rawEmail = request.getParameter("email");
 
-                // Validate trùng lặp khi sửa
+                // Validate
                 String error = null;
                 if (fullName.isEmpty() || email.isEmpty()) {
                     error = "Vui lòng điền đầy đủ họ và tên và email!";
@@ -209,7 +184,7 @@ public class UserServlet extends HttpServlet {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
                 } else if (!email.toLowerCase().endsWith("@techcorp.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@techcorp\\.vn$")) {
                     error = "Email công ty phải có định dạng @techcorp.vn (ví dụ: nhanvien@techcorp.vn)!";
-                } else if (userDAO.isEmailExistsForOther(email, accountId)) {
+                } else if (userService.isEmailExistsForOther(email, accountId)) {
                     error = "Email công ty '" + email + "' đã được sử dụng bởi tài khoản khác!";
                 }
 
@@ -219,7 +194,7 @@ public class UserServlet extends HttpServlet {
                     return;
                 }
 
-                boolean success = userDAO.updateAccountBasic(accountId, fullName, email, role);
+                boolean success = userService.updateAccountBasic(accountId, fullName, email, role);
                 if (success) {
                     session.setAttribute("successMessage", "Lưu thay đổi tài khoản thành công!");
                 } else {

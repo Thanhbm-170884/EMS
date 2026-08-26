@@ -102,11 +102,16 @@ public class PayrollService {
             insuranceBase = config.getMaxinsurancesalary();
         }
 
+        BigDecimal btnBase = actualBaseSalary.add(totalInsuranceAllowance);
+        if (btnBase.compareTo(new BigDecimal("106200000")) > 0){
+            btnBase = new BigDecimal("106200000");
+        }
+
         BigDecimal bhxh = insuranceBase.multiply(config.getBhxhpercent()).divide(new BigDecimal("100"), 2,
                 RoundingMode.HALF_UP);
         BigDecimal bhyt = insuranceBase.multiply(config.getBhytpercent()).divide(new BigDecimal("100"), 2,
                 RoundingMode.HALF_UP);
-        BigDecimal bhtn = insuranceBase.multiply(config.getBhtnpercent()).divide(new BigDecimal("100"), 2,
+        BigDecimal bhtn = btnBase.multiply(config.getBhtnpercent()).divide(new BigDecimal("100"), 2,
                 RoundingMode.HALF_UP);
         BigDecimal totalInsurance = bhxh.add(bhyt).add(bhtn);
 
@@ -161,11 +166,11 @@ public class PayrollService {
         } else if (income <= 30000000) {
             tax = (income * 0.10) - 500000;
         } else if (income <= 60000000) {
-            tax = (income * 0.20) - 2000000;
+            tax = (income * 0.20) - 3500000;
         } else if (income <= 100000000) {
-            tax = (income * 0.30) - 6000000;
+            tax = (income * 0.30) - 9500000;
         } else {
-            tax = (income * 0.35) - 12000000;
+            tax = (income * 0.35) - 14500000;
         }
 
         return BigDecimal.valueOf(tax).setScale(2, RoundingMode.HALF_UP);

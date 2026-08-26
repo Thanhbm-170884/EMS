@@ -1,6 +1,6 @@
 package com.ems.service;
 
-import com.ems.dao.UserDAO;
+import com.ems.dao.EmployeeDAO;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -15,11 +15,11 @@ import java.util.Map;
  */
 public class EmployeeManageService {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final EmployeeDAO employeeDAO = new EmployeeDAO();
 
     /** Lấy danh sách toàn bộ hồ sơ nhân viên */
     public List<Map<String, Object>> getAllEmployees() {
-        return userDAO.getAllEmployees();
+        return employeeDAO.getAllEmployees();
     }
 
     /** Tính toán thống kê nhân sự (Tổng số nhân viên, Đang làm việc) */
@@ -44,12 +44,12 @@ public class EmployeeManageService {
 
     /** Lấy danh sách phòng ban */
     public List<Map<String, Object>> getDepartments() {
-        return userDAO.getDepartments();
+        return employeeDAO.getDepartments();
     }
 
     /** Lấy danh sách chức vụ */
     public List<Map<String, Object>> getPositions() {
-        return userDAO.getPositions();
+        return employeeDAO.getPositions();
     }
 
     /**
@@ -71,14 +71,14 @@ public class EmployeeManageService {
         }
 
         // Kiểm tra trùng email hoặc số điện thoại
-        if (userDAO.isEmailExists(emailTrimmed)) {
+        if (employeeDAO.isEmailExists(emailTrimmed)) {
             return false;
         }
-        if (!phoneTrimmed.isEmpty() && userDAO.isPhoneExists(phoneTrimmed)) {
+        if (!phoneTrimmed.isEmpty() && employeeDAO.isPhoneExists(phoneTrimmed)) {
             return false;
         }
 
-        return userDAO.createEmployee(fullName.trim(), emailTrimmed, phoneTrimmed, gender, dob, deptId, posId, dependentsCount, baseSalary);
+        return employeeDAO.createEmployee(fullName.trim(), emailTrimmed, phoneTrimmed, gender, dob, deptId, posId, dependentsCount, baseSalary);
     }
 
     /**
@@ -100,14 +100,38 @@ public class EmployeeManageService {
         }
 
         // Kiểm tra email/phone trùng với nhân viên khác
-        if (userDAO.isEmailExistsForOtherUserId(emailTrimmed, userId)) {
+        if (employeeDAO.isEmailExistsForOtherUserId(emailTrimmed, userId)) {
             return false;
         }
-        if (!phoneTrimmed.isEmpty() && userDAO.isPhoneExistsForOtherUserId(phoneTrimmed, userId)) {
+        if (!phoneTrimmed.isEmpty() && employeeDAO.isPhoneExistsForOtherUserId(phoneTrimmed, userId)) {
             return false;
         }
 
-        return userDAO.updateEmployeeFull(userId, fullName.trim(), emailTrimmed, phoneTrimmed, gender, dob, deptId, posId, dependentsCount, baseSalary);
+        return employeeDAO.updateEmployeeFull(userId, fullName.trim(), emailTrimmed, phoneTrimmed, gender, dob, deptId, posId, dependentsCount, baseSalary);
+    }
+
+    /** Kiểm tra email đã tồn tại trong hệ thống chưa */
+    public boolean isEmailExists(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return employeeDAO.isEmailExists(email.trim().toLowerCase());
+    }
+
+    /** Kiểm tra số điện thoại đã tồn tại trong hệ thống chưa */
+    public boolean isPhoneExists(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        return employeeDAO.isPhoneExists(phone.trim());
+    }
+
+    /** Kiểm tra email có trùng với nhân viên khác không */
+    public boolean isEmailExistsForOtherUserId(String email, int userId) {
+        if (email == null || email.trim().isEmpty()) return false;
+        return employeeDAO.isEmailExistsForOtherUserId(email.trim().toLowerCase(), userId);
+    }
+
+    /** Kiểm tra số điện thoại có trùng với nhân viên khác không */
+    public boolean isPhoneExistsForOtherUserId(String phone, int userId) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        return employeeDAO.isPhoneExistsForOtherUserId(phone.trim(), userId);
     }
 
     /**
@@ -115,7 +139,37 @@ public class EmployeeManageService {
      */
     public boolean toggleEmployeeStatus(int userId, boolean currentStatus) {
         if (userId <= 0) return false;
-        userDAO.updateEmployeeStatus(userId, !currentStatus);
+        employeeDAO.updateEmployeeStatus(userId, !currentStatus);
         return true;
+    }
+
+    /**
+     * Lấy thông tin Admin đăng nhập để hiển thị Topbar
+     */
+    public Map<String, String> getAdminHeaderInfo(String username) {
+        Map<String, String> info = new HashMap<>();
+        info.put("fullName", "Admin");
+        info.put("deptName", "Quản trị viên");
+        if (username == null || username.trim().isEmpty()) return info;
+
+        try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(
+                     "SELECT u.FullName, d.Name as deptName FROM accounts a " +
+                     "JOIN users u ON a.UserId = u.Id " +
+                     "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+                     "WHERE a.Username = ?")) {
+            ps.setString(1, username.trim());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fn = rs.getString("FullName");
+                    String dn = rs.getString("deptName");
+                    if (fn != null && !fn.isEmpty()) info.put("fullName", fn);
+                    if (dn != null && !dn.isEmpty()) info.put("deptName", dn);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return info;
     }
 }
