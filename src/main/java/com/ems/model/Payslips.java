@@ -8,10 +8,8 @@ public class Payslips {
     private Integer periodid;
     private Integer standardworkdays;
     private java.math.BigDecimal actualworkdays;
-    private java.math.BigDecimal othours;
     private java.math.BigDecimal basesalary;
     private java.math.BigDecimal actualbasesalary;
-    private java.math.BigDecimal otsalary;
     private java.math.BigDecimal totalallowanceamount;
     private java.math.BigDecimal bonusamount;
     private java.math.BigDecimal grossamount;
@@ -19,13 +17,15 @@ public class Payslips {
     private java.math.BigDecimal bhytamount;
     private java.math.BigDecimal bhtnamount;
     private java.math.BigDecimal totalinsurancededuction;
+    private java.math.BigDecimal employerBhxhAmount;
+    private java.math.BigDecimal employerBhtnldAmount;
+    private java.math.BigDecimal employerBhytAmount;
+    private java.math.BigDecimal employerBhtnAmount;
+    private java.math.BigDecimal totalEmployerCost;
     private Integer dependentscount;
     private java.math.BigDecimal dependentdeduction;
     private java.math.BigDecimal taxableincome;
     private java.math.BigDecimal taxdeduction;
-    private java.math.BigDecimal penaltyamount;
-    private java.math.BigDecimal advanceamount;
-    private java.math.BigDecimal otherdeductions;
     private java.math.BigDecimal netamount;
     private String status;
     private String note;
@@ -48,17 +48,11 @@ public class Payslips {
     public java.math.BigDecimal getActualworkdays() { return actualworkdays; }
     public void setActualworkdays(java.math.BigDecimal actualworkdays) { this.actualworkdays = actualworkdays; }
     
-    public java.math.BigDecimal getOthours() { return othours; }
-    public void setOthours(java.math.BigDecimal othours) { this.othours = othours; }
-    
     public java.math.BigDecimal getBasesalary() { return basesalary; }
     public void setBasesalary(java.math.BigDecimal basesalary) { this.basesalary = basesalary; }
     
     public java.math.BigDecimal getActualbasesalary() { return actualbasesalary; }
     public void setActualbasesalary(java.math.BigDecimal actualbasesalary) { this.actualbasesalary = actualbasesalary; }
-    
-    public java.math.BigDecimal getOtsalary() { return otsalary; }
-    public void setOtsalary(java.math.BigDecimal otsalary) { this.otsalary = otsalary; }
     
     public java.math.BigDecimal getTotalallowanceamount() { return totalallowanceamount; }
     public void setTotalallowanceamount(java.math.BigDecimal totalallowanceamount) { this.totalallowanceamount = totalallowanceamount; }
@@ -80,6 +74,21 @@ public class Payslips {
     
     public java.math.BigDecimal getTotalinsurancededuction() { return totalinsurancededuction; }
     public void setTotalinsurancededuction(java.math.BigDecimal totalinsurancededuction) { this.totalinsurancededuction = totalinsurancededuction; }
+
+    public java.math.BigDecimal getEmployerBhxhAmount() { return employerBhxhAmount; }
+    public void setEmployerBhxhAmount(java.math.BigDecimal employerBhxhAmount) { this.employerBhxhAmount = employerBhxhAmount; }
+
+    public java.math.BigDecimal getEmployerBhtnldAmount() { return employerBhtnldAmount; }
+    public void setEmployerBhtnldAmount(java.math.BigDecimal employerBhtnldAmount) { this.employerBhtnldAmount = employerBhtnldAmount; }
+
+    public java.math.BigDecimal getEmployerBhytAmount() { return employerBhytAmount; }
+    public void setEmployerBhytAmount(java.math.BigDecimal employerBhytAmount) { this.employerBhytAmount = employerBhytAmount; }
+
+    public java.math.BigDecimal getEmployerBhtnAmount() { return employerBhtnAmount; }
+    public void setEmployerBhtnAmount(java.math.BigDecimal employerBhtnAmount) { this.employerBhtnAmount = employerBhtnAmount; }
+
+    public java.math.BigDecimal getTotalEmployerCost() { return totalEmployerCost; }
+    public void setTotalEmployerCost(java.math.BigDecimal totalEmployerCost) { this.totalEmployerCost = totalEmployerCost; }
     
     public Integer getDependentscount() { return dependentscount; }
     public void setDependentscount(Integer dependentscount) { this.dependentscount = dependentscount; }
@@ -92,15 +101,6 @@ public class Payslips {
     
     public java.math.BigDecimal getTaxdeduction() { return taxdeduction; }
     public void setTaxdeduction(java.math.BigDecimal taxdeduction) { this.taxdeduction = taxdeduction; }
-    
-    public java.math.BigDecimal getPenaltyamount() { return penaltyamount; }
-    public void setPenaltyamount(java.math.BigDecimal penaltyamount) { this.penaltyamount = penaltyamount; }
-    
-    public java.math.BigDecimal getAdvanceamount() { return advanceamount; }
-    public void setAdvanceamount(java.math.BigDecimal advanceamount) { this.advanceamount = advanceamount; }
-    
-    public java.math.BigDecimal getOtherdeductions() { return otherdeductions; }
-    public void setOtherdeductions(java.math.BigDecimal otherdeductions) { this.otherdeductions = otherdeductions; }
     
     public java.math.BigDecimal getNetamount() { return netamount; }
     public void setNetamount(java.math.BigDecimal netamount) { this.netamount = netamount; }

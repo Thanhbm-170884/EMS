@@ -61,7 +61,7 @@
                         <th>Ngày Công</th>
                         <th>Tỷ lệ BH (XH-YT-TN)</th>
                         <th>Giảm trừ (Bản thân - NPT)</th>
-                        <th>OT (Ngày - Nghỉ - Lễ)</th>
+                        <th>BH Công Ty (XH-LĐ-YT-TN)</th>
                         <th>Trạng Thái</th>
                     </tr>
                 </thead>
@@ -80,7 +80,7 @@
                                 <span class="text-muted"><fmt:formatNumber value="${item.dependenttaxdeduction}" type="number"/> đ / NPT</span>
                             </td>
                             <td>
-                                x${item.otweekdayrate} - x${item.otweekendrate} - x${item.otholidayrate}
+                                ${item.employerbhxhpercent}% - ${item.employerbhtnldpercent}% - ${item.employerbhytpercent}% - ${item.employerbhtnpercent}%
                             </td>
                             <td>
                                 <c:choose>
@@ -174,19 +174,23 @@
                 </div>
 
                 <div>
-                    <div class="modal-section-title">4. Hệ Số Phụ Cấp Làm Thêm Giờ (OT)</div>
-                    <div class="modal-grid-3">
+                    <div class="modal-section-title">4. Tham số Bảo Hiểm (Công Ty Đóng)</div>
+                    <div class="modal-grid-2">
                         <div class="modal-form-group">
-                            <label>Ngày thường</label>
-                            <input type="number" step="0.1" name="otweekdayrate" value="1.5" required>
+                            <label>Tỷ lệ BHXH (%)</label>
+                            <input type="number" step="0.01" name="employerbhxhpercent" value="17.00" required>
                         </div>
                         <div class="modal-form-group">
-                            <label>Cuối tuần</label>
-                            <input type="number" step="0.1" name="otweekendrate" value="2.0" required>
+                            <label>Tỷ lệ BHTNLĐ (%)</label>
+                            <input type="number" step="0.01" name="employerbhtnldpercent" value="0.50" required>
                         </div>
                         <div class="modal-form-group">
-                            <label>Ngày Lễ/Tết</label>
-                            <input type="number" step="0.1" name="otholidayrate" value="3.0" required>
+                            <label>Tỷ lệ BHYT (%)</label>
+                            <input type="number" step="0.01" name="employerbhytpercent" value="3.00" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label>Tỷ lệ BHTN (%)</label>
+                            <input type="number" step="0.01" name="employerbhtnpercent" value="1.00" required>
                         </div>
                     </div>
                 </div>

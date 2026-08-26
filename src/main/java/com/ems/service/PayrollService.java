@@ -21,8 +21,7 @@ public class PayrollService {
     private PayslipDAO payslipDAO = new PayslipDAO();
 
     // Tính toán phiếu lương
-    public Payslips calculatePayslip(int userId, int periodId, BigDecimal actualWorkDays, BigDecimal otHours,
-            BigDecimal bonus, BigDecimal penalty, BigDecimal advance) {
+    public Payslips calculatePayslip(int userId, int periodId, BigDecimal actualWorkDays, BigDecimal bonus) {
 
         // Lấy dữ liệu cấu hình ĐANG ÁP DỤNG
         Payrollconfigs config = configDAO.getActiveConfig();
@@ -40,26 +39,14 @@ public class PayrollService {
         payslip.setPeriodid(periodId);
         payslip.setStandardworkdays(config.getStandardworkingdays());
         payslip.setActualworkdays(actualWorkDays);
-        payslip.setOthours(otHours);
         payslip.setBasesalary(baseSalary);
         payslip.setBonusamount(bonus != null ? bonus : BigDecimal.ZERO);
-        payslip.setPenaltyamount(penalty != null ? penalty : BigDecimal.ZERO);
-        payslip.setAdvanceamount(advance != null ? advance : BigDecimal.ZERO);
-        payslip.setOtherdeductions(BigDecimal.ZERO);
 
         // --- TÍNH LƯONG THỰC TẾ ---
         BigDecimal actualBaseSalary = baseSalary
                 .multiply(actualWorkDays)
                 .divide(new BigDecimal(config.getStandardworkingdays()), 2, RoundingMode.HALF_UP);
         payslip.setActualbasesalary(actualBaseSalary);
-
-        // --- TÍNH TIỀN OT ---
-        // Tiền 1 giờ = (Lương cơ bản / Ngày chuẩn / 8 tiếng)
-        BigDecimal hourlyRate = baseSalary
-                .divide(new BigDecimal(config.getStandardworkingdays()), 2, RoundingMode.HALF_UP)
-                .divide(new BigDecimal("8"), 2, RoundingMode.HALF_UP);
-        BigDecimal otSalary = hourlyRate.multiply(otHours).multiply(config.getOtweekdayrate());
-        payslip.setOtsalary(otSalary);
 
         // --- TÍNH PHỤ CẤP ---
         List<Allowancetypes> allowances = allowanceDAO.getAllActive(); // Lấy các phụ cấp đang bật
@@ -92,7 +79,7 @@ public class PayrollService {
         payslip.setTotalallowanceamount(totalAllowance);
 
         // --- TÍNH TỔNG THU NHẬP (GROSS) ---
-        BigDecimal grossAmount = actualBaseSalary.add(otSalary).add(totalAllowance).add(payslip.getBonusamount());
+        BigDecimal grossAmount = actualBaseSalary.add(totalAllowance).add(payslip.getBonusamount());
         payslip.setGrossamount(grossAmount);
 
         // --- TÍNH BẢO HIỂM ---
@@ -107,6 +94,7 @@ public class PayrollService {
             btnBase = new BigDecimal("106200000");
         }
 
+        //Nhan vien dong
         BigDecimal bhxh = insuranceBase.multiply(config.getBhxhpercent()).divide(new BigDecimal("100"), 2,
                 RoundingMode.HALF_UP);
         BigDecimal bhyt = insuranceBase.multiply(config.getBhytpercent()).divide(new BigDecimal("100"), 2,
@@ -119,6 +107,18 @@ public class PayrollService {
         payslip.setBhytamount(bhyt);
         payslip.setBhtnamount(bhtn);
         payslip.setTotalinsurancededuction(totalInsurance);
+
+        //Cong ty dong
+        BigDecimal empBhxh = insuranceBase.multiply(config.getEmployerbhxhpercent()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        BigDecimal empBhtnld = insuranceBase.multiply(config.getEmployerbhtnldpercent()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        BigDecimal empBhyt = insuranceBase.multiply(config.getEmployerbhytpercent()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        BigDecimal empBhtn = btnBase.multiply(config.getEmployerbhtnpercent()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
+        payslip.setEmployerBhxhAmount(empBhxh);
+        payslip.setEmployerBhtnldAmount(empBhtnld);
+        payslip.setEmployerBhytAmount(empBhyt);
+        payslip.setEmployerBhtnAmount(empBhtn);
+        payslip.setTotalEmployerCost(grossAmount.add(empBhxh).add(empBhtnld).add(empBhyt).add(empBhtn));
 
         // --- TÍNH THUẾ TNCN (Bậc Thang) ---
         payslip.setDependentscount(user.getDependentscount());
@@ -143,9 +143,7 @@ public class PayrollService {
         // --- TÍNH THỰC LĨNH (NET) ---
         BigDecimal netAmount = grossAmount
                 .subtract(totalInsurance)
-                .subtract(payslip.getTaxdeduction())
-                .subtract(payslip.getPenaltyamount())
-                .subtract(payslip.getAdvanceamount());
+                .subtract(payslip.getTaxdeduction());
 
         payslip.setNetamount(netAmount);
         payslip.setStatus("Draft");
@@ -205,12 +203,9 @@ public class PayrollService {
             }
 
             // Set cac gia tri khac bang 0
-            BigDecimal otHours = BigDecimal.ZERO;
             BigDecimal bonus = BigDecimal.ZERO;
-            BigDecimal penalty = BigDecimal.ZERO;
-            BigDecimal advance = BigDecimal.ZERO;
 
-            Payslips p = calculatePayslip(u.getId(), periodId, actualDays, otHours, bonus, penalty, advance);
+            Payslips p = calculatePayslip(u.getId(), periodId, actualDays, bonus);
             p.setStatus("Draft");
             p.setAdjustedbyaccountid(managerId);
 
@@ -249,8 +244,7 @@ public class PayrollService {
         return result;
     }
 
-    public String updateManualPayslip(int payslipId, BigDecimal bonus, BigDecimal penalty, BigDecimal advance,
-            String note, int managerId) {
+    public String updateManualPayslip(int payslipId, BigDecimal bonus, int managerId) {
         Payslips oldPayslip = payslipDAO.getPayslipById(payslipId);
         if (oldPayslip == null)
             return "Không tìm thấy phiếu lương này!";
@@ -260,11 +254,9 @@ public class PayrollService {
                 oldPayslip.getUserid(),
                 oldPayslip.getPeriodid(),
                 oldPayslip.getActualworkdays(),
-                oldPayslip.getOthours(),
-                bonus, penalty, advance);
+                bonus);
 
         updatedPayslip.setId(payslipId);
-        updatedPayslip.setNote(note);
         updatedPayslip.setAdjustedbyaccountid(managerId);
 
         if (payslipDAO.updatePayslip(updatedPayslip)) {

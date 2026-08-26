@@ -9,13 +9,14 @@ public class Payrollconfigs {
     private java.math.BigDecimal bhxhpercent;
     private java.math.BigDecimal bhytpercent;
     private java.math.BigDecimal bhtnpercent;
+    private java.math.BigDecimal employerbhxhpercent;
+    private java.math.BigDecimal employerbhtnldpercent;
+    private java.math.BigDecimal employerbhytpercent;
+    private java.math.BigDecimal employerbhtnpercent;
     private java.math.BigDecimal maxinsurancesalary;
     private java.math.BigDecimal personaltaxdeduction;
     private java.math.BigDecimal dependenttaxdeduction;
     private Integer standardworkingdays;
-    private java.math.BigDecimal otweekdayrate;
-    private java.math.BigDecimal otweekendrate;
-    private java.math.BigDecimal otholidayrate;
     private Boolean isactive;
     private Integer createdbyaccountid;
     private java.time.LocalDateTime createdat;
@@ -68,6 +69,18 @@ public class Payrollconfigs {
         this.bhtnpercent = bhtnpercent;
     }
 
+    public java.math.BigDecimal getEmployerbhxhpercent() { return employerbhxhpercent; }
+    public void setEmployerbhxhpercent(java.math.BigDecimal employerbhxhpercent) { this.employerbhxhpercent = employerbhxhpercent; }
+
+    public java.math.BigDecimal getEmployerbhtnldpercent() { return employerbhtnldpercent; }
+    public void setEmployerbhtnldpercent(java.math.BigDecimal employerbhtnldpercent) { this.employerbhtnldpercent = employerbhtnldpercent; }
+
+    public java.math.BigDecimal getEmployerbhytpercent() { return employerbhytpercent; }
+    public void setEmployerbhytpercent(java.math.BigDecimal employerbhytpercent) { this.employerbhytpercent = employerbhytpercent; }
+
+    public java.math.BigDecimal getEmployerbhtnpercent() { return employerbhtnpercent; }
+    public void setEmployerbhtnpercent(java.math.BigDecimal employerbhtnpercent) { this.employerbhtnpercent = employerbhtnpercent; }
+
     public java.math.BigDecimal getMaxinsurancesalary() {
         return maxinsurancesalary;
     }
@@ -98,30 +111,6 @@ public class Payrollconfigs {
 
     public void setStandardworkingdays(Integer standardworkingdays) {
         this.standardworkingdays = standardworkingdays;
-    }
-
-    public java.math.BigDecimal getOtweekdayrate() {
-        return otweekdayrate;
-    }
-
-    public void setOtweekdayrate(java.math.BigDecimal otweekdayrate) {
-        this.otweekdayrate = otweekdayrate;
-    }
-
-    public java.math.BigDecimal getOtweekendrate() {
-        return otweekendrate;
-    }
-
-    public void setOtweekendrate(java.math.BigDecimal otweekendrate) {
-        this.otweekendrate = otweekendrate;
-    }
-
-    public java.math.BigDecimal getOtholidayrate() {
-        return otholidayrate;
-    }
-
-    public void setOtholidayrate(java.math.BigDecimal otholidayrate) {
-        this.otholidayrate = otholidayrate;
     }
     
     public Boolean getIsactive() {

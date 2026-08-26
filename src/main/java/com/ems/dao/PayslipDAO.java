@@ -18,12 +18,12 @@ public class PayslipDAO {
         List<PayslipDTO> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder("SELECT p.Id, p.PeriodId, p.StandardWorkDays, p.ActualWorkDays, " +
-                "p.BaseSalary, p.ActualBaseSalary, p.OtHours, p.OtSalary, p.BonusAmount, " +
-                "p.DependentsCount, p.DependentDeduction, p.TaxableIncome, p.PenaltyAmount, p.AdvanceAmount, " +
-                "(COALESCE(p.PenaltyAmount, 0) + COALESCE(p.AdvanceAmount, 0) + COALESCE(p.OtherDeductions, 0)) AS OtherDeductions, "
+                "p.BaseSalary, p.ActualBaseSalary, p.BonusAmount, " +
+                "p.DependentsCount, p.DependentDeduction, p.TaxableIncome, " +
+                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, " +
+                "p.EmployerBhxhAmount, p.EmployerBhtnldAmount, p.EmployerBhytAmount, p.EmployerBhtnAmount, p.TotalEmployerCost, "
                 +
-                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, p.TaxDeduction, p.NetAmount, p.Status, p.Note, "
-                +
+                "p.TaxDeduction, p.NetAmount, p.Status, " +
                 "u.EmployeeCode, u.FullName, d.Name AS DepartmentName, pos.Name AS PositionName " +
                 "FROM payslips p " +
                 "JOIN users u ON p.UserId = u.Id " +
@@ -75,23 +75,22 @@ public class PayslipDAO {
                     dto.setActualWorkDays(rs.getBigDecimal("ActualWorkDays"));
                     dto.setBaseSalary(rs.getBigDecimal("BaseSalary"));
                     dto.setActualBaseSalary(rs.getBigDecimal("ActualBaseSalary"));
-                    dto.setOtHours(rs.getBigDecimal("OtHours"));
-                    dto.setOtSalary(rs.getBigDecimal("OtSalary"));
                     dto.setBonusAmount(rs.getBigDecimal("BonusAmount"));
                     dto.setDependentsCount(rs.getInt("DependentsCount"));
                     dto.setDependentDeduction(rs.getBigDecimal("DependentDeduction"));
                     dto.setTaxableIncome(rs.getBigDecimal("TaxableIncome"));
-                    dto.setPenaltyAmount(rs.getBigDecimal("PenaltyAmount"));
-                    dto.setAdvanceAmount(rs.getBigDecimal("AdvanceAmount"));
-                    dto.setOtherDeductions(rs.getBigDecimal("OtherDeductions"));
                     dto.setGrossAmount(rs.getBigDecimal("GrossAmount"));
                     dto.setTotalInsurance(rs.getBigDecimal("TotalInsuranceDeduction"));
                     dto.setBhxh(rs.getBigDecimal("BhxhAmount"));
                     dto.setBhyt(rs.getBigDecimal("BhytAmount"));
                     dto.setBhtn(rs.getBigDecimal("BhtnAmount"));
+                    dto.setEmployerBhxhAmount(rs.getBigDecimal("EmployerBhxhAmount"));
+                    dto.setEmployerBhtnldAmount(rs.getBigDecimal("EmployerBhtnldAmount"));
+                    dto.setEmployerBhytAmount(rs.getBigDecimal("EmployerBhytAmount"));
+                    dto.setEmployerBhtnAmount(rs.getBigDecimal("EmployerBhtnAmount"));
+                    dto.setTotalEmployerCost(rs.getBigDecimal("TotalEmployerCost"));
                     dto.setTaxDeduction(rs.getBigDecimal("TaxDeduction"));
                     dto.setNetAmount(rs.getBigDecimal("NetAmount"));
-                    dto.setNote(rs.getString("Note"));
 
                     dto.setAllowanceDetails(getAllowanceDetailsByPayslipId(dto.getId()));
 
@@ -159,11 +158,11 @@ public class PayslipDAO {
                 "SELECT p.Id, p.UserId, u.EmployeeCode, u.FullName, d.Name AS DepartmentName, pos.Name AS PositionName, "
                         +
                         "t.Id AS PeriodId, t.Name AS PeriodName, " +
-                        "p.BaseSalary, p.OtSalary, p.TotalAllowanceAmount, p.TotalInsuranceDeduction, " +
+                        "p.BaseSalary, p.TotalAllowanceAmount, p.TotalInsuranceDeduction, " +
                         "p.DependentDeduction, p.TaxDeduction, " +
-                        "(COALESCE(p.PenaltyAmount, 0) + COALESCE(p.AdvanceAmount, 0) + COALESCE(p.OtherDeductions, 0)) AS OtherDeductions, "
+                        "p.EmployerBhxhAmount, p.EmployerBhtnldAmount, p.EmployerBhytAmount, p.EmployerBhtnAmount, p.TotalEmployerCost, "
                         +
-                        "p.GrossAmount, p.NetAmount, p.Status, p.Note, p.CreatedAt " +
+                        "p.GrossAmount, p.NetAmount, p.Status, p.CreatedAt " +
                         "FROM payslips p " +
                         "JOIN users u ON p.UserId = u.Id " +
                         "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
@@ -213,16 +212,20 @@ public class PayslipDAO {
                     dto.setPeriodName(rs.getString("PeriodName"));
 
                     dto.setBaseSalary(rs.getBigDecimal("BaseSalary"));
-                    dto.setOtSalary(rs.getBigDecimal("OtSalary"));
                     dto.setAllowances(rs.getBigDecimal("TotalAllowanceAmount"));
                     dto.setInsuranceDeduction(rs.getBigDecimal("TotalInsuranceDeduction"));
                     dto.setDependentDeduction(rs.getBigDecimal("DependentDeduction"));
                     dto.setTaxDeduction(rs.getBigDecimal("TaxDeduction"));
-                    dto.setOtherDeductions(rs.getBigDecimal("OtherDeductions"));
+
+                    dto.setEmployerBhxhAmount(rs.getBigDecimal("EmployerBhxhAmount"));
+                    dto.setEmployerBhtnldAmount(rs.getBigDecimal("EmployerBhtnldAmount"));
+                    dto.setEmployerBhytAmount(rs.getBigDecimal("EmployerBhytAmount"));
+                    dto.setEmployerBhtnAmount(rs.getBigDecimal("EmployerBhtnAmount"));
+                    dto.setTotalEmployerCost(rs.getBigDecimal("TotalEmployerCost"));
+
                     dto.setGrossAmount(rs.getBigDecimal("GrossAmount"));
                     dto.setNetAmount(rs.getBigDecimal("NetAmount"));
                     dto.setStatus(rs.getString("Status"));
-                    dto.setNote(rs.getString("Note"));
 
                     if (rs.getTimestamp("CreatedAt") != null) {
                         dto.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
@@ -237,10 +240,10 @@ public class PayslipDAO {
         return list;
     }
 
-    public Payslips getPayslipById(int id){
+    public Payslips getPayslipById(int id) {
         String sql = "SELECT * FROM payslips WHERE Id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -249,19 +252,20 @@ public class PayslipDAO {
                     p.setUserid(rs.getInt("UserId"));
                     p.setPeriodid(rs.getInt("PeriodId"));
                     p.setActualworkdays(rs.getBigDecimal("ActualWorkDays"));
-                    p.setOthours(rs.getBigDecimal("OtHours"));
                     p.setStatus(rs.getString("Status"));
                     return p;
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     public int updatePayslipStatusByPeriod(int periodId, String oldStatus, String newStatus) {
         String sql = "UPDATE payslips SET Status = ? WHERE PeriodId = ? AND Status = ?";
         try (java.sql.Connection conn = com.ems.util.DBConnection.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newStatus);
             ps.setInt(2, periodId);
             ps.setString(3, oldStatus);
@@ -315,11 +319,13 @@ public class PayslipDAO {
     }
 
     public int insertPayslip(com.ems.model.Payslips p) {
-        String sql = "INSERT INTO payslips (UserId, PeriodId, StandardWorkDays, ActualWorkDays, OtHours, " +
-                "BaseSalary, ActualBaseSalary, OtSalary, TotalAllowanceAmount, BonusAmount, GrossAmount, " +
+        String sql = "INSERT INTO payslips (UserId, PeriodId, StandardWorkDays, ActualWorkDays, " +
+                "BaseSalary, ActualBaseSalary, TotalAllowanceAmount, BonusAmount, GrossAmount, " +
                 "BhxhAmount, BhytAmount, BhtnAmount, TotalInsuranceDeduction, DependentsCount, " +
-                "DependentDeduction, TaxableIncome, TaxDeduction, PenaltyAmount, AdvanceAmount, " +
-                "OtherDeductions, NetAmount, Status, AdjustedByAccountId) " +
+                "DependentDeduction, TaxableIncome, TaxDeduction, " +
+                "EmployerBhxhAmount, EmployerBhtnldAmount, EmployerBhytAmount, EmployerBhtnAmount, TotalEmployerCost, "
+                +
+                "NetAmount, Status, AdjustedByAccountId) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
@@ -328,24 +334,26 @@ public class PayslipDAO {
             ps.setInt(2, p.getPeriodid());
             ps.setInt(3, p.getStandardworkdays());
             ps.setBigDecimal(4, p.getActualworkdays());
-            ps.setBigDecimal(5, p.getOthours());
-            ps.setBigDecimal(6, p.getBasesalary());
-            ps.setBigDecimal(7, p.getActualbasesalary());
-            ps.setBigDecimal(8, p.getOtsalary());
-            ps.setBigDecimal(9, p.getTotalallowanceamount());
-            ps.setBigDecimal(10, p.getBonusamount());
-            ps.setBigDecimal(11, p.getGrossamount());
-            ps.setBigDecimal(12, p.getBhxhamount());
-            ps.setBigDecimal(13, p.getBhytamount());
-            ps.setBigDecimal(14, p.getBhtnamount());
-            ps.setBigDecimal(15, p.getTotalinsurancededuction());
-            ps.setInt(16, p.getDependentscount());
-            ps.setBigDecimal(17, p.getDependentdeduction());
-            ps.setBigDecimal(18, p.getTaxableincome());
-            ps.setBigDecimal(19, p.getTaxdeduction());
-            ps.setBigDecimal(20, p.getPenaltyamount());
-            ps.setBigDecimal(21, p.getAdvanceamount());
-            ps.setBigDecimal(22, p.getOtherdeductions());
+            ps.setBigDecimal(5, p.getBasesalary());
+            ps.setBigDecimal(6, p.getActualbasesalary());
+            ps.setBigDecimal(7, p.getTotalallowanceamount());
+            ps.setBigDecimal(8, p.getBonusamount());
+            ps.setBigDecimal(9, p.getGrossamount());
+            ps.setBigDecimal(10, p.getBhxhamount());
+            ps.setBigDecimal(11, p.getBhytamount());
+            ps.setBigDecimal(12, p.getBhtnamount());
+            ps.setBigDecimal(13, p.getTotalinsurancededuction());
+            ps.setInt(14, p.getDependentscount());
+            ps.setBigDecimal(15, p.getDependentdeduction());
+            ps.setBigDecimal(16, p.getTaxableincome());
+            ps.setBigDecimal(17, p.getTaxdeduction());
+
+            ps.setBigDecimal(18, p.getEmployerBhxhAmount());
+            ps.setBigDecimal(19, p.getEmployerBhtnldAmount());
+            ps.setBigDecimal(20, p.getEmployerBhytAmount());
+            ps.setBigDecimal(21, p.getEmployerBhtnAmount());
+            ps.setBigDecimal(22, p.getTotalEmployerCost());
+
             ps.setBigDecimal(23, p.getNetamount());
             ps.setString(24, p.getStatus());
             if (p.getAdjustedbyaccountid() != null)
@@ -379,33 +387,35 @@ public class PayslipDAO {
     }
 
     public boolean updatePayslip(Payslips p) {
-        String sql = "UPDATE payslips SET BonusAmount=?, PenaltyAmount=?, AdvanceAmount=?, " +
+        String sql = "UPDATE payslips SET BonusAmount=?, " +
                 "GrossAmount=?, TaxableIncome=?, TaxDeduction=?, NetAmount=?, Note=?, AdjustedByAccountId=? " +
                 "WHERE Id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setBigDecimal(1, p.getBonusamount());
-            ps.setBigDecimal(2, p.getPenaltyamount());
-            ps.setBigDecimal(3, p.getAdvanceamount());
-            ps.setBigDecimal(4, p.getGrossamount());
-            ps.setBigDecimal(5, p.getTaxableincome());
-            ps.setBigDecimal(6, p.getTaxdeduction());
-            ps.setBigDecimal(7, p.getNetamount());
-            ps.setString(8, p.getNote());
-            if (p.getAdjustedbyaccountid() != null) ps.setInt(9, p.getAdjustedbyaccountid());
-            else ps.setNull(9, java.sql.Types.INTEGER);
-            ps.setInt(10, p.getId());
+            ps.setBigDecimal(2, p.getGrossamount());
+            ps.setBigDecimal(3, p.getTaxableincome());
+            ps.setBigDecimal(4, p.getTaxdeduction());
+            ps.setBigDecimal(5, p.getNetamount());
+            ps.setString(6, p.getNote());
+            if (p.getAdjustedbyaccountid() != null)
+                ps.setInt(7, p.getAdjustedbyaccountid());
+            else
+                ps.setNull(7, java.sql.Types.INTEGER);
+            ps.setInt(8, p.getId());
 
             return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     public int deleteDraftPayslips(int periodId) {
         String sqlAllowances = "DELETE FROM payslip_allowances WHERE PayslipId IN (SELECT Id FROM payslips WHERE PeriodId = ? AND Status = 'Draft')";
         String sqlPayslips = "DELETE FROM payslips WHERE PeriodId = ? AND Status = 'Draft'";
-        
+
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {
@@ -413,13 +423,13 @@ public class PayslipDAO {
                     ps1.setInt(1, periodId);
                     ps1.executeUpdate();
                 }
-                
+
                 int deletedCount = 0;
                 try (PreparedStatement ps2 = conn.prepareStatement(sqlPayslips)) {
                     ps2.setInt(1, periodId);
                     deletedCount = ps2.executeUpdate();
                 }
-                
+
                 conn.commit();
                 return deletedCount;
             } catch (Exception e) {
@@ -435,11 +445,14 @@ public class PayslipDAO {
     public List<PayslipDTO> getPayslipsByUserId(int userId) {
         List<PayslipDTO> list = new ArrayList<>();
         String sql = "SELECT p.Id, p.PeriodId, p.StandardWorkDays, p.ActualWorkDays, " +
-                "p.BaseSalary, p.ActualBaseSalary, p.OtHours, p.OtSalary, p.BonusAmount, " +
-                "p.DependentsCount, p.DependentDeduction, p.TaxableIncome, p.PenaltyAmount, p.AdvanceAmount, " +
-                "(COALESCE(p.PenaltyAmount, 0) + COALESCE(p.AdvanceAmount, 0) + COALESCE(p.OtherDeductions, 0)) AS OtherDeductions, " +
-                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, p.TaxDeduction, p.NetAmount, p.Status, p.Note, " +
-                "u.EmployeeCode, u.FullName, d.Name AS DepartmentName, pos.Name AS PositionName, t.Name AS PeriodName " +
+                "p.BaseSalary, p.ActualBaseSalary, p.BonusAmount, " +
+                "p.DependentsCount, p.DependentDeduction, p.TaxableIncome, " +
+                "p.EmployerBhxhAmount, p.EmployerBhtnldAmount, p.EmployerBhytAmount, p.EmployerBhtnAmount, p.TotalEmployerCost, "
+                +
+                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, p.TaxDeduction, p.NetAmount, p.Status, p.Note, "
+                +
+                "u.EmployeeCode, u.FullName, d.Name AS DepartmentName, pos.Name AS PositionName, t.Name AS PeriodName "
+                +
                 "FROM payslips p " +
                 "JOIN users u ON p.UserId = u.Id " +
                 "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
@@ -449,7 +462,7 @@ public class PayslipDAO {
                 "ORDER BY t.StartDate DESC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -468,15 +481,17 @@ public class PayslipDAO {
                     dto.setActualWorkDays(rs.getBigDecimal("ActualWorkDays"));
                     dto.setBaseSalary(rs.getBigDecimal("BaseSalary"));
                     dto.setActualBaseSalary(rs.getBigDecimal("ActualBaseSalary"));
-                    dto.setOtHours(rs.getBigDecimal("OtHours"));
-                    dto.setOtSalary(rs.getBigDecimal("OtSalary"));
                     dto.setBonusAmount(rs.getBigDecimal("BonusAmount"));
                     dto.setDependentsCount(rs.getInt("DependentsCount"));
                     dto.setDependentDeduction(rs.getBigDecimal("DependentDeduction"));
                     dto.setTaxableIncome(rs.getBigDecimal("TaxableIncome"));
-                    dto.setPenaltyAmount(rs.getBigDecimal("PenaltyAmount"));
-                    dto.setAdvanceAmount(rs.getBigDecimal("AdvanceAmount"));
-                    dto.setOtherDeductions(rs.getBigDecimal("OtherDeductions"));
+
+                    dto.setEmployerBhxhAmount(rs.getBigDecimal("EmployerBhxhAmount"));
+                    dto.setEmployerBhtnldAmount(rs.getBigDecimal("EmployerBhtnldAmount"));
+                    dto.setEmployerBhytAmount(rs.getBigDecimal("EmployerBhytAmount"));
+                    dto.setEmployerBhtnAmount(rs.getBigDecimal("EmployerBhtnAmount"));
+                    dto.setTotalEmployerCost(rs.getBigDecimal("TotalEmployerCost"));
+
                     dto.setGrossAmount(rs.getBigDecimal("GrossAmount"));
                     dto.setTotalInsurance(rs.getBigDecimal("TotalInsuranceDeduction"));
                     dto.setBhxh(rs.getBigDecimal("BhxhAmount"));
@@ -497,4 +512,4 @@ public class PayslipDAO {
         }
         return list;
     }
-}
+}

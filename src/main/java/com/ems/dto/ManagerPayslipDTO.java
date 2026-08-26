@@ -12,10 +12,10 @@ public class ManagerPayslipDTO {
     private String fullName;
     private String departmentName;
     private String positionName;
-    
+
     private Integer periodId;
     private String periodName;
-    
+
     private BigDecimal baseSalary;
     private BigDecimal otSalary;
     private BigDecimal allowances;
@@ -23,6 +23,13 @@ public class ManagerPayslipDTO {
     private BigDecimal dependentDeduction;
     private BigDecimal taxDeduction;
     private BigDecimal otherDeductions;
+
+    private BigDecimal employerBhxhAmount;
+    private BigDecimal employerBhtnldAmount;
+    private BigDecimal employerBhytAmount;
+    private BigDecimal employerBhtnAmount;
+    private BigDecimal totalEmployerCost;
+
     private BigDecimal grossAmount;
     private BigDecimal netAmount;
     private String status;
@@ -31,7 +38,8 @@ public class ManagerPayslipDTO {
 
     // Formatting helper
     private String formatCurrency(BigDecimal amount) {
-        if (amount == null) return "0";
+        if (amount == null)
+            return "0";
         DecimalFormat formatter = new DecimalFormat("#,###");
         return formatter.format(amount).replace(',', '.');
     }
@@ -74,9 +82,12 @@ public class ManagerPayslipDTO {
 
     public BigDecimal getTotalDeductions() {
         BigDecimal total = BigDecimal.ZERO;
-        if (insuranceDeduction != null) total = total.add(insuranceDeduction);
-        if (taxDeduction != null) total = total.add(taxDeduction);
-        if (otherDeductions != null) total = total.add(otherDeductions);
+        if (insuranceDeduction != null)
+            total = total.add(insuranceDeduction);
+        if (taxDeduction != null)
+            total = total.add(taxDeduction);
+        if (otherDeductions != null)
+            total = total.add(otherDeductions);
         return total;
     }
 
@@ -86,8 +97,10 @@ public class ManagerPayslipDTO {
 
     public BigDecimal getTotalAdditions() {
         BigDecimal total = BigDecimal.ZERO;
-        if (otSalary != null) total = total.add(otSalary);
-        if (allowances != null) total = total.add(allowances);
+        if (otSalary != null)
+            total = total.add(otSalary);
+        if (allowances != null)
+            total = total.add(allowances);
         return total;
     }
 
@@ -215,6 +228,17 @@ public class ManagerPayslipDTO {
     public void setOtherDeductions(BigDecimal otherDeductions) {
         this.otherDeductions = otherDeductions;
     }
+
+    public BigDecimal getEmployerBhxhAmount() { return employerBhxhAmount; }
+    public void setEmployerBhxhAmount(BigDecimal employerBhxhAmount) { this.employerBhxhAmount = employerBhxhAmount; }
+    public BigDecimal getEmployerBhtnldAmount() { return employerBhtnldAmount; }
+    public void setEmployerBhtnldAmount(BigDecimal employerBhtnldAmount) { this.employerBhtnldAmount = employerBhtnldAmount; }
+    public BigDecimal getEmployerBhytAmount() { return employerBhytAmount; }
+    public void setEmployerBhytAmount(BigDecimal employerBhytAmount) { this.employerBhytAmount = employerBhytAmount; }
+    public BigDecimal getEmployerBhtnAmount() { return employerBhtnAmount; }
+    public void setEmployerBhtnAmount(BigDecimal employerBhtnAmount) { this.employerBhtnAmount = employerBhtnAmount; }
+    public BigDecimal getTotalEmployerCost() { return totalEmployerCost; }
+    public void setTotalEmployerCost(BigDecimal totalEmployerCost) { this.totalEmployerCost = totalEmployerCost; }
 
     public BigDecimal getGrossAmount() {
         return grossAmount;
