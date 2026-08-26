@@ -60,7 +60,21 @@ public class AutherFilter implements Filter {
         String uri = req.getRequestURI();
         String path = uri.substring(req.getContextPath().length());
         // admin
-        boolean isAdminPage = path.equals("/home_admin") || path.equals("/home_admin.jsp");
+        boolean isAdminPage = path.equals("/home_admin") || path.equals("/home_admin.jsp")
+                || path.equals("/work-schedule") || path.equals("/work-schedule.jsp")
+                || path.equals("/holiday") || path.equals("/holiday.jsp")
+                || path.equals("/shift-assignment") || path.equals("/shift-assignment.jsp")
+                || path.equals("/shift-management") || path.equals("/shift-management.jsp")
+                || path.equals("/pay-periods") || path.equals("/pay_periods")
+                || path.equals("/pay-period") || path.equals("/pay_period")
+                || path.equals("/pay-period-list.jsp")
+                || path.equals("/base-salaries") || path.equals("/base-salary")
+                || path.equals("/base-salary-list.jsp")
+                || path.equals("/manager-payslips") || path.equals("/manager-payslip")
+                || path.equals("/payslip-list.jsp")
+                || path.equals("/payslip-config.jsp")
+                || path.equals("/allowance-list.jsp")
+                || path.equals("/salary-management") || path.equals("/salary-management.jsp");
         if (isAdminPage && !"admin".equalsIgnoreCase(role)) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -68,18 +82,10 @@ public class AutherFilter implements Filter {
 
         // manager
         boolean isManagerPage = path.equals("/home_manager") || path.equals("/home_manager.jsp")
-                || path.equals("/holiday") || path.equals("/holiday.jsp")
-                || path.equals("/work-schedule") || path.equals("/work-schedule.jsp")
-                || path.equals("/base-salaries") || path.equals("/base-salary")
-                || path.equals("/base-salary-list.jsp")
-                || path.equals("/manager-payslips") || path.equals("/manager-payslip")
-                || path.equals("/manager-payslip-list.jsp")
+
                 || path.equals("/request-manager.jsp")
-                || path.equals("/employee-balances.jsp")
-                || path.equals("/pay-periods") || path.equals("/pay_periods")
-                || path.equals("/pay-period") || path.equals("/pay_period")
-                || path.equals("/pay-period-list.jsp")
-                || path.equals("/salary-management") || path.equals("/salary-management.jsp");
+
+                ;
         if (isManagerPage && !"manager".equalsIgnoreCase(role)) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

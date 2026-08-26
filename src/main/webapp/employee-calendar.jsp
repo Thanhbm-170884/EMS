@@ -31,7 +31,7 @@
     <!-- Topbar -->
     <div class="topbar">
       <div>
-        <div class="topbar-title">📅 Lịch làm việc</div>
+        <div class="topbar-title"> Lịch làm việc</div>
         <div class="topbar-breadcrumb">EMS &rsaquo; Lịch làm việc</div>
       </div>
       <div class="topbar-right">Tháng <strong>${month}/${year}</strong></div>
