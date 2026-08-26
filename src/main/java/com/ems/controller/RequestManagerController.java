@@ -110,6 +110,7 @@ public class RequestManagerController {
         }
 
         List<EmployeeBalanceDTO> list = balanceDao.getAllEmployeeBalances();
+
         request.setAttribute("balances", list);
 
         request.getRequestDispatcher(

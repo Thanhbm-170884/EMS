@@ -21,41 +21,16 @@
                 Trang chủ
             </a>
             <div class="nav-section-label">Quản lý</div>
-            <a href="${pageContext.request.contextPath}/work-schedule"
-               class="nav-link ${pageContext.request.servletPath == '/work-schedule.jsp' ? 'active' : ''}">
-                Lịch làm việc
-            </a>
+
             <a href="${pageContext.request.contextPath}/requests?action=pending"
-                           class="nav-link ${pageContext.request.servletPath == '/request-manager.jsp' ? 'active' : ''}">
-                            Xử lý đơn
-                        </a>
+               class="nav-link ${pageContext.request.servletPath == '/request-manager.jsp' ? 'active' : ''}">
+                Xử lý đơn
+            </a>
             <a href="${pageContext.request.contextPath}/requests?action=employeeBalances"
-                           class="nav-link ${pageContext.request.servletPath == '/employee-balances.jsp' ? 'active' : ''}">
-                            Trạng thái nhân sự
-                        </a>
-            <a href="${pageContext.request.contextPath}/holiday"
-               class="nav-link ${pageContext.request.servletPath == '/holiday.jsp' ? 'active' : ''}">
-                Quản lý ngày nghỉ lễ
+               class="nav-link ${pageContext.request.servletPath == '/employee-balances.jsp' ? 'active' : ''}">
+                Trạng thái nhân sự
             </a>
 
-            <a href="${pageContext.request.contextPath}/shift-management"
-               class="nav-link ${pageContext.request.servletPath == '/shift-management.jsp' ? 'active' : ''}">
-                Ca làm việc
-            </a>
-
-            <a href="${pageContext.request.contextPath}/shift-assignment"
-               class="nav-link ${pageContext.request.servletPath == '/shift-assignment.jsp' ? 'active' : ''}">
-                Phân ca làm việc
-            </a>
-
-            <a href="${pageContext.request.contextPath}/salary-management"
-               class="nav-link ${pageContext.request.servletPath == '/salary-management.jsp' ? 'active' : ''}">
-                Quản lý lương
-            </a>
-            <a href="${pageContext.request.contextPath}/Attendance/upload.jsp"
-                                       class="nav-link ${pageContext.request.servletPath == '/Attendance/upload.jsp' ? 'active' : ''}">
-                                        Quản lý chấm công
-                          </a>
         </c:if>
 
 
@@ -82,6 +57,36 @@
                class="nav-link ${pageContext.request.servletPath == '/positions.jsp' ? 'active' : ''}">
                 Chức vụ
             </a>
+
+            <a href="${pageContext.request.contextPath}/work-schedule"
+               class="nav-link ${pageContext.request.servletPath == '/work-schedule.jsp' ? 'active' : ''}">
+                Lịch làm việc
+            </a>
+
+            <a href="${pageContext.request.contextPath}/holiday"
+               class="nav-link ${pageContext.request.servletPath == '/holiday.jsp' ? 'active' : ''}">
+                Quản lý ngày nghỉ lễ
+            </a>
+
+            <a href="${pageContext.request.contextPath}/shift-management"
+               class="nav-link ${pageContext.request.servletPath == '/shift-management.jsp' ? 'active' : ''}">
+                Ca làm việc
+            </a>
+
+            <a href="${pageContext.request.contextPath}/shift-assignment"
+               class="nav-link ${pageContext.request.servletPath == '/shift-assignment.jsp' ? 'active' : ''}">
+                Phân ca làm việc
+            </a>
+
+            <a href="${pageContext.request.contextPath}/Attendance/upload.jsp"
+               class="nav-link ${pageContext.request.servletPath == '/Attendance/upload.jsp' ? 'active' : ''}">
+                Quản lý chấm công
+            </a>
+
+            <a href="${pageContext.request.contextPath}/salary-management"
+               class="nav-link ${pageContext.request.servletPath == '/salary-management.jsp' ? 'active' : ''}">
+                Quản lý lương
+            </a>
         </c:if>
 
         <!- Employee ->
@@ -92,8 +97,8 @@
                 Trang chủ
             </a>
             <a href="${pageContext.request.contextPath}/profile"
-                           class="nav-link ${pageContext.request.servletPath == '/employee-profile.jsp' ? 'active' : ''}">
-               Thông tin cá nhân
+               class="nav-link ${pageContext.request.servletPath == '/employee-profile.jsp' ? 'active' : ''}">
+                Thông tin cá nhân
             </a>
             <div class="nav-section-label">Công việc</div>
             <a href="${pageContext.request.contextPath}/employee-calendar?year=<%=java.time.LocalDate.now().getYear()%>&amp;month=<%=java.time.LocalDate.now().getMonthValue()%>&amp;employeeId=${sessionScope.accountId}"
@@ -113,8 +118,8 @@
                 Xem lương
             </a>
             <a href="${pageContext.request.contextPath}/Attendance/my-attendance.jsp"
-                           class="nav-link ${pageContext.request.servletPath == '/my-attendance.jsp' || fn:contains(pageContext.request.requestURI, '/my-attendance') ? 'active' : ''}">
-                            Xem điểm danh
+               class="nav-link ${pageContext.request.servletPath == '/my-attendance.jsp' || fn:contains(pageContext.request.requestURI, '/my-attendance') ? 'active' : ''}">
+                Xem điểm danh
             </a>
 
 
@@ -142,6 +147,7 @@
                 <div class="user-role"><%= session.getAttribute("role")%>></div>
             </div>
         </div>
-        <button class="btn-logout" onclick="window.location='${pageContext.request.contextPath}/logout'">Đăng xuất</button>
+        <button class="btn-logout" onclick="window.location='${pageContext.request.contextPath}/logout'">Đăng xuất
+        </button>
     </div>
 </aside>
