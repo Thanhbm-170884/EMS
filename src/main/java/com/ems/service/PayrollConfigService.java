@@ -31,8 +31,9 @@ public class PayrollConfigService {
         if (item.getStandardworkingdays() <= 0 || item.getStandardworkingdays() > 31) {
             return "Lỗi: Số ngày công chuẩn phải từ 1 đến 31 ngày.";
         }
-        if (isNegative(item.getOtweekdayrate()) || isNegative(item.getOtweekendrate()) || isNegative(item.getOtholidayrate())) {
-            return "Lỗi: Hệ số nhân OT không được là số âm.";
+        if (isNegative(item.getEmployerbhxhpercent()) || isNegative(item.getEmployerbhtnldpercent()) ||
+                isNegative(item.getEmployerbhytpercent()) || isNegative(item.getEmployerbhtnpercent())) {
+            return "Lỗi: Tỷ lệ bảo hiểm phần công ty đóng không được là số âm.";
         }
         if (item.getEffectivedate() == null) {
             return "Lỗi: Ngày áp dụng không được để trống.";

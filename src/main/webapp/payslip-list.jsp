@@ -19,27 +19,23 @@
                         startItem=totalFilteredItems> 0 ? (currentPage - 1) * pageSize + 1 : 0;
                         int endItem = Math.min(currentPage * pageSize, totalFilteredItems);
                         %>
-                        <%! 
-                        private String buildPageUrl(Integer periodId, String search, Integer deptId, int page, int pageSize) {
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("payslips?page=");
+                        <%! private String buildPageUrl(Integer periodId, String search, Integer deptId, int page, int
+                            pageSize) { StringBuilder sb=new StringBuilder(); sb.append("payslips?page=");
                             sb.append(page);
-                            sb.append("&pageSize=");
+                            sb.append(" &pageSize=");
                             sb.append(pageSize);
                             if (periodId != null && periodId > 0) {
-                                sb.append("&periodId=").append(periodId);
+                                sb.append(" &periodId=").append(periodId);
                             }
                             if (search != null && !search.trim().isEmpty()) {
                                 try {
-                                    sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
-                                } catch (Exception ignored) {} 
-                            }
-                            if (deptId != null && deptId > 0) {
-                                sb.append("&departmentId=").append(deptId);
+                                    sb.append(" &search=").append(java.net.URLEncoder.encode(search.trim(), " UTF-8"));
+                            } catch (Exception ignored) {} } if (deptId !=null && deptId> 0) {
+                            sb.append("&departmentId=").append(deptId);
                             }
                             return sb.toString();
-                        }
-                        %>
+                            }
+                            %>
 
                             <!DOCTYPE html>
                             <html lang="vi">
@@ -504,22 +500,6 @@
                                                                                         </td>
                                                                                     </tr>
                                                                                     <tr>
-                                                                                        <td>Làm thêm OT
-                                                                                            (
-                                                                                            <fmt:formatNumber
-                                                                                                value="${p.otHours}"
-                                                                                                type="number" />
-                                                                                            h)
-                                                                                        </td>
-                                                                                        <td
-                                                                                            style="text-align: right; font-weight:600;">
-                                                                                            <fmt:formatNumber
-                                                                                                value="${p.otSalary}"
-                                                                                                type="number" />
-                                                                                            đ
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                    <tr>
                                                                                         <td>Thường
                                                                                             (Bonus)</td>
                                                                                         <td
@@ -666,47 +646,62 @@
                                                                                             đ
                                                                                         </td>
                                                                                     </tr>
+                                                                                </table>
+
+                                                                                <!-- NGƯỜI SỬ DỤNG LAO ĐỘNG TRẢ -->
+                                                                                <h6
+                                                                                    style="color:#475569; margin-bottom:10px; font-size:14px; font-weight:600; text-transform:uppercase;">
+                                                                                    3. Người sử dụng lao động trả
+                                                                                </h6>
+                                                                                <table class="allowance-table"
+                                                                                    style="margin-bottom: 20px;">
                                                                                     <tr>
-                                                                                        <td>Khấu trừ
-                                                                                            khác (Phạt,
-                                                                                            Ứng)</td>
+                                                                                        <td>Bảo hiểm xã hội</td>
                                                                                         <td
-                                                                                            style="text-align: right; font-weight:600; color:#dc2626;">
-                                                                                            -
+                                                                                            style="text-align: right; font-weight:600;">
                                                                                             <fmt:formatNumber
-                                                                                                value="${p.otherDeductions}"
-                                                                                                type="number" />
-                                                                                            đ
+                                                                                                value="${p.employerBhxhAmount}"
+                                                                                                type="number" /> đ
                                                                                         </td>
                                                                                     </tr>
                                                                                     <tr>
+                                                                                        <td>Bảo hiểm Tai nạn lao động -
+                                                                                            Bệnh nghề nghiệp</td>
                                                                                         <td
-                                                                                            style="color:#64748b; font-size:13px; padding-left: 20px;">
-                                                                                            - Tiền phạt
-                                                                                            (Penalty)
-                                                                                        </td>
-                                                                                        <td
-                                                                                            style="text-align: right; font-weight:500; font-size:13px; color:#dc2626;">
-                                                                                            -
+                                                                                            style="text-align: right; font-weight:600;">
                                                                                             <fmt:formatNumber
-                                                                                                value="${p.penaltyAmount}"
-                                                                                                type="number" />
-                                                                                            đ
+                                                                                                value="${p.employerBhtnldAmount}"
+                                                                                                type="number" /> đ
                                                                                         </td>
                                                                                     </tr>
                                                                                     <tr>
+                                                                                        <td>Bảo hiểm y tế</td>
                                                                                         <td
-                                                                                            style="color:#64748b; font-size:13px; padding-left: 20px;">
-                                                                                            - Tạm ứng
-                                                                                            (Advance)
+                                                                                            style="text-align: right; font-weight:600;">
+                                                                                            <fmt:formatNumber
+                                                                                                value="${p.employerBhytAmount}"
+                                                                                                type="number" /> đ
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                        <td>Bảo hiểm thất nghiệp
                                                                                         </td>
                                                                                         <td
-                                                                                            style="text-align: right; font-weight:500; font-size:13px; color:#dc2626;">
-                                                                                            -
+                                                                                            style="text-align: right; font-weight:600;">
                                                                                             <fmt:formatNumber
-                                                                                                value="${p.advanceAmount}"
-                                                                                                type="number" />
-                                                                                            đ
+                                                                                                value="${p.employerBhtnAmount}"
+                                                                                                type="number" /> đ
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                    <tr
+                                                                                        style="background:#f8fafc; border-top: 1px solid #cbd5e1;">
+                                                                                        <td style="font-weight:700;">
+                                                                                            TỔNG CỘNG</td>
+                                                                                        <td
+                                                                                            style="text-align: right; font-weight:700; color:#1e40af;">
+                                                                                            <fmt:formatNumber
+                                                                                                value="${p.totalEmployerCost}"
+                                                                                                type="number" /> đ
                                                                                         </td>
                                                                                     </tr>
                                                                                 </table>
@@ -765,21 +760,25 @@
                                                     </div>
                                                     <div class="ps-pagination-controls">
                                                         <!-- Previous page button -->
-                                                        <% String btnPrevClass = currentPage <= 1 ? "disabled" : ""; %>
-                                                        <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, currentPage - 1, pageSize) %>"
-                                                            class="ps-page-nav-btn <%= btnPrevClass %>">&lt;</a>
+                                                        <% String btnPrevClass=currentPage <=1 ? "disabled" : "" ; %>
+                                                            <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, currentPage - 1, pageSize) %>"
+                                                                class="ps-page-nav-btn <%= btnPrevClass %>">&lt;</a>
 
-                                                        <!-- Page numbers -->
-                                                        <% for (int p=1; p <=totalPages; p++) { %>
-                                                            <% String btnActiveClass = p == currentPage ? "active" : ""; %>
-                                                            <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, p, pageSize) %>"
-                                                                class="ps-page-btn <%= btnActiveClass %>"><%= p %></a>
-                                                        <% } %>
+                                                            <!-- Page numbers -->
+                                                            <% for (int p=1; p <=totalPages; p++) { %>
+                                                                <% String btnActiveClass=p==currentPage ? "active" : ""
+                                                                    ; %>
+                                                                    <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, p, pageSize) %>"
+                                                                        class="ps-page-btn <%= btnActiveClass %>">
+                                                                        <%= p %>
+                                                                    </a>
+                                                                    <% } %>
 
-                                                        <!-- Next page button -->
-                                                        <% String btnNextClass = currentPage >= totalPages ? "disabled" : ""; %>
-                                                        <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, currentPage + 1, pageSize) %>"
-                                                            class="ps-page-nav-btn <%= btnNextClass %>">&gt;</a>
+                                                                        <!-- Next page button -->
+                                                                        <% String btnNextClass=currentPage>= totalPages
+                                                                            ? "disabled" : ""; %>
+                                                                            <a href="<%= buildPageUrl(selectedPeriodId, searchStr, selectedDeptId, currentPage + 1, pageSize) %>"
+                                                                                class="ps-page-nav-btn <%= btnNextClass %>">&gt;</a>
                                                     </div>
                                                 </div>
                                             </div>
