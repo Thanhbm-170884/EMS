@@ -388,7 +388,7 @@ public class PayslipDAO {
 
     public boolean updatePayslip(Payslips p) {
         String sql = "UPDATE payslips SET BonusAmount=?, " +
-                "GrossAmount=?, TaxableIncome=?, TaxDeduction=?, NetAmount=?, Note=?, AdjustedByAccountId=? " +
+                "GrossAmount=?, TaxableIncome=?, TaxDeduction=?, NetAmount=?, AdjustedByAccountId=? " +
                 "WHERE Id = ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -449,7 +449,7 @@ public class PayslipDAO {
                 "p.DependentsCount, p.DependentDeduction, p.TaxableIncome, " +
                 "p.EmployerBhxhAmount, p.EmployerBhtnldAmount, p.EmployerBhytAmount, p.EmployerBhtnAmount, p.TotalEmployerCost, "
                 +
-                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, p.TaxDeduction, p.NetAmount, p.Status, p.Note, "
+                "p.GrossAmount, p.TotalInsuranceDeduction, p.BhxhAmount, p.BhytAmount, p.BhtnAmount, p.TaxDeduction, p.NetAmount, p.Status, "
                 +
                 "u.EmployeeCode, u.FullName, d.Name AS DepartmentName, pos.Name AS PositionName, t.Name AS PeriodName "
                 +
