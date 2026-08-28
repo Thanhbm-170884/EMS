@@ -176,12 +176,18 @@ public class PayPeriodServlet extends HttpServlet {
                                 session.setAttribute("toastMessage", "Kỳ lương đã tồn tại hoặc bị trùng lặp thời gian!");
                                 session.setAttribute("toastType", "error");
                             } else {
+                                TimesheetPeriodDTO existingPeriod = periodService.getPeriodById(id);
+                                boolean currentLockStatus = (existingPeriod != null) ? existingPeriod.isLocked() : false;
+                                if (isLockedStr != null && !isLockedStr.trim().isEmpty()) {
+                                    currentLockStatus = "true".equalsIgnoreCase(isLockedStr) || "on".equalsIgnoreCase(isLockedStr) || "1".equals(isLockedStr);
+                                }
+
                                 TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
                                 dto.setId(id);
                                 dto.setName(name.trim());
-                            dto.setStartDate(startDate);
-                            dto.setEndDate(endDate);
-                            dto.setLocked("true".equalsIgnoreCase(isLockedStr) || "on".equalsIgnoreCase(isLockedStr) || "1".equals(isLockedStr));
+                                dto.setStartDate(startDate);
+                                dto.setEndDate(endDate);
+                                dto.setLocked(currentLockStatus);
 
                             boolean success = periodService.updatePeriod(dto);
                             if (success) {
