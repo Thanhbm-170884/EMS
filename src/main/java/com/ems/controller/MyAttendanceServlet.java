@@ -59,7 +59,7 @@ public class MyAttendanceServlet extends HttpServlet {
         }
 
         if (fromDate.isAfter(toDate)) {
-            request.setAttribute("error", "Từ ngày phải trước hoặc bằng Đến ngày.");
+            request.setAttribute("error", "Ngày bắt đầu không được sau ngày kết thúc.");
         } else {
             try {
                 List<AttendanceHistoryDTO> history =

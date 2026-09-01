@@ -460,7 +460,7 @@
             if (from > to) {
                 if (e) e.preventDefault();
                 if (errorBox) {
-                    errorBox.innerHTML = '⚠ <strong>Lỗi:</strong> Từ ngày phải trước hoặc bằng Đến ngày.';
+                    errorBox.innerHTML = '⚠ <strong>Lỗi:</strong> Ngày bắt đầu không được sau ngày kết thúc.';
                     errorBox.style.display = 'block';
                     errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
