@@ -1,150 +1,46 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="j" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EMS – Lịch sử chấm công của tôi</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/ems.css?v=3.0"/>
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/ems.css"/>
 
     <style>
-        .filter-bar {
-            display: inline-flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            background: #ffffff;
-            padding: 12px 18px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        }
-
-        .filter-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .filter-item label {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: #475569;
-            white-space: nowrap;
-        }
-
-        .filter-item input[type="date"] {
-            box-sizing: border-box;
-            height: 38px;
-            padding: 6px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 13.5px;
-            color: #1e293b;
-            background-color: #f8fafc;
-            outline: none;
-            transition: all 0.15s ease;
-            font-family: inherit;
-        }
-
-        .filter-item input[type="date"]:focus {
-            background-color: #ffffff;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-        }
-
-        .btn-filter-submit {
-            height: 38px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 18px;
-            background: #2563eb;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13.5px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
-            font-family: inherit;
-            white-space: nowrap;
-        }
-
-        .btn-filter-submit:hover {
-            background: #1d4ed8;
-            box-shadow: 0 3px 6px rgba(37, 99, 235, 0.25);
-            transform: translateY(-1px);
-        }
-
-        .btn-filter-submit:active {
-            transform: translateY(0);
-        }
-
-        .btn-filter-reset {
-            height: 38px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 14px;
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 13.5px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-family: inherit;
-            white-space: nowrap;
-        }
-
-        .btn-filter-reset:hover {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-
         .preview-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 13.5px;
+            font-size: 14px;
         }
 
         .preview-table th {
-            background: #f8fafc;
-            color: #64748b;
-            font-weight: 700;
-            padding: 13px 18px;
-            border-bottom: 1.5px solid #e2e8f0;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
             text-transform: uppercase;
-            font-size: 11.5px;
+            font-size: 12px;
             letter-spacing: .5px;
         }
 
         .preview-table td {
-            padding: 13px 18px;
+            padding: 12px 16px;
             border-bottom: 1px solid #f1f5f9;
-            color: #1e293b;
-            font-weight: 500;
+            color: #334155;
         }
 
-        .preview-table tr:hover td {
+        .preview-table tr:hover {
             background: #f8fafc;
         }
 
         .badge {
-            display: inline-flex;
-            align-items: center;
+            display: inline-block;
             padding: 4px 10px;
             border-radius: 9999px;
             font-size: 12px;
@@ -166,6 +62,57 @@
             color: #b45309;
         }
 
+        .filter-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-bar .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .filter-bar .form-group input {
+            box-sizing: border-box;
+            height: 40px;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .filter-bar .btn-primary {
+            height: 40px;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+
+        }
+
         .alert-danger {
             background: #fef2f2;
             border: 1px solid #fecaca;
@@ -173,7 +120,7 @@
             padding: 12px 16px;
             border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 13.5px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -186,10 +133,11 @@
 
     <div class="page-body">
 
-        <div class="page-header" style="margin-bottom: 24px;">
-            <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 4px;">Lịch sử chấm công của tôi</h1>
-            <p style="font-size: 14px; color: #4b5563;">
-                Xem lại thông tin check-in / check-out theo khoảng thời gian bạn chọn.
+        <div class="page-header">
+            <h1>Lịch sử chấm công của tôi</h1>
+            <p>
+                Xem lại thông tin check-in / check-out
+                theo khoảng thời gian bạn chọn.
             </p>
         </div>
 
@@ -199,39 +147,29 @@
             </div>
         <% } %>
 
-        <div>
-            <form class="filter-bar"
-                  method="get"
-                  action="${pageContext.request.contextPath}/Attendance/my-attendance">
+        <form class="filter-bar"
+              method="get"
+              action="${pageContext.request.contextPath}/Attendance/my-attendance">
 
-                <div class="filter-item">
-                    <label for="fromDateInput">Từ ngày:</label>
-                    <input type="date"
-                           id="fromDateInput"
-                           name="fromDate"
-                           value="${fromDate}" />
-                </div>
+            <div class="form-group">
+                <label>Từ ngày</label>
+                <input type="date"
+                       name="fromDate"
+                       value="${fromDate}" />
+            </div>
 
-                <div class="filter-item">
-                    <label for="toDateInput">Đến ngày:</label>
-                    <input type="date"
-                           id="toDateInput"
-                           name="toDate"
-                           value="${toDate}" />
-                </div>
+            <div class="form-group">
+                <label>Đến ngày</label>
+                <input type="date"
+                       name="toDate"
+                       value="${toDate}" />
+            </div>
 
-                <button type="submit" class="btn-filter-submit">
-                    Lọc dữ liệu
-                </button>
+            <button type="submit" class="btn-primary">
+                🔍 Lọc
+            </button>
 
-                <c:if test="${not empty fromDate or not empty toDate}">
-                    <a href="${pageContext.request.contextPath}/Attendance/my-attendance.jsp" class="btn-filter-reset">
-                        Đặt lại
-                    </a>
-                </c:if>
-
-            </form>
-        </div>
+        </form>
 
         <div class="card" style="padding:0; overflow:hidden;">
 
