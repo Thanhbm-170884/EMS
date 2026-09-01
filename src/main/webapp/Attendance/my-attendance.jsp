@@ -1,14 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="j" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EMS – Lịch sử chấm công của tôi</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/ems.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/ems.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
 
     <style>
         .preview-table {
@@ -84,10 +88,19 @@
             margin-bottom: 6px;
         }
 
-        .filter-bar .form-group input {
+        .date-input-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            width: 170px;
+        }
+
+        .date-input-wrap input,
+        .date-input-wrap .flatpickr-input {
             box-sizing: border-box;
-            height: 40px;
-            padding: 8px 12px;
+            width: 100% !important;
+            height: 40px !important;
+            padding: 8px 36px 8px 12px !important;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-size: 14px;
@@ -96,11 +109,23 @@
             outline: none;
             margin: 0 !important;
             font-family: inherit;
+            cursor: pointer;
         }
 
-        .filter-bar .form-group input:focus {
+        .date-input-wrap input:focus,
+        .date-input-wrap .flatpickr-input:focus {
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .date-input-wrap .calendar-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            pointer-events: none;
+            z-index: 2;
         }
 
         .btn-primary {
@@ -173,17 +198,37 @@
               action="${pageContext.request.contextPath}/Attendance/my-attendance">
 
             <div class="form-group">
-                <label>Từ ngày</label>
-                <input type="date"
-                       name="fromDate"
-                       value="${fromDate}" />
+                <label for="fromDate">Từ ngày</label>
+                <div class="date-input-wrap">
+                    <input type="text"
+                           id="fromDate"
+                           name="fromDate"
+                           placeholder="dd/mm/yyyy"
+                           value="${fromDate}" />
+                    <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
             </div>
 
             <div class="form-group">
-                <label>Đến ngày</label>
-                <input type="date"
-                       name="toDate"
-                       value="${toDate}" />
+                <label for="toDate">Đến ngày</label>
+                <div class="date-input-wrap">
+                    <input type="text"
+                           id="toDate"
+                           name="toDate"
+                           placeholder="dd/mm/yyyy"
+                           value="${toDate}" />
+                    <svg class="calendar-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
             </div>
 
             <button type="submit" class="btn-primary">
@@ -217,7 +262,10 @@
 
                                 <tr>
 
-                                    <td>${h.date}</td>
+                                    <td>
+                                        <fmt:parseDate value="${h.date}" pattern="yyyy-MM-dd" var="parsedDate" />
+                                        <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
+                                    </td>
 
                                     <td>
                                         ${h.checkIn != null ? h.checkIn : '—'}
@@ -297,5 +345,30 @@
 
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof flatpickr !== "undefined") {
+            var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
+
+            flatpickr("#fromDate", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                altInputClass: "flatpickr-input",
+                allowInput: true,
+                locale: vnLocale
+            });
+
+            flatpickr("#toDate", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                altInputClass: "flatpickr-input",
+                allowInput: true,
+                locale: vnLocale
+            });
+        }
+    });
+</script>
 </body>
 </html>
