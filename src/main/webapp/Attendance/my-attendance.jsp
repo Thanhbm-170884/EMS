@@ -346,6 +346,102 @@
 </div>
 
 <script>
+    function attachDateMask(input, instance) {
+        if (!input) return;
+
+        input.addEventListener('keydown', function(e) {
+            if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter'].includes(e.key)) {
+                return;
+            }
+            if (!/^\d$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        input.addEventListener('input', function(e) {
+            if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
+                return;
+            }
+            var raw = this.value.replace(/\D/g, '');
+            if (raw.length === 0) return;
+
+            var res = '';
+            // Xử lý ngày (dd)
+            if (raw.length >= 1) {
+                var d1 = parseInt(raw[0], 10);
+                if (d1 > 3 && raw.length === 1) {
+                    res = '0' + d1 + '/';
+                } else if (raw.length >= 2) {
+                    var dd = parseInt(raw.slice(0, 2), 10);
+                    if (dd > 31) dd = 31;
+                    if (dd === 0) dd = 1;
+                    var ddStr = dd < 10 ? '0' + dd : '' + dd;
+                    res = ddStr + '/';
+                } else {
+                    res = raw.slice(0, 1);
+                }
+            }
+
+            // Xử lý tháng (mm)
+            if (raw.length >= 3) {
+                var dayStr = res.slice(0, 2);
+                var mPart = raw.slice(2);
+                if (mPart.length >= 1) {
+                    var m1 = parseInt(mPart[0], 10);
+                    if (m1 > 1 && mPart.length === 1) {
+                        res = dayStr + '/0' + m1 + '/';
+                    } else if (mPart.length >= 2) {
+                        var mm = parseInt(mPart.slice(0, 2), 10);
+                        if (mm > 12) mm = 12;
+                        if (mm === 0) mm = 1;
+                        var mmStr = mm < 10 ? '0' + mm : '' + mm;
+                        res = dayStr + '/' + mmStr + '/';
+                    } else {
+                        res = dayStr + '/' + mPart.slice(0, 1);
+                    }
+                }
+            }
+
+            // Xử lý năm (yyyy)
+            if (raw.length >= 5) {
+                var dayStr = res.slice(0, 2);
+                var monthStr = res.slice(3, 5);
+                var yPart = raw.slice(4, 8);
+                res = dayStr + '/' + monthStr + '/' + yPart;
+            }
+
+            this.value = res;
+
+            if (res.length === 10 && instance) {
+                instance.setDate(res, false, "d/m/Y");
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            var val = this.value.trim();
+            if (!val) return;
+            var parts = val.split('/');
+            if (parts.length === 3) {
+                var d = parseInt(parts[0], 10);
+                var m = parseInt(parts[1], 10);
+                var y = parseInt(parts[2], 10);
+                if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+                    if (d < 1) d = 1;
+                    if (d > 31) d = 31;
+                    if (m < 1) m = 1;
+                    if (m > 12) m = 12;
+                    if (y < 100) y = 2000 + y;
+                    var dd = d < 10 ? '0' + d : '' + d;
+                    var mm = m < 10 ? '0' + m : '' + m;
+                    this.value = dd + '/' + mm + '/' + y;
+                    if (instance) {
+                        instance.setDate(this.value, false, "d/m/Y");
+                    }
+                }
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof flatpickr !== "undefined") {
             var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
@@ -356,7 +452,12 @@
                 altFormat: "d/m/Y",
                 altInputClass: "flatpickr-input",
                 allowInput: true,
-                locale: vnLocale
+                locale: vnLocale,
+                onReady: function(selectedDates, dateStr, instance) {
+                    if (instance.altInput) {
+                        attachDateMask(instance.altInput, instance);
+                    }
+                }
             });
 
             flatpickr("#toDate", {
@@ -365,7 +466,12 @@
                 altFormat: "d/m/Y",
                 altInputClass: "flatpickr-input",
                 allowInput: true,
-                locale: vnLocale
+                locale: vnLocale,
+                onReady: function(selectedDates, dateStr, instance) {
+                    if (instance.altInput) {
+                        attachDateMask(instance.altInput, instance);
+                    }
+                }
             });
         }
     });
