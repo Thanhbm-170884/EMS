@@ -33,33 +33,7 @@
 <body>
 
 <!-- Sidebar -->
-<aside class="sidebar">
-  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
-    <div class="brand-dot">E</div>
-    <span class="brand-name">EMS</span>
-  </a>
-  <nav class="nav-group">
-    <div class="nav-section-label">Tổng quan</div>
-    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
-    <div class="nav-section-label">Quản trị</div>
-    <a href="<%= request.getContextPath() %>/users"       class="nav-link">Tài khoản</a>
-    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
-    <a href="<%= request.getContextPath() %>/departments" class="nav-link active">Phòng ban</a>
-    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-block">
-      <div class="user-avatar">
-        <%= fullName != null && !fullName.isEmpty() ? fullName.substring(0,1).toUpperCase() : "A" %>
-      </div>
-      <div>
-        <div class="user-name"><%= fullName != null ? fullName : "Admin" %></div>
-        <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
-  </div>
-</aside>
+<%@include file="/WEB-INF/jspf/sidebar.jsp"%>
 
 <!-- Main content -->
 <div class="main-content">
