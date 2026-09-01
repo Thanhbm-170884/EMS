@@ -1,14 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="j" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EMS – Lịch sử chấm công của tôi</title>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/ems.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/ems.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
 
     <style>
         .preview-table {
@@ -88,10 +92,11 @@
             line-height: 1.2;
         }
 
-        .filter-bar .form-group input {
+        .filter-bar .form-group input,
+        .filter-bar .form-group .flatpickr-input {
             box-sizing: border-box;
-            width: 170px;
-            height: 38px;
+            width: 170px !important;
+            height: 38px !important;
             padding: 7px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
@@ -104,7 +109,8 @@
             font-family: inherit;
         }
 
-        .filter-bar .form-group input:focus {
+        .filter-bar .form-group input:focus,
+        .filter-bar .form-group .flatpickr-input:focus {
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
@@ -177,16 +183,20 @@
               action="${pageContext.request.contextPath}/Attendance/my-attendance">
 
             <div class="form-group">
-                <label>Từ ngày</label>
-                <input type="date"
+                <label for="fromDate">Từ ngày</label>
+                <input type="text"
+                       id="fromDate"
                        name="fromDate"
+                       placeholder="dd/mm/yyyy"
                        value="${fromDate}" />
             </div>
 
             <div class="form-group">
-                <label>Đến ngày</label>
-                <input type="date"
+                <label for="toDate">Đến ngày</label>
+                <input type="text"
+                       id="toDate"
                        name="toDate"
+                       placeholder="dd/mm/yyyy"
                        value="${toDate}" />
             </div>
 
@@ -221,7 +231,10 @@
 
                                 <tr>
 
-                                    <td>${h.date}</td>
+                                    <td>
+                                        <fmt:parseDate value="${h.date}" pattern="yyyy-MM-dd" var="parsedDate" />
+                                        <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
+                                    </td>
 
                                     <td>
                                         ${h.checkIn != null ? h.checkIn : '—'}
@@ -301,5 +314,30 @@
 
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof flatpickr !== "undefined") {
+            var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
+
+            flatpickr("#fromDate", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                altInputClass: "flatpickr-input",
+                allowInput: true,
+                locale: vnLocale
+            });
+
+            flatpickr("#toDate", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                altInputClass: "flatpickr-input",
+                allowInput: true,
+                locale: vnLocale
+            });
+        }
+    });
+</script>
 </body>
 </html>
