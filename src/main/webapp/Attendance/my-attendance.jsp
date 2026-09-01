@@ -1,18 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="j" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EMS – Lịch sử chấm công của tôi</title>
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/ems.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/ems.css"/>
 
     <style>
         .preview-table {
@@ -70,16 +66,13 @@
             display: flex;
             align-items: flex-end;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
         .filter-bar .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 0 !important;
-            padding: 0 !important;
         }
 
         .filter-bar .form-group label {
@@ -87,62 +80,37 @@
             font-size: 13px;
             font-weight: 600;
             color: #475569;
-            margin: 0 !important;
-            padding: 0 !important;
-            line-height: 1.2;
+            margin-bottom: 6px;
         }
 
-        .filter-bar .form-group input,
-        .filter-bar .form-group .flatpickr-input {
+        .filter-bar .form-group input {
             box-sizing: border-box;
-            width: 170px !important;
-            height: 38px !important;
-            padding: 7px 12px;
+            height: 40px;
+            padding: 9px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 13.5px;
-            color: #1e293b;
-            background: #ffffff;
-            outline: none;
-            margin: 0 !important;
-            transition: all 0.15s ease;
-            font-family: inherit;
+            font-size: 14px;
         }
 
-        .filter-bar .form-group input:focus,
-        .filter-bar .form-group .flatpickr-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-        }
-
-        .btn-filter-submit {
+        .filter-bar .btn-primary {
+            height: 40px;
             box-sizing: border-box;
-            height: 38px;
-            padding: 0 22px;
-            background: #2563eb;
-            color: #ffffff;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: #1e3a8a;
+            color: white;
             border: none;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 13.5px;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 !important;
-            transition: all 0.15s ease;
-            font-family: inherit;
-            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
-        }
+            text-decoration: none;
+            font-size: 14px;
 
-        .btn-filter-submit:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 6px rgba(37, 99, 235, 0.2);
-        }
-
-        .btn-filter-submit:active {
-            transform: translateY(0);
         }
 
         .alert-danger {
@@ -165,10 +133,11 @@
 
     <div class="page-body">
 
-        <div class="page-header" style="margin-bottom: 24px;">
-            <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 4px;">Lịch sử chấm công của tôi</h1>
-            <p style="font-size: 14px; color: #4b5563;">
-                Xem lại thông tin check-in / check-out theo khoảng thời gian bạn chọn.
+        <div class="page-header">
+            <h1>Lịch sử chấm công của tôi</h1>
+            <p>
+                Xem lại thông tin check-in / check-out
+                theo khoảng thời gian bạn chọn.
             </p>
         </div>
 
@@ -183,25 +152,21 @@
               action="${pageContext.request.contextPath}/Attendance/my-attendance">
 
             <div class="form-group">
-                <label for="fromDate">Từ ngày</label>
-                <input type="text"
-                       id="fromDate"
+                <label>Từ ngày</label>
+                <input type="date"
                        name="fromDate"
-                       placeholder="dd/mm/yyyy"
                        value="${fromDate}" />
             </div>
 
             <div class="form-group">
-                <label for="toDate">Đến ngày</label>
-                <input type="text"
-                       id="toDate"
+                <label>Đến ngày</label>
+                <input type="date"
                        name="toDate"
-                       placeholder="dd/mm/yyyy"
                        value="${toDate}" />
             </div>
 
-            <button type="submit" class="btn-filter-submit">
-                Lọc
+            <button type="submit" class="btn-primary">
+                🔍 Lọc
             </button>
 
         </form>
@@ -231,10 +196,7 @@
 
                                 <tr>
 
-                                    <td>
-                                        <fmt:parseDate value="${h.date}" pattern="yyyy-MM-dd" var="parsedDate" />
-                                        <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
-                                    </td>
+                                    <td>${h.date}</td>
 
                                     <td>
                                         ${h.checkIn != null ? h.checkIn : '—'}
@@ -314,91 +276,5 @@
 
 </div>
 
-<script>
-    function formatToDDMMYYYY(val) {
-        if (!val) return '';
-        val = val.trim();
-        // Xử lý dạng có dấu phân cách (ví dụ 2/11/2024 hoặc 2-11-2024)
-        var parts = val.split(/[\/\-\.]/);
-        if (parts.length === 3) {
-            var d = parseInt(parts[0], 10);
-            var m = parseInt(parts[1], 10);
-            var y = parseInt(parts[2], 10);
-            if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
-                var dd = d < 10 ? '0' + d : '' + d;
-                var mm = m < 10 ? '0' + m : '' + m;
-                var yyyy = y < 100 ? (2000 + y) : '' + y;
-                return dd + '/' + mm + '/' + yyyy;
-            }
-        }
-        // Xử lý dạng chuỗi số liền nhau (ví dụ 02112024)
-        var digits = val.replace(/\D/g, '');
-        if (digits.length === 8) {
-            return digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
-        }
-        return val;
-    }
-
-    function initSmartDatePicker(selector) {
-        if (typeof flatpickr === "undefined") return;
-        var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
-
-        return flatpickr(selector, {
-            dateFormat: "Y-m-d",
-            altInput: true,
-            altFormat: "d/m/Y",
-            altInputClass: "flatpickr-input",
-            allowInput: true,
-            locale: vnLocale,
-            parseDate: function(datestr, format) {
-                if (!datestr) return null;
-                var match = datestr.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
-                if (match) {
-                    var day = parseInt(match[1], 10);
-                    var month = parseInt(match[2], 10) - 1;
-                    var year = parseInt(match[3], 10);
-                    return new Date(year, month, day);
-                }
-                var isoMatch = datestr.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
-                if (isoMatch) {
-                    var year = parseInt(isoMatch[1], 10);
-                    var month = parseInt(isoMatch[2], 10) - 1;
-                    var day = parseInt(isoMatch[3], 10);
-                    return new Date(year, month, day);
-                }
-                return flatpickr.parseDate(datestr, format);
-            },
-            onReady: function(selectedDates, dateStr, instance) {
-                if (instance.altInput) {
-                    // Tự động thêm số 0 khi nhập thiếu (ví dụ 2/11/2024 -> 02/11/2024)
-                    instance.altInput.addEventListener('blur', function() {
-                        var formatted = formatToDDMMYYYY(instance.altInput.value);
-                        if (formatted !== instance.altInput.value) {
-                            instance.altInput.value = formatted;
-                        }
-                        instance.setDate(instance.altInput.value, true, "d/m/Y");
-                    });
-
-                    // Tự động chèn dấu '/' khi người dùng gõ số
-                    instance.altInput.addEventListener('input', function(e) {
-                        if (e.inputType === 'deleteContentBackward') return;
-                        var v = this.value;
-                        var clean = v.replace(/[^\d\/]/g, '');
-                        if (clean.length === 2 && !clean.includes('/')) {
-                            this.value = clean + '/';
-                        } else if (clean.length === 5 && clean.indexOf('/', 3) === -1) {
-                            this.value = clean + '/';
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        initSmartDatePicker("#fromDate");
-        initSmartDatePicker("#toDate");
-    });
-</script>
 </body>
 </html>
