@@ -73,6 +73,7 @@
         .filter-bar .form-group {
             display: flex;
             flex-direction: column;
+            margin-bottom: 0 !important;
         }
 
         .filter-bar .form-group label {
@@ -86,23 +87,30 @@
         .filter-bar .form-group input {
             box-sizing: border-box;
             height: 40px;
-            padding: 9px 12px;
+            padding: 8px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-size: 14px;
+            color: #1e293b;
+            background: #ffffff;
+            outline: none;
+            margin: 0 !important;
+            font-family: inherit;
         }
 
-        .filter-bar .btn-primary {
-            height: 40px;
-            box-sizing: border-box;
+        .filter-bar .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
 
         .btn-primary {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 10px 20px;
-            background: #1e3a8a;
+            justify-content: center;
+            height: 40px;
+            box-sizing: border-box;
+            padding: 0 22px;
+            background: #2563eb;
             color: white;
             border: none;
             border-radius: 8px;
@@ -110,7 +118,20 @@
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
+            margin: 0 !important;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
+            font-family: inherit;
+        }
 
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .alert-danger {
@@ -166,7 +187,7 @@
             </div>
 
             <button type="submit" class="btn-primary">
-                🔍 Lọc
+                Lọc
             </button>
 
         </form>
