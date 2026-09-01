@@ -72,78 +72,7 @@
 
 <body>
 
-<aside class="sidebar">
-
-    <a href="${pageContext.request.contextPath}/home"
-       class="sidebar-brand">
-        <div class="brand-dot">E</div>
-        <span class="brand-name">EMS</span>
-    </a>
-
-    <nav class="nav-group">
-
-        <div class="nav-section-label">Menu chính</div>
-
-        <a href="${pageContext.request.contextPath}/home_manager.jsp"
-                       class="nav-link ${pageContext.request.servletPath == '/home_manager.jsp' ? 'active' : ''}">
-                        Trang chủ
-                    </a>
-                    <div class="nav-section-label">Quản lý</div>
-                    <a href="${pageContext.request.contextPath}/work-schedule"
-                       class="nav-link ${pageContext.request.servletPath == '/work-schedule.jsp' ? 'active' : ''}">
-                        Lịch làm việc
-                    </a>
-                    <a href="${pageContext.request.contextPath}/requests?action=pending"
-                                   class="nav-link ${pageContext.request.servletPath == '/request-manager.jsp' ? 'active' : ''}">
-                                    Xử lý đơn
-                                </a>
-                    <a href="${pageContext.request.contextPath}/holiday"
-                       class="nav-link ${pageContext.request.servletPath == '/holiday.jsp' ? 'active' : ''}">
-                        Quản lý ngày nghỉ lễ
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/shift-management"
-                       class="nav-link ${pageContext.request.servletPath == '/shift-management.jsp' ? 'active' : ''}">
-                        Ca làm việc
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/shift-assignment"
-                       class="nav-link ${pageContext.request.servletPath == '/shift-assignment.jsp' ? 'active' : ''}">
-                        Phân ca làm việc
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/salary-management"
-                       class="nav-link ${pageContext.request.servletPath == '/salary-management.jsp' ? 'active' : ''}">
-                        Quản lý lương
-                    </a>
-                    <a href="${pageContext.request.contextPath}/Attendance/upload.jsp"
-                                   class="nav-link ${pageContext.request.servletPath == '/Attendance/upload.jsp' ? 'active' : ''}">
-                                    Quản lý chấm công
-                      </a>
-
-    </nav>
-
-    <div class="sidebar-footer">
-
-        <div class="user-block">
-            <div class="user-avatar">
-                M
-            </div>
-
-            <div>
-                <div class="user-name">Manager</div>
-                <div class="user-role">Quản lý</div>
-            </div>
-        </div>
-
-        <button class="btn-logout"
-                onclick="window.location='${pageContext.request.contextPath}/login'">
-            Đăng xuất
-        </button>
-
-    </div>
-
-</aside>
+<%@ include file="/WEB-INF/jspf/sidebar.jsp" %>
 
 
 <div class="main-content">
