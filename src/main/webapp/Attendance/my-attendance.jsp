@@ -315,28 +315,89 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof flatpickr !== "undefined") {
-            var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
-
-            flatpickr("#fromDate", {
-                dateFormat: "Y-m-d",
-                altInput: true,
-                altFormat: "d/m/Y",
-                altInputClass: "flatpickr-input",
-                allowInput: true,
-                locale: vnLocale
-            });
-
-            flatpickr("#toDate", {
-                dateFormat: "Y-m-d",
-                altInput: true,
-                altFormat: "d/m/Y",
-                altInputClass: "flatpickr-input",
-                allowInput: true,
-                locale: vnLocale
-            });
+    function formatToDDMMYYYY(val) {
+        if (!val) return '';
+        val = val.trim();
+        // Xử lý dạng có dấu phân cách (ví dụ 2/11/2024 hoặc 2-11-2024)
+        var parts = val.split(/[\/\-\.]/);
+        if (parts.length === 3) {
+            var d = parseInt(parts[0], 10);
+            var m = parseInt(parts[1], 10);
+            var y = parseInt(parts[2], 10);
+            if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+                var dd = d < 10 ? '0' + d : '' + d;
+                var mm = m < 10 ? '0' + m : '' + m;
+                var yyyy = y < 100 ? (2000 + y) : '' + y;
+                return dd + '/' + mm + '/' + yyyy;
+            }
         }
+        // Xử lý dạng chuỗi số liền nhau (ví dụ 02112024)
+        var digits = val.replace(/\D/g, '');
+        if (digits.length === 8) {
+            return digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+        }
+        return val;
+    }
+
+    function initSmartDatePicker(selector) {
+        if (typeof flatpickr === "undefined") return;
+        var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
+
+        return flatpickr(selector, {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            altInputClass: "flatpickr-input",
+            allowInput: true,
+            locale: vnLocale,
+            parseDate: function(datestr, format) {
+                if (!datestr) return null;
+                var match = datestr.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+                if (match) {
+                    var day = parseInt(match[1], 10);
+                    var month = parseInt(match[2], 10) - 1;
+                    var year = parseInt(match[3], 10);
+                    return new Date(year, month, day);
+                }
+                var isoMatch = datestr.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+                if (isoMatch) {
+                    var year = parseInt(isoMatch[1], 10);
+                    var month = parseInt(isoMatch[2], 10) - 1;
+                    var day = parseInt(isoMatch[3], 10);
+                    return new Date(year, month, day);
+                }
+                return flatpickr.parseDate(datestr, format);
+            },
+            onReady: function(selectedDates, dateStr, instance) {
+                if (instance.altInput) {
+                    // Tự động thêm số 0 khi nhập thiếu (ví dụ 2/11/2024 -> 02/11/2024)
+                    instance.altInput.addEventListener('blur', function() {
+                        var formatted = formatToDDMMYYYY(instance.altInput.value);
+                        if (formatted !== instance.altInput.value) {
+                            instance.altInput.value = formatted;
+                        }
+                        instance.setDate(instance.altInput.value, true, "d/m/Y");
+                    });
+
+                    // Tự động chèn dấu '/' khi người dùng gõ số
+                    instance.altInput.addEventListener('input', function(e) {
+                        if (e.inputType === 'deleteContentBackward') return;
+                        var v = this.value;
+                        var clean = v.replace(/[^\d\/]/g, '');
+                        if (clean.length === 2 && !clean.includes('/')) {
+                            this.value = clean + '/';
+                        } else if (clean.length === 5 && clean.indexOf('/', 3) === -1) {
+                            this.value = clean + '/';
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initSmartDatePicker("#fromDate");
+        initSmartDatePicker("#toDate");
     });
 </script>
 </body>
