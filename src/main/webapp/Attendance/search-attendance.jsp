@@ -148,21 +148,28 @@
         }
 
         .search-button-group .btn-search {
-            background: #1e3a8a !important;
+            background: #2563eb !important;
             color: white !important;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+            transition: all 0.15s ease;
         }
 
         .search-button-group .btn-search:hover {
-            background: #172554 !important;
+            background: #1d4ed8 !important;
+            box-shadow: 0 3px 6px rgba(37, 99, 235, 0.25);
+            transform: translateY(-1px);
         }
 
         .search-button-group .btn-clear {
-            background: #64748b !important;
-            color: white !important;
+            background: #f1f5f9 !important;
+            color: #475569 !important;
+            border: 1px solid #e2e8f0 !important;
+            transition: all 0.15s ease;
         }
 
         .search-button-group .btn-clear:hover {
-            background: #475569 !important;
+            background: #e2e8f0 !important;
+            color: #1e293b !important;
         }
 
         .btn-back {
@@ -370,18 +377,16 @@
                 </div>
 
 
-                <!-- BUTTON -->
-
                 <div class="search-button-group">
 
                     <button type="submit" class="btn-search">
-                        🔍 Tìm kiếm
+                        Tìm kiếm
                     </button>
 
                     <button type="button"
                             class="btn-clear"
                             onclick="clearFilter()">
-                        ↺ Clear
+                        Đặt lại
                     </button>
 
                 </div>
