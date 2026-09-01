@@ -46,6 +46,10 @@ public class RequestController extends HttpServlet {
                     employeeController.myRequests(request, response);
                     break;
 
+                case "showForm":
+                    employeeController.showForm(request, response);
+                    break;
+
                 case "pending":
                     managerController.pending(request, response);
                     break;

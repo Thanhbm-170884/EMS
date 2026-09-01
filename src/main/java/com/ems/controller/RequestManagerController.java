@@ -43,8 +43,8 @@ public class RequestManagerController {
         String searchName = request.getParameter("searchName");
         String filterType = request.getParameter("filterType");
 
-        // 2. Fetch all requests
-        List<RequestDTO> allRequests = dao.getAll();
+        // 2. Fetch only requests assigned to this manager (department-scoped)
+        List<RequestDTO> allRequests = dao.getByApproverAccountId(accountId);
 
         // 3. Extract request types for dropdown
         java.util.Set<String> allRequestTypes = new java.util.LinkedHashSet<>();
@@ -110,6 +110,7 @@ public class RequestManagerController {
         }
 
         List<EmployeeBalanceDTO> list = balanceDao.getAllEmployeeBalances();
+
         request.setAttribute("balances", list);
 
         request.getRequestDispatcher(

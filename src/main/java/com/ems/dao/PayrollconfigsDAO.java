@@ -20,13 +20,14 @@ public class PayrollconfigsDAO {
         item.setBhxhpercent(rs.getBigDecimal("BhxhPercent"));
         item.setBhytpercent(rs.getBigDecimal("BhytPercent"));
         item.setBhtnpercent(rs.getBigDecimal("BhtnPercent"));
+        item.setEmployerbhxhpercent(rs.getBigDecimal("EmployerBhxhPercent"));
+        item.setEmployerbhtnldpercent(rs.getBigDecimal("EmployerBhtnldPercent"));
+        item.setEmployerbhytpercent(rs.getBigDecimal("EmployerBhytPercent"));
+        item.setEmployerbhtnpercent(rs.getBigDecimal("EmployerBhtnPercent"));
         item.setMaxinsurancesalary(rs.getBigDecimal("MaxInsuranceSalary"));
         item.setPersonaltaxdeduction(rs.getBigDecimal("PersonalTaxDeduction"));
         item.setDependenttaxdeduction(rs.getBigDecimal("DependentTaxDeduction"));
         item.setStandardworkingdays(rs.getInt("StandardWorkingDays"));
-        item.setOtweekdayrate(rs.getBigDecimal("OtWeekdayRate"));
-        item.setOtweekendrate(rs.getBigDecimal("OtWeekendRate"));
-        item.setOtholidayrate(rs.getBigDecimal("OtHolidayRate"));
         item.setIsactive(rs.getBoolean("IsActive"));
         item.setCreatedbyaccountid(rs.getObject("CreatedByAccountId") != null ? rs.getInt("CreatedByAccountId") : null);
 
@@ -79,31 +80,38 @@ public class PayrollconfigsDAO {
     }
 
     public boolean insert(Payrollconfigs item){
+        // CÂU LỆNH INSERT ĐÃ SẠCH BÓNG OT
         String sql = "INSERT INTO payrollconfigs (ConfigName, EffectiveDate, BhxhPercent, BhytPercent, BhtnPercent, " +
+                "EmployerBhxhPercent, EmployerBhtnldPercent, EmployerBhytPercent, EmployerBhtnPercent, " +
                 "MaxInsuranceSalary, PersonalTaxDeduction, DependentTaxDeduction, StandardWorkingDays, " +
-                "OtWeekdayRate, OtWeekendRate, OtHolidayRate, IsActive, CreatedByAccountId) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "IsActive, CreatedByAccountId) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, item.getConfigname());
-            ps.setDate(2, Date.valueOf(item.getEffectivedate())); // Convert LocalDate -> SQL Date
+            ps.setDate(2, Date.valueOf(item.getEffectivedate()));
             ps.setBigDecimal(3, item.getBhxhpercent());
             ps.setBigDecimal(4, item.getBhytpercent());
             ps.setBigDecimal(5, item.getBhtnpercent());
-            ps.setBigDecimal(6, item.getMaxinsurancesalary());
-            ps.setBigDecimal(7, item.getPersonaltaxdeduction());
-            ps.setBigDecimal(8, item.getDependenttaxdeduction());
-            ps.setInt(9, item.getStandardworkingdays());
-            ps.setBigDecimal(10, item.getOtweekdayrate());
-            ps.setBigDecimal(11, item.getOtweekendrate());
-            ps.setBigDecimal(12, item.getOtholidayrate());
-            ps.setBoolean(13, item.getIsactive() != null ? item.getIsactive() : false);
+
+            ps.setBigDecimal(6, item.getEmployerbhxhpercent());
+            ps.setBigDecimal(7, item.getEmployerbhtnldpercent());
+            ps.setBigDecimal(8, item.getEmployerbhytpercent());
+            ps.setBigDecimal(9, item.getEmployerbhtnpercent());
+
+            ps.setBigDecimal(10, item.getMaxinsurancesalary());
+            ps.setBigDecimal(11, item.getPersonaltaxdeduction());
+            ps.setBigDecimal(12, item.getDependenttaxdeduction());
+            ps.setInt(13, item.getStandardworkingdays());
+
+            ps.setBoolean(14, item.getIsactive() != null ? item.getIsactive() : false);
 
             if (item.getCreatedbyaccountid() != null) {
-                ps.setInt(14, item.getCreatedbyaccountid());
+                ps.setInt(15, item.getCreatedbyaccountid());
             } else {
-                ps.setNull(14, Types.INTEGER);
+                ps.setNull(15, Types.INTEGER);
             }
 
             int affectedRows = ps.executeUpdate();

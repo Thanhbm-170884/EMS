@@ -273,16 +273,26 @@
 
 
 
-                                            <!-- Edit button -->
-                                            <button type="button" class="btn-action-edit"
-                                              onclick="openEditModal(<%= p.getId() %>, '<%= p.getName().replace("'", "\\'") %>', '<%= p.getStartDate() %>', '<%= p.getEndDate() %>', <%= isLocked %>)">
-                                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M12 20h9" />
-                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                              </svg>
-                                              Sửa
-                                            </button>
+                                            <% if (isLocked) { %>
+                                              <button type="button" class="btn-action-edit" style="opacity: 0.5; cursor: not-allowed;" title="Kỳ lương đã khóa, không thể sửa">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                                  stroke="currentColor" stroke-width="2">
+                                                  <path d="M12 20h9" />
+                                                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                                </svg>
+                                                Sửa
+                                              </button>
+                                            <% } else { %>
+                                              <button type="button" class="btn-action-edit"
+                                                onclick="openEditModal(<%= p.getId() %>, '<%= p.getName().replace("'", "\\'") %>', '<%= p.getStartDate() %>', '<%= p.getEndDate() %>', <%= isLocked %>)">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                                  stroke="currentColor" stroke-width="2">
+                                                  <path d="M12 20h9" />
+                                                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                                </svg>
+                                                Sửa
+                                              </button>
+                                            <% } %>
 
                                           </div>
                                         </td>

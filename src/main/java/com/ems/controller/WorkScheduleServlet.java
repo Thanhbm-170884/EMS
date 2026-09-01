@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class WorkScheduleServlet extends HttpServlet {
         request.setAttribute("shifts", shifts);
         request.setAttribute("hasSchedule", hasSchedule);
         // Gửi ngày hiện tại để form hiển thị effectiveDate mặc định
-        request.setAttribute("today", shifts.get(0).getEffectiveDate().toString());
+        request.setAttribute("today", hasSchedule ? shifts.get(0).getEffectiveDate().toString() : "");
         request.getRequestDispatcher("/work-schedule.jsp").forward(request, response);
     }
 
@@ -41,7 +43,6 @@ public class WorkScheduleServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        // Đọc ngày áp dụng từ form (HR chọn), fallback về hôm nay nếu không có
         LocalDate effectiveDate;
         try {
             String effectiveDateParam = request.getParameter("effectiveDate");
@@ -53,38 +54,96 @@ public class WorkScheduleServlet extends HttpServlet {
         }
 
         List<ShiftDTO> shiftDTOS = new ArrayList<>();
+        List<ShiftDTO> submittedShifts = new ArrayList<>();
+        String error = null;
 
         for (int i = 0; i < 7; i++) {
-            String dayOfWeek = request.getParameter("dayOfWeek_" + i);
-            if (dayOfWeek == null || dayOfWeek.isBlank())
+            String dayOfWeekParam = request.getParameter("dayOfWeek_" + i);
+            if (dayOfWeekParam == null || dayOfWeekParam.isBlank())
                 continue;
 
-            String workingParam = request.getParameter("working_" + i);
-            String startTime    = request.getParameter("startTime_" + i);
-            String endTime      = request.getParameter("endTime_" + i);
-            String breakStart   = request.getParameter("breakStart_" + i);
-            String breakEnd     = request.getParameter("breakEnd_" + i);
+            int dayOfWeek = Integer.parseInt(dayOfWeekParam.trim());
+            boolean working = "true".equals(request.getParameter("working_" + i));
+            String startTime = request.getParameter("startTime_" + i);
+            String endTime = request.getParameter("endTime_" + i);
+            String breakStart = request.getParameter("breakStart_" + i);
+            String breakEnd = request.getParameter("breakEnd_" + i);
+
+            ShiftDTO raw = new ShiftDTO();
+            raw.setDayOfWeek(dayOfWeek);
+            raw.setWorking(working);
+            if (working) {
+                raw.setStartTime(startTime);
+                raw.setEndTime(endTime);
+                raw.setBreakStart(breakStart);
+                raw.setBreakEnd(breakEnd);
+            }
+            submittedShifts.add(raw);
+
+            if (error != null) {
+                continue;
+            }
 
             ShiftDTO dto = new ShiftDTO();
-            dto.setDayOfWeek(Integer.parseInt(dayOfWeek.trim()));
-            boolean working = "true".equals(workingParam);
+            dto.setDayOfWeek(dayOfWeek);
             dto.setWorking(working);
+
             if (working) {
-                dto.setStartTime(startTime  != null ? startTime.trim()  : null);
-                dto.setEndTime(endTime      != null ? endTime.trim()    : null);
-                dto.setBreakStart(breakStart != null ? breakStart.trim() : null);
-                dto.setBreakEnd(breakEnd    != null ? breakEnd.trim()   : null);
-            } else {
-                dto.setStartTime(null);
-                dto.setEndTime(null);
-                dto.setBreakStart(null);
-                dto.setBreakEnd(null);
+                try {
+                    LocalTime start = LocalTime.parse(startTime);
+                    LocalTime end = LocalTime.parse(endTime);
+                    if (!start.isBefore(end)) {
+                        error = "Giờ bắt đầu phải trước giờ kết thúc";
+                        continue;
+                    }
+
+                    if (breakStart != null && !breakStart.isBlank()
+                            && breakEnd != null && !breakEnd.isBlank()) {
+                        LocalTime bStart = LocalTime.parse(breakStart);
+                        LocalTime bEnd = LocalTime.parse(breakEnd);
+                        if (!bStart.isBefore(bEnd)) {
+                            error = "Giờ bắt đầu nghỉ trưa phải trước giờ kết thúc nghỉ trưa";
+                            continue;
+                        }
+                        if (bStart.isBefore(start) || bEnd.isAfter(end)) {
+                            error = "Giờ nghỉ trưa phải nằm trong khung giờ làm việc";
+                            continue;
+                        }
+                    }
+
+                    dto.setStartTime(startTime.trim());
+                    dto.setEndTime(endTime.trim());
+                    dto.setBreakStart(breakStart != null ? breakStart.trim() : null);
+                    dto.setBreakEnd(breakEnd != null ? breakEnd.trim() : null);
+                } catch (DateTimeParseException e) {
+                    error = "Định dạng giờ không hợp lệ";
+                    continue;
+                }
             }
+
             shiftDTOS.add(dto);
         }
 
-        // Gọi saveNewDefaultSchedule với effectiveDate để versioning đúng
+        if (error != null) {
+            forwardWithError(request, response, error, submittedShifts, effectiveDate);
+            return;
+        }
+
         workScheduleService.saveNewDefaultSchedule(shiftDTOS, effectiveDate);
         response.sendRedirect(request.getContextPath() + "/work-schedule?saved=1");
+    }
+
+    private void forwardWithError(HttpServletRequest request, HttpServletResponse response, String error,
+                                  List<ShiftDTO> submittedShifts, LocalDate effectiveDate)
+            throws ServletException, IOException {
+        List<ShiftDTO> shifts = workScheduleService.getWorkSchedule();
+        boolean hasSchedule = shifts != null && !shifts.isEmpty();
+        request.setAttribute("shifts", shifts);
+        request.setAttribute("hasSchedule", hasSchedule);
+        request.setAttribute("formShifts", submittedShifts);
+        // Giữ đúng ngày user vừa chọn trên date-picker, không lấy lại từ DB
+        request.setAttribute("today", effectiveDate.toString());
+        request.setAttribute("error", error);
+        request.getRequestDispatcher("/work-schedule.jsp").forward(request, response);
     }
 }

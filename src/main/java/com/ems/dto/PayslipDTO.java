@@ -20,17 +20,11 @@ public class PayslipDTO {
 
     private BigDecimal baseSalary;
     private BigDecimal actualBaseSalary;
-    private BigDecimal otHours;
-    private BigDecimal otSalary;
     private BigDecimal bonusAmount;
     
     private Integer dependentsCount;
     private BigDecimal dependentDeduction;
     private BigDecimal taxableIncome;
-    
-    private BigDecimal penaltyAmount;
-    private BigDecimal advanceAmount;
-    private BigDecimal otherDeductions;
     
     private BigDecimal bhxh;
     private BigDecimal bhyt;
@@ -40,6 +34,12 @@ public class PayslipDTO {
     private BigDecimal totalInsurance;
     private BigDecimal taxDeduction;
     private BigDecimal netAmount;
+
+    private BigDecimal employerBhxhAmount;
+    private BigDecimal employerBhtnldAmount;
+    private BigDecimal employerBhytAmount;
+    private BigDecimal employerBhtnAmount;
+    private BigDecimal totalEmployerCost;
 
     private List<AllowanceDetailDTO> allowanceDetails = new ArrayList<>();
 
@@ -70,10 +70,6 @@ public class PayslipDTO {
     public void setBaseSalary(BigDecimal baseSalary) { this.baseSalary = baseSalary; }
     public BigDecimal getActualBaseSalary() { return actualBaseSalary; }
     public void setActualBaseSalary(BigDecimal actualBaseSalary) { this.actualBaseSalary = actualBaseSalary; }
-    public BigDecimal getOtHours() { return otHours; }
-    public void setOtHours(BigDecimal otHours) { this.otHours = otHours; }
-    public BigDecimal getOtSalary() { return otSalary; }
-    public void setOtSalary(BigDecimal otSalary) { this.otSalary = otSalary; }
     public BigDecimal getBonusAmount() { return bonusAmount; }
     public void setBonusAmount(BigDecimal bonusAmount) { this.bonusAmount = bonusAmount; }
 
@@ -83,13 +79,6 @@ public class PayslipDTO {
     public void setDependentDeduction(BigDecimal dependentDeduction) { this.dependentDeduction = dependentDeduction; }
     public BigDecimal getTaxableIncome() { return taxableIncome; }
     public void setTaxableIncome(BigDecimal taxableIncome) { this.taxableIncome = taxableIncome; }
-
-    public BigDecimal getPenaltyAmount() { return penaltyAmount; }
-    public void setPenaltyAmount(BigDecimal penaltyAmount) { this.penaltyAmount = penaltyAmount; }
-    public BigDecimal getAdvanceAmount() { return advanceAmount; }
-    public void setAdvanceAmount(BigDecimal advanceAmount) { this.advanceAmount = advanceAmount; }
-    public BigDecimal getOtherDeductions() { return otherDeductions; }
-    public void setOtherDeductions(BigDecimal otherDeductions) { this.otherDeductions = otherDeductions; }
 
     public BigDecimal getBhxh() { return bhxh; }
     public void setBhxh(BigDecimal bhxh) { this.bhxh = bhxh; }
@@ -106,6 +95,17 @@ public class PayslipDTO {
     public void setTaxDeduction(BigDecimal taxDeduction) { this.taxDeduction = taxDeduction; }
     public BigDecimal getNetAmount() { return netAmount; }
     public void setNetAmount(BigDecimal netAmount) { this.netAmount = netAmount; }
+
+    public BigDecimal getEmployerBhxhAmount() { return employerBhxhAmount; }
+    public void setEmployerBhxhAmount(BigDecimal employerBhxhAmount) { this.employerBhxhAmount = employerBhxhAmount; }
+    public BigDecimal getEmployerBhtnldAmount() { return employerBhtnldAmount; }
+    public void setEmployerBhtnldAmount(BigDecimal employerBhtnldAmount) { this.employerBhtnldAmount = employerBhtnldAmount; }
+    public BigDecimal getEmployerBhytAmount() { return employerBhytAmount; }
+    public void setEmployerBhytAmount(BigDecimal employerBhytAmount) { this.employerBhytAmount = employerBhytAmount; }
+    public BigDecimal getEmployerBhtnAmount() { return employerBhtnAmount; }
+    public void setEmployerBhtnAmount(BigDecimal employerBhtnAmount) { this.employerBhtnAmount = employerBhtnAmount; }
+    public BigDecimal getTotalEmployerCost() { return totalEmployerCost; }
+    public void setTotalEmployerCost(BigDecimal totalEmployerCost) { this.totalEmployerCost = totalEmployerCost; }
 
     public List<AllowanceDetailDTO> getAllowanceDetails() { return allowanceDetails; }
     public void setAllowanceDetails(List<AllowanceDetailDTO> allowanceDetails) { this.allowanceDetails = allowanceDetails; }

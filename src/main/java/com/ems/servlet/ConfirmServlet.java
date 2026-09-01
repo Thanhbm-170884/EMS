@@ -47,7 +47,7 @@ public class ConfirmServlet extends HttpServlet {
             }
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi khi tra cứu nhân viên: " + e.getMessage());
-            request.getRequestDispatcher("/Attendance/preview.jsp").forward(request, response);
+            request.getRequestDispatcher("/Attendance/upload").forward(request, response);
             return;
         }
 
@@ -55,7 +55,7 @@ public class ConfirmServlet extends HttpServlet {
         if (invalidCount > 0) {
             request.setAttribute("error",
                     "Còn " + invalidCount + " dòng chưa hợp lệ. Vui lòng bấm \"Sửa\" để chỉnh lại trước khi lưu.");
-            request.getRequestDispatcher("/Attendance/preview.jsp").forward(request, response);
+            request.getRequestDispatcher("/Attendance/attendance.jsp").forward(request, response);
             return;
         }
 

@@ -165,34 +165,46 @@ public class PayPeriodServlet extends HttpServlet {
                         session.setAttribute("toastType", "error");
                     } else {
                         int id = Integer.parseInt(idStr);
-                        Date startDate = Date.valueOf(startDateStr);
-                        Date endDate = Date.valueOf(endDateStr);
-
-                        if (endDate.before(startDate)) {
-                            session.setAttribute("toastMessage", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!");
+                        TimesheetPeriodDTO existingPeriod = periodService.getPeriodById(id);
+                        
+                        if (existingPeriod != null && existingPeriod.isLocked()) {
+                            session.setAttribute("toastMessage", "Kỳ lương đã khóa không thể chỉnh sửa!");
                             session.setAttribute("toastType", "error");
                         } else {
-                            if (periodService.isDuplicatePeriod(name.trim(), startDate, endDate, id)) {
-                                session.setAttribute("toastMessage", "Kỳ lương đã tồn tại hoặc bị trùng lặp thời gian!");
-                                session.setAttribute("toastType", "error");
-                            } else {
-                                TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
-                                dto.setId(id);
-                                dto.setName(name.trim());
-                            dto.setStartDate(startDate);
-                            dto.setEndDate(endDate);
-                            dto.setLocked("true".equalsIgnoreCase(isLockedStr) || "on".equalsIgnoreCase(isLockedStr) || "1".equals(isLockedStr));
+                            Date startDate = Date.valueOf(startDateStr);
+                            Date endDate = Date.valueOf(endDateStr);
 
-                            boolean success = periodService.updatePeriod(dto);
-                            if (success) {
-                                session.setAttribute("toastMessage", "Cập nhật thông tin kỳ lương thành công!");
-                                session.setAttribute("toastType", "success");
-                            } else {
-                                session.setAttribute("toastMessage", "Cập nhật kỳ lương thất bại!");
+                            if (endDate.before(startDate)) {
+                                session.setAttribute("toastMessage", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!");
                                 session.setAttribute("toastType", "error");
+                            } else {
+                                if (periodService.isDuplicatePeriod(name.trim(), startDate, endDate, id)) {
+                                    session.setAttribute("toastMessage", "Kỳ lương đã tồn tại hoặc bị trùng lặp thời gian!");
+                                    session.setAttribute("toastType", "error");
+                                } else {
+                                    boolean currentLockStatus = false;
+                                    if (isLockedStr != null && !isLockedStr.trim().isEmpty()) {
+                                        currentLockStatus = "true".equalsIgnoreCase(isLockedStr) || "on".equalsIgnoreCase(isLockedStr) || "1".equals(isLockedStr);
+                                    }
+
+                                    TimesheetPeriodDTO dto = new TimesheetPeriodDTO();
+                                    dto.setId(id);
+                                    dto.setName(name.trim());
+                                    dto.setStartDate(startDate);
+                                    dto.setEndDate(endDate);
+                                    dto.setLocked(currentLockStatus);
+
+                                    boolean success = periodService.updatePeriod(dto);
+                                    if (success) {
+                                        session.setAttribute("toastMessage", "Cập nhật thông tin kỳ lương thành công!");
+                                        session.setAttribute("toastType", "success");
+                                    } else {
+                                        session.setAttribute("toastMessage", "Cập nhật kỳ lương thất bại!");
+                                        session.setAttribute("toastType", "error");
+                                    }
+                                }
                             }
                         }
-                    }
                     }
                     break;
                 }

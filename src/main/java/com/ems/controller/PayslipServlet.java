@@ -207,14 +207,10 @@ public class PayslipServlet extends HttpServlet {
             // Xử lý tiền tệ (Nếu rỗng thì cho = 0)
             BigDecimal bonus = request.getParameter("bonus").isEmpty() ? BigDecimal.ZERO
                     : new BigDecimal(request.getParameter("bonus"));
-            BigDecimal penalty = request.getParameter("penalty").isEmpty() ? BigDecimal.ZERO
-                    : new BigDecimal(request.getParameter("penalty"));
-            BigDecimal advance = request.getParameter("advance").isEmpty() ? BigDecimal.ZERO
-                    : new BigDecimal(request.getParameter("advance"));
 
             // Gọi Service tính lại và cập nhật
             com.ems.service.PayrollService payrollService = new com.ems.service.PayrollService();
-            String result = payrollService.updateManualPayslip(payslipId, bonus, penalty, advance, note, managerId);
+            String result = payrollService.updateManualPayslip(payslipId, bonus, managerId);
 
             if ("SUCCESS".equals(result)) {
                 request.getSession().setAttribute("msgSuccess",
