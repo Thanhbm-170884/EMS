@@ -192,10 +192,12 @@
                 ⚠ <%= request.getAttribute("error") %>
             </div>
         <% } %>
+        <div id="clientErrorAlert" class="alert-danger" style="display: none;"></div>
 
         <form class="filter-bar"
               method="get"
-              action="${pageContext.request.contextPath}/Attendance/my-attendance">
+              action="${pageContext.request.contextPath}/Attendance/my-attendance"
+              onsubmit="return validateAttendanceFilter(event)">
 
             <div class="form-group">
                 <label for="fromDate">Từ ngày</label>
@@ -442,17 +444,52 @@
         });
     }
 
+    var fromPicker = null;
+    var toPicker = null;
+
+    function validateAttendanceFilter(e) {
+        var fromInput = document.getElementById('fromDate');
+        var toInput = document.getElementById('toDate');
+        var fromVal = fromInput ? fromInput.value : '';
+        var toVal = toInput ? toInput.value : '';
+        var errorBox = document.getElementById('clientErrorAlert');
+
+        if (fromVal && toVal) {
+            var from = new Date(fromVal);
+            var to = new Date(toVal);
+            if (from > to) {
+                if (e) e.preventDefault();
+                if (errorBox) {
+                    errorBox.innerHTML = '⚠ <strong>Lỗi:</strong> Từ ngày phải trước hoặc bằng Đến ngày.';
+                    errorBox.style.display = 'block';
+                    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+        }
+        if (errorBox) errorBox.style.display = 'none';
+        return true;
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof flatpickr !== "undefined") {
             var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
 
-            flatpickr("#fromDate", {
+            fromPicker = flatpickr("#fromDate", {
                 dateFormat: "Y-m-d",
                 altInput: true,
                 altFormat: "d/m/Y",
                 altInputClass: "flatpickr-input",
                 allowInput: true,
                 locale: vnLocale,
+                maxDate: new Date(),
+                onChange: function(selectedDates) {
+                    if (selectedDates.length > 0 && toPicker) {
+                        toPicker.set("minDate", selectedDates[0]);
+                    }
+                    var errorBox = document.getElementById('clientErrorAlert');
+                    if (errorBox) errorBox.style.display = 'none';
+                },
                 onReady: function(selectedDates, dateStr, instance) {
                     if (instance.altInput) {
                         attachDateMask(instance.altInput, instance);
@@ -460,13 +497,21 @@
                 }
             });
 
-            flatpickr("#toDate", {
+            toPicker = flatpickr("#toDate", {
                 dateFormat: "Y-m-d",
                 altInput: true,
                 altFormat: "d/m/Y",
                 altInputClass: "flatpickr-input",
                 allowInput: true,
                 locale: vnLocale,
+                maxDate: new Date(),
+                onChange: function(selectedDates) {
+                    if (selectedDates.length > 0 && fromPicker) {
+                        fromPicker.set("maxDate", selectedDates[0]);
+                    }
+                    var errorBox = document.getElementById('clientErrorAlert');
+                    if (errorBox) errorBox.style.display = 'none';
+                },
                 onReady: function(selectedDates, dateStr, instance) {
                     if (instance.altInput) {
                         attachDateMask(instance.altInput, instance);
