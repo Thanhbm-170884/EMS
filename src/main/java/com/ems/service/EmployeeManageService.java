@@ -65,8 +65,8 @@ public class EmployeeManageService {
         String emailTrimmed = email.trim().toLowerCase();
         String phoneTrimmed = (phone != null) ? phone.trim() : "";
 
-        // Kiểm tra email công ty @techcorp.vn
-        if (!emailTrimmed.endsWith("@techcorp.vn")) {
+        // Kiểm tra email công ty @hrms.vn
+        if (!emailTrimmed.endsWith("@hrms.vn")) {
             return false;
         }
 
@@ -95,7 +95,7 @@ public class EmployeeManageService {
         String phoneTrimmed = (phone != null) ? phone.trim() : "";
 
         // Kiểm tra định dạng email công ty
-        if (!emailTrimmed.endsWith("@techcorp.vn")) {
+        if (!emailTrimmed.endsWith("@hrms.vn")) {
             return false;
         }
 

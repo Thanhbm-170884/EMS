@@ -476,8 +476,8 @@
       if (/\s/.test(rawEm)) {
         setFieldStatus(emInput, emMsg, false, "Email phải viết liền, không được chứa khoảng trắng!");
         hasError = true;
-      } else if (!/^[a-zA-Z0-9._%+-]+@techcorp\.vn$/.test(em)) {
-        setFieldStatus(emInput, emMsg, false, "Email công ty phải có đuôi @techcorp.vn (VD: nhanvien@techcorp.vn)!");
+      } else if (!/^[a-zA-Z0-9._%+-]+@hrms\.vn$/.test(em)) {
+        setFieldStatus(emInput, emMsg, false, "Email công ty phải có đuôi @hrms.vn (VD: nhanvien@hrms.vn)!");
         hasError = true;
       } else {
         const isEmDup = EXISTING_USERS.some(function(u){ return u.id !== currentId && u.email && u.email.toLowerCase() === em; });

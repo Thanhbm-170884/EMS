@@ -92,7 +92,7 @@ public class UserManageService {
     }
 
     /**
-     * Cập nhật thông tin cơ bản tài khoản (Họ tên, Email @techcorp.vn, Vai trò)
+     * Cập nhật thông tin cơ bản tài khoản (Họ tên, Email @hrms.vn, Vai trò)
      */
     public boolean updateAccountBasic(int accountId, String fullName, String email, String roleName) {
         if (accountId <= 0 || fullName == null || fullName.trim().isEmpty() || email == null || email.trim().isEmpty()) {
@@ -100,7 +100,7 @@ public class UserManageService {
         }
 
         String emailTrimmed = email.trim().toLowerCase();
-        if (!emailTrimmed.endsWith("@techcorp.vn")) {
+        if (!emailTrimmed.endsWith("@hrms.vn")) {
             return false;
         }
 
