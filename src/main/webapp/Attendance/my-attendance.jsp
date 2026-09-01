@@ -74,6 +74,8 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
         }
 
         .filter-bar .form-group label {
@@ -81,6 +83,9 @@
             font-size: 13px;
             font-weight: 600;
             color: #475569;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.2;
         }
 
         .filter-bar .form-group input {
@@ -94,6 +99,7 @@
             color: #1e293b;
             background: #ffffff;
             outline: none;
+            margin: 0 !important;
             transition: all 0.15s ease;
             font-family: inherit;
         }
@@ -117,6 +123,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            margin: 0 !important;
             transition: all 0.15s ease;
             font-family: inherit;
             box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
