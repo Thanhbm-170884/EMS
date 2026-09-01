@@ -15,32 +15,32 @@
 
     <style>
         .filter-bar {
-            display: flex;
-            align-items: flex-end;
-            gap: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
             margin-bottom: 24px;
             flex-wrap: wrap;
             background: #ffffff;
-            padding: 16px 20px;
-            border-radius: 12px;
+            padding: 12px 18px;
+            border-radius: 10px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
-        .filter-bar .form-group {
+        .filter-item {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
+            align-items: center;
+            gap: 8px;
         }
 
-        .filter-bar .form-group label {
-            display: block;
-            font-size: 13px;
+        .filter-item label {
+            font-size: 13.5px;
             font-weight: 600;
-            color: #334155;
+            color: #475569;
+            white-space: nowrap;
         }
 
-        .filter-bar .form-group input[type="date"] {
+        .filter-item input[type="date"] {
             box-sizing: border-box;
             height: 38px;
             padding: 6px 12px;
@@ -54,7 +54,7 @@
             font-family: inherit;
         }
 
-        .filter-bar .form-group input[type="date"]:focus {
+        .filter-item input[type="date"]:focus {
             background-color: #ffffff;
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
@@ -65,7 +65,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0 20px;
+            padding: 0 18px;
             background: #2563eb;
             color: #ffffff;
             border: none;
@@ -76,6 +76,7 @@
             transition: all 0.15s ease;
             box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
             font-family: inherit;
+            white-space: nowrap;
         }
 
         .btn-filter-submit:hover {
@@ -93,7 +94,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0 16px;
+            padding: 0 14px;
             background: #f1f5f9;
             color: #475569;
             border: 1px solid #e2e8f0;
@@ -104,6 +105,7 @@
             cursor: pointer;
             transition: all 0.15s ease;
             font-family: inherit;
+            white-space: nowrap;
         }
 
         .btn-filter-reset:hover {
@@ -197,35 +199,39 @@
             </div>
         <% } %>
 
-        <form class="filter-bar"
-              method="get"
-              action="${pageContext.request.contextPath}/Attendance/my-attendance">
+        <div>
+            <form class="filter-bar"
+                  method="get"
+                  action="${pageContext.request.contextPath}/Attendance/my-attendance">
 
-            <div class="form-group">
-                <label>Từ ngày</label>
-                <input type="date"
-                       name="fromDate"
-                       value="${fromDate}" />
-            </div>
+                <div class="filter-item">
+                    <label for="fromDateInput">Từ ngày:</label>
+                    <input type="date"
+                           id="fromDateInput"
+                           name="fromDate"
+                           value="${fromDate}" />
+                </div>
 
-            <div class="form-group">
-                <label>Đến ngày</label>
-                <input type="date"
-                       name="toDate"
-                       value="${toDate}" />
-            </div>
+                <div class="filter-item">
+                    <label for="toDateInput">Đến ngày:</label>
+                    <input type="date"
+                           id="toDateInput"
+                           name="toDate"
+                           value="${toDate}" />
+                </div>
 
-            <button type="submit" class="btn-filter-submit">
-                Lọc
-            </button>
+                <button type="submit" class="btn-filter-submit">
+                    Lọc dữ liệu
+                </button>
 
-            <% if (request.getParameter("fromDate") != null || request.getParameter("toDate") != null) { %>
-                <a href="${pageContext.request.contextPath}/Attendance/my-attendance.jsp" class="btn-filter-reset">
-                    Đặt lại
-                </a>
-            <% } %>
+                <c:if test="${not empty fromDate or not empty toDate}">
+                    <a href="${pageContext.request.contextPath}/Attendance/my-attendance.jsp" class="btn-filter-reset">
+                        Đặt lại
+                    </a>
+                </c:if>
 
-        </form>
+            </form>
+        </div>
 
         <div class="card" style="padding:0; overflow:hidden;">
 
