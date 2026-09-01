@@ -128,6 +128,50 @@
             z-index: 2;
         }
 
+        .flatpickr-calendar {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e2e8f0 !important;
+            font-family: inherit !important;
+        }
+
+        .flatpickr-months {
+            padding: 6px 4px 0 !important;
+            align-items: center !important;
+        }
+
+        .flatpickr-current-month {
+            padding: 4px 0 0 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+        }
+
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            padding: 2px 6px !important;
+            border-radius: 6px !important;
+        }
+
+        .flatpickr-current-month .numInputWrapper {
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            width: 65px !important;
+        }
+
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 32px !important;
+            width: 32px !important;
+            padding: 0 !important;
+            top: 6px !important;
+        }
+
         .btn-primary {
             display: inline-flex;
             align-items: center;
@@ -473,7 +517,17 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof flatpickr !== "undefined") {
-            var vnLocale = typeof flatpickr.l10ns.vn !== "undefined" ? flatpickr.l10ns.vn : "default";
+            var customVnLocale = {
+                firstDayOfWeek: 1,
+                weekdays: {
+                    shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+                    longhand: ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"]
+                },
+                months: {
+                    shorthand: ["Thg 1", "Thg 2", "Thg 3", "Thg 4", "Thg 5", "Thg 6", "Thg 7", "Thg 8", "Thg 9", "Thg 10", "Thg 11", "Thg 12"],
+                    longhand: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"]
+                }
+            };
 
             fromPicker = flatpickr("#fromDate", {
                 dateFormat: "Y-m-d",
@@ -481,8 +535,7 @@
                 altFormat: "d/m/Y",
                 altInputClass: "flatpickr-input",
                 allowInput: true,
-                locale: vnLocale,
-                maxDate: new Date(),
+                locale: customVnLocale,
                 onChange: function(selectedDates) {
                     if (selectedDates.length > 0 && toPicker) {
                         toPicker.set("minDate", selectedDates[0]);
@@ -503,8 +556,7 @@
                 altFormat: "d/m/Y",
                 altInputClass: "flatpickr-input",
                 allowInput: true,
-                locale: vnLocale,
-                maxDate: new Date(),
+                locale: customVnLocale,
                 onChange: function(selectedDates) {
                     if (selectedDates.length > 0 && fromPicker) {
                         fromPicker.set("maxDate", selectedDates[0]);
