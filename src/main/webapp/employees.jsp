@@ -349,11 +349,7 @@
             <div style="color:#64748b; font-size:12px; margin-bottom:2px;">Chức vụ:</div>
             <div style="color:#0f172a; font-weight:600;" id="viewEmpPos">—</div>
           </div>
-          <div>
-            <div style="color:#64748b; font-size:12px; margin-bottom:2px;">Cấp bậc (Job Level):</div>
-            <div style="color:#0f172a; font-weight:600;" id="viewEmpJobLevel">—</div>
-          </div>
-          <div>
+          <div style="grid-column: span 2;">
             <div style="color:#64748b; font-size:12px; margin-bottom:2px;">Lương cơ bản:</div>
             <div style="color:#0d9488; font-weight:700; font-size:14px;" id="viewEmpSalary">—</div>
           </div>
@@ -1096,7 +1092,6 @@
     document.getElementById('viewEmpEmail').textContent      = row.dataset.email             || '—';
     document.getElementById('viewEmpDept').textContent       = row.dataset.dept              || '—';
     document.getElementById('viewEmpPos').textContent        = row.dataset.pos               || '—';
-    document.getElementById('viewEmpJobLevel').textContent   = row.dataset.jobLevel          || '—';
     document.getElementById('viewEmpSalary').textContent     = row.dataset.salaryDisplay     || '—';
 
     document.getElementById('viewEmpModal').style.display = 'flex';
