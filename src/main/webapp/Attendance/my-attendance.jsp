@@ -66,13 +66,14 @@
             display: flex;
             align-items: flex-end;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             flex-wrap: wrap;
         }
 
         .filter-bar .form-group {
             display: flex;
             flex-direction: column;
+            gap: 6px;
         }
 
         .filter-bar .form-group label {
@@ -80,37 +81,55 @@
             font-size: 13px;
             font-weight: 600;
             color: #475569;
-            margin-bottom: 6px;
         }
 
         .filter-bar .form-group input {
             box-sizing: border-box;
-            height: 40px;
-            padding: 9px 12px;
+            width: 170px;
+            height: 38px;
+            padding: 7px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13.5px;
+            color: #1e293b;
+            background: #ffffff;
+            outline: none;
+            transition: all 0.15s ease;
+            font-family: inherit;
         }
 
-        .filter-bar .btn-primary {
-            height: 40px;
+        .filter-bar .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .btn-filter-submit {
             box-sizing: border-box;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 20px;
-            background: #1e3a8a;
-            color: white;
+            height: 38px;
+            padding: 0 22px;
+            background: #2563eb;
+            color: #ffffff;
             border: none;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 13.5px;
             cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
+        }
 
+        .btn-filter-submit:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-filter-submit:active {
+            transform: translateY(0);
         }
 
         .alert-danger {
@@ -133,11 +152,10 @@
 
     <div class="page-body">
 
-        <div class="page-header">
-            <h1>Lịch sử chấm công của tôi</h1>
-            <p>
-                Xem lại thông tin check-in / check-out
-                theo khoảng thời gian bạn chọn.
+        <div class="page-header" style="margin-bottom: 24px;">
+            <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 4px;">Lịch sử chấm công của tôi</h1>
+            <p style="font-size: 14px; color: #4b5563;">
+                Xem lại thông tin check-in / check-out theo khoảng thời gian bạn chọn.
             </p>
         </div>
 
@@ -165,8 +183,8 @@
                        value="${toDate}" />
             </div>
 
-            <button type="submit" class="btn-primary">
-                🔍 Lọc
+            <button type="submit" class="btn-filter-submit">
+                Lọc
             </button>
 
         </form>
