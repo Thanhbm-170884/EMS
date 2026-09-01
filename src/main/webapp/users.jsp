@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List, java.util.Map" %>
 <%
     if (request.getAttribute("usersList") == null) {
@@ -61,33 +61,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
-    <div class="brand-dot">E</div>
-    <span class="brand-name">EMS</span>
-  </a>
-  <nav class="nav-group">
-    <div class="nav-section-label">Tổng quan</div>
-    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
-    <div class="nav-section-label">Quản trị</div>
-    <a href="<%= request.getContextPath() %>/users"       class="nav-link active">Tài khoản</a>
-    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
-    <a href="<%= request.getContextPath() %>/departments" class="nav-link">Phòng ban</a>
-    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-block">
-      <div class="user-avatar">
-        <%= fullName != null && !fullName.isEmpty() ? fullName.substring(0,1).toUpperCase() : "A" %>
-      </div>
-      <div>
-        <div class="user-name"><%= fullName != null ? fullName : "Admin" %></div>
-        <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
-  </div>
-</aside>
+<%@include file="/WEB-INF/jspf/sidebar.jsp"%>
 
 <div class="main-content">
   <div class="topbar">
@@ -476,8 +450,8 @@
       if (/\s/.test(rawEm)) {
         setFieldStatus(emInput, emMsg, false, "Email phải viết liền, không được chứa khoảng trắng!");
         hasError = true;
-      } else if (!/^[a-zA-Z0-9._%+-]+@techcorp\.vn$/.test(em)) {
-        setFieldStatus(emInput, emMsg, false, "Email công ty phải có đuôi @techcorp.vn (VD: nhanvien@techcorp.vn)!");
+      } else if (!/^[a-zA-Z0-9._%+-]+@hrms\.vn$/.test(em)) {
+        setFieldStatus(emInput, emMsg, false, "Email công ty phải có đuôi @hrms.vn (VD: nhanvien@hrms.vn)!");
         hasError = true;
       } else {
         const isEmDup = EXISTING_USERS.some(function(u){ return u.id !== currentId && u.email && u.email.toLowerCase() === em; });

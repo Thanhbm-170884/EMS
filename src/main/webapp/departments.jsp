@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List, java.util.Map" %>
 <%
     if (request.getAttribute("departmentsList") == null) {
@@ -33,33 +33,7 @@
 <body>
 
 <!-- Sidebar -->
-<aside class="sidebar">
-  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
-    <div class="brand-dot">E</div>
-    <span class="brand-name">EMS</span>
-  </a>
-  <nav class="nav-group">
-    <div class="nav-section-label">Tổng quan</div>
-    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
-    <div class="nav-section-label">Quản trị</div>
-    <a href="<%= request.getContextPath() %>/users"       class="nav-link">Tài khoản</a>
-    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
-    <a href="<%= request.getContextPath() %>/departments" class="nav-link active">Phòng ban</a>
-    <a href="<%= request.getContextPath() %>/positions"   class="nav-link">Chức vụ</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-block">
-      <div class="user-avatar">
-        <%= fullName != null && !fullName.isEmpty() ? fullName.substring(0,1).toUpperCase() : "A" %>
-      </div>
-      <div>
-        <div class="user-name"><%= fullName != null ? fullName : "Admin" %></div>
-        <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
-  </div>
-</aside>
+<%@include file="/WEB-INF/jspf/sidebar.jsp"%>
 
 <!-- Main content -->
 <div class="main-content">
@@ -472,13 +446,13 @@
       var opt = document.createElement('option');
       opt.value = "";
       opt.disabled = true;
-      opt.textContent = "(Phòng ban này chưa có nhân sự trực thuộc)";
+      opt.textContent = "(Chưa có nhân sự nào trong phòng giữ vai trò Manager)";
       selectHead.appendChild(opt);
     } else {
       matchingEmployees.forEach(function(emp) {
         var opt = document.createElement('option');
         opt.value = emp.accountId;
-        opt.textContent = emp.fullName + ' (' + emp.employeeCode + ')';
+        opt.textContent = emp.fullName + ' (' + emp.employeeCode + ' - Manager)';
         if (headId && String(emp.accountId) === String(headId)) {
           opt.selected = true;
         }

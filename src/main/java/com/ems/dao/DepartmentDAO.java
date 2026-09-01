@@ -63,15 +63,17 @@ public class DepartmentDAO {
     }
 
     /**
-     * Lấy danh sách tài khoản nhân viên đang hoạt động để chọn làm Trưởng phòng
+     * Lấy danh sách tài khoản Manager đang hoạt động để chọn làm Trưởng phòng
      */
     public List<Map<String, Object>> getActiveEmployeesForHead() {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT a.Id AS AccountId, u.FullName, u.EmployeeCode, u.DepartmentId, d.Name AS DeptName " +
                      "FROM accounts a " +
                      "JOIN users u ON a.UserId = u.Id " +
+                     "JOIN accountroles ar ON a.Id = ar.AccountId " +
+                     "JOIN roles r ON ar.RoleId = r.Id " +
                      "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
-                     "WHERE a.Status = 1 " +
+                     "WHERE a.Status = 1 AND u.Status = 1 AND r.Name = 'Manager' " +
                      "ORDER BY u.FullName ASC";
 
         try (Connection conn = DBConnection.getConnection();

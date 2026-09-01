@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List, java.util.Map" %>
 <%
     if (request.getAttribute("positionsList") == null) {
@@ -30,33 +30,7 @@
 <body>
 
 <!-- Sidebar -->
-<aside class="sidebar">
-  <a href="<%= request.getContextPath() %>/home" class="sidebar-brand">
-    <div class="brand-dot">E</div>
-    <span class="brand-name">EMS</span>
-  </a>
-  <nav class="nav-group">
-    <div class="nav-section-label">Tổng quan</div>
-    <a href="<%= request.getContextPath() %>/home" class="nav-link">Trang chủ</a>
-    <div class="nav-section-label">Quản trị</div>
-    <a href="<%= request.getContextPath() %>/users"       class="nav-link">Tài khoản</a>
-    <a href="<%= request.getContextPath() %>/employees"   class="nav-link">Nhân viên</a>
-    <a href="<%= request.getContextPath() %>/departments" class="nav-link">Phòng ban</a>
-    <a href="<%= request.getContextPath() %>/positions"   class="nav-link active">Chức vụ</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-block">
-      <div class="user-avatar">
-        <%= fullName != null && !fullName.isEmpty() ? fullName.substring(0,1).toUpperCase() : "A" %>
-      </div>
-      <div>
-        <div class="user-name"><%= fullName != null ? fullName : "Admin" %></div>
-        <div class="user-role"><%= deptName != null ? deptName : "Quản trị viên" %></div>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="window.location='<%= request.getContextPath() %>/logout'">Đăng xuất</button>
-  </div>
-</aside>
+<%@include file="/WEB-INF/jspf/sidebar.jsp"%>
 
 <!-- Main content -->
 <div class="main-content">
@@ -103,31 +77,6 @@
       </div>
     </div>
 
-    <!-- Level Guide / Chú thích Cấp bậc -->
-    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-      <div style="font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        Cấp bậc chức vụ (Job Level):
-      </div>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap; font-size: 12.5px;">
-        <span style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
-          <strong>Level 1:</strong> Thực tập / Junior
-        </span>
-        <span style="background: #ecfeff; border: 1px solid #a5f3fc; color: #155e75; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
-          <strong>Level 2:</strong> Nhân viên chính thức / Middle
-        </span>
-        <span style="background: #fefce8; border: 1px solid #fef08a; color: #854d0e; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
-          <strong>Level 3:</strong> Chuyên viên / Senior
-        </span>
-        <span style="background: #faf5ff; border: 1px solid #e9d5ff; color: #6b21a8; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
-          <strong>Level 4:</strong> Trưởng nhóm / Quản lý / Lead
-        </span>
-        <span style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
-          <strong>Level 5:</strong> Ban Giám đốc / Tổng giám đốc
-        </span>
-      </div>
-    </div>
-
     <!-- Main Card -->
     <div class="card">
       <div class="card-header">
@@ -147,7 +96,6 @@
             <tr style="border-bottom: 1.5px solid #f3f4f6; color: #6b7280; text-transform: uppercase; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">
               <th style="padding: 14px 16px;">Mã CV</th>
               <th style="padding: 14px 16px;">Tên chức vụ</th>
-              <th style="padding: 14px 16px;">Cấp bậc</th>
               <th style="padding: 14px 16px;">Số nhân sự</th>
               <th style="padding: 14px 16px;">Thao tác</th>
             </tr>
@@ -159,7 +107,7 @@
                   int id = (Integer) pos.get("id");
                   String code = (String) pos.get("code");
                   String name = (String) pos.get("name");
-                  int jobLevel = (Integer) pos.get("jobLevel");
+                  int jobLevel = pos.get("jobLevel") != null ? (Integer) pos.get("jobLevel") : 1;
                   int totalEmp = (Integer) pos.get("totalEmployees");
 
             %>
@@ -169,9 +117,6 @@
               </td>
               <td style="padding: 12px 16px; font-weight: 600; color: #111827;">
                 <%= name != null ? name : "" %>
-              </td>
-              <td style="padding: 12px 16px;">
-                <span class="badge-role">Level <%= jobLevel %></span>
               </td>
               <td style="padding: 12px 16px;">
                 <a href="employees?pos=<%= java.net.URLEncoder.encode(name != null ? name : "", "UTF-8") %>" style="text-decoration: none;" title="Xem danh sách nhân viên giữ chức vụ <%= name %>">
@@ -190,7 +135,7 @@
               } else {
             %>
             <tr>
-              <td colspan="5" style="text-align: center; color: #9ca3af; padding: 40px;">
+              <td colspan="4" style="text-align: center; color: #9ca3af; padding: 40px;">
                 Chưa có chức vụ nào trong hệ thống
               </td>
             </tr>
@@ -214,6 +159,7 @@
     </div>
     <form action="positions" method="post">
       <input type="hidden" name="action" value="create"/>
+      <input type="hidden" name="jobLevel" value="1"/>
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Mã chức vụ <span style="color:red;">*</span></label>
@@ -224,16 +170,6 @@
           <label class="form-label">Tên chức vụ <span style="color:red;">*</span></label>
           <input type="text" name="name" id="addPosName" class="form-input" placeholder="Ví dụ: Lập trình viên, Kế toán viên..." required oninput="validateAddPosForm()"/>
           <div id="addPosNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cấp bậc (Job Level) <span style="color:red;">*</span></label>
-          <select name="jobLevel" class="form-input" required>
-            <option value="1">Level 1 - Thực tập / Junior</option>
-            <option value="2" selected>Level 2 - Nhân viên chính thức / Middle</option>
-            <option value="3">Level 3 - Chuyên viên / Senior</option>
-            <option value="4">Level 4 - Trưởng nhóm / Quản lý / Lead</option>
-            <option value="5">Level 5 - Ban Giám đốc / Tổng giám đốc</option>
-          </select>
         </div>
       </div>
       <div class="modal-footer">
@@ -256,6 +192,7 @@
     <form action="positions" method="post">
       <input type="hidden" name="action" value="update"/>
       <input type="hidden" name="id" id="editPosId"/>
+      <input type="hidden" name="jobLevel" id="editPosLevel" value="1"/>
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Mã chức vụ</label>
@@ -265,16 +202,6 @@
           <label class="form-label">Tên chức vụ <span style="color:red;">*</span></label>
           <input type="text" name="name" id="editPosName" class="form-input" required oninput="validateEditPosForm()"/>
           <div id="editPosNameMsg" style="font-size: 12px; margin-top: 4px;"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cấp bậc (Job Level) <span style="color:red;">*</span></label>
-          <select name="jobLevel" id="editPosLevel" class="form-input" required>
-            <option value="1">Level 1 - Thực tập / Junior</option>
-            <option value="2">Level 2 - Nhân viên chính thức / Middle</option>
-            <option value="3">Level 3 - Chuyên viên / Senior</option>
-            <option value="4">Level 4 - Trưởng nhóm / Quản lý / Lead</option>
-            <option value="5">Level 5 - Ban Giám đốc / Tổng giám đốc</option>
-          </select>
         </div>
       </div>
       <div class="modal-footer">
