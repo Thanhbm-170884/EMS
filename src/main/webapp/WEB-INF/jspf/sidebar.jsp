@@ -5,18 +5,17 @@
 
 
                 <aside class="sidebar">
-                    <a href="home" class="sidebar-brand">
+                    <a href="${pageContext.request.contextPath}/home" class="sidebar-brand">
                         <div class="brand-dot">E</div>
                         <span class="brand-name">EMS</span>
-
                     </a>
                     <nav class="nav-group">
                         <div class="nav-section-label">Menu chính</div>
-                        <!- Manager ->
+                        <!-- Manager -->
                             <c:if test="${sessionScope.role == 'Manager'}">
 
-                                <a href="${pageContext.request.contextPath}/home_manager.jsp"
-                                    class="nav-link ${pageContext.request.servletPath == '/home_manager.jsp' ? 'active' : ''}">
+                                <a href="${pageContext.request.contextPath}/home"
+                                    class="nav-link ${pageContext.request.servletPath == '/home_manager.jsp' || pageContext.request.servletPath == '/home.jsp' ? 'active' : ''}">
                                     Trang chủ
                                 </a>
                                 <div class="nav-section-label">Quản lý</div>
@@ -33,10 +32,10 @@
                             </c:if>
 
 
-                            <!- Admin ->
+                            <!-- Admin -->
                                 <c:if test="${sessionScope.role == 'Admin'}">
                                     <a href="${pageContext.request.contextPath}/home"
-                                        class="nav-link ${pageContext.request.servletPath == '/home_admin.jsp' ? 'active' : ''}">
+                                        class="nav-link ${pageContext.request.servletPath == '/home_admin.jsp' || pageContext.request.servletPath == '/home.jsp' ? 'active' : ''}">
                                         Trang chủ
                                     </a>
                                     <div class="nav-section-label">Quản trị</div>
@@ -88,7 +87,7 @@
                                     </a>
                                 </c:if>
 
-                                <!- Employee ->
+                                <!-- Employee -->
                                     <c:if test="${sessionScope.role == 'Employee'}">
 
                                         <a href="${pageContext.request.contextPath}/home"
@@ -126,16 +125,6 @@
 
                     </nav>
 
-                    <%-- <div class="bg-[#F0F4FA] p-3.5 rounded-xl border border-slate-200/80">--%>
-                        <%-- <div class="flex items-center space-x-2 text-emerald-600 font-semibold text-xs mb-1">--%>
-                            <%-- <i data-lucide="check-circle-2" class="w-4 h-4"></i>--%>
-                                <%-- <span>Hệ thống</span>--%>
-                                    <%-- </div>--%>
-                                        <%-- <p class="text-[11px] text-slate-500 leading-snug">--%>
-                                            <%-- Lịch đã được đồng bộ lúc <strong class="text-slate-700">08:30</strong>
-                                                hôm nay.--%>
-                                                <%-- </p>--%>
-                                                    <%-- </div>--%>
                                                         <div class="sidebar-footer">
                                                             <div class="user-block">
                                                                 <div class="user-avatar">
@@ -150,7 +139,7 @@
                                                                             %>
                                                                     </div>
                                                                     <div class="user-role">
-                                                                        <%= session.getAttribute("role")%>>
+                                                                        <%= session.getAttribute("role") != null ? session.getAttribute("role") : "" %>
                                                                     </div>
                                                                 </div>
                                                             </div>
