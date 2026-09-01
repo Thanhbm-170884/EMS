@@ -472,13 +472,13 @@
       var opt = document.createElement('option');
       opt.value = "";
       opt.disabled = true;
-      opt.textContent = "(Phòng ban này chưa có nhân sự trực thuộc)";
+      opt.textContent = "(Chưa có nhân sự nào trong phòng giữ vai trò Manager)";
       selectHead.appendChild(opt);
     } else {
       matchingEmployees.forEach(function(emp) {
         var opt = document.createElement('option');
         opt.value = emp.accountId;
-        opt.textContent = emp.fullName + ' (' + emp.employeeCode + ')';
+        opt.textContent = emp.fullName + ' (' + emp.employeeCode + ' - Manager)';
         if (headId && String(emp.accountId) === String(headId)) {
           opt.selected = true;
         }
