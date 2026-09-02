@@ -127,7 +127,10 @@
                 </a>
               </td>
               <td style="padding: 12px 16px; white-space: nowrap;">
-                <a href="javascript:void(0)" onclick="openEditModal(<%= id %>, '<%= code %>', '<%= name %>', <%= jobLevel %>)" class="btn-action-edit">Sửa</a>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <a href="javascript:void(0)" onclick="openEditModal(<%= id %>, '<%= code %>', '<%= name %>', <%= jobLevel %>)" class="btn-action-edit">Sửa</a>
+                  <a href="javascript:void(0)" onclick="openDeleteModal(<%= id %>, '<%= name %>', <%= totalEmp %>)" class="btn-action-delete">Xóa</a>
+                </div>
               </td>
             </tr>
             <%
@@ -207,6 +210,32 @@
       <div class="modal-footer">
         <button type="button" class="btn-secondary" onclick="closeEditModal()">Hủy</button>
         <button type="submit" id="editPosSubmitBtn" class="btn-primary">Lưu thay đổi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==========================================
+     MODAL 3: XÁC NHẬN XÓA CHỨC VỤ
+     ========================================== -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Xác nhận xóa chức vụ</div>
+      <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+    </div>
+    <form action="positions" method="post" id="deleteForm">
+      <input type="hidden" name="action" value="delete"/>
+      <input type="hidden" name="id" id="deletePosId"/>
+      <div class="modal-body">
+        <p id="deleteMessage" style="font-size: 14px; color: #374151; line-height: 1.5;"></p>
+        <div id="deleteWarning" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 12px;">
+          <strong>Cảnh báo:</strong> Chức vụ này hiện đang có nhân viên đảm nhiệm. Bạn không thể xóa cho đến khi chuyển hết nhân sự sang chức vụ khác!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Đóng</button>
+        <button type="submit" class="btn-primary" id="btnConfirmDelete" style="background: #dc2626;">Xóa chức vụ</button>
       </div>
     </form>
   </div>
@@ -376,6 +405,34 @@
   }
   function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
+  }
+
+  // Modal Xóa
+  function openDeleteModal(id, name, totalEmp) {
+    document.getElementById('deletePosId').value = id;
+    const msg = document.getElementById('deleteMessage');
+    const warning = document.getElementById('deleteWarning');
+    const btn = document.getElementById('btnConfirmDelete');
+
+    if (totalEmp > 0) {
+      msg.innerHTML = 'Bạn đang muốn xóa chức vụ <strong>' + name + '</strong>.';
+      warning.style.display = 'block';
+      warning.innerHTML = '<strong>Cảnh báo:</strong> Chức vụ này hiện đang có <strong>' + totalEmp + ' nhân sự</strong> đảm nhiệm. Bạn không thể xóa cho đến khi chuyển hết nhân sự sang chức vụ khác!';
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+    } else {
+      msg.innerHTML = 'Bạn có chắc chắn muốn xóa chức vụ <strong>' + name + '</strong> không?<br><span style="color:#6b7280; font-size:13px;">Hành động này không thể hoàn tác.</span>';
+      warning.style.display = 'none';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
+
+    document.getElementById('deleteModal').style.display = 'flex';
+  }
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
   }
 
   // Đóng Modal khi bấm ngoài vùng backdrop
