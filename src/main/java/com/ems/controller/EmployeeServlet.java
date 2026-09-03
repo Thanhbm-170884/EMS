@@ -111,12 +111,14 @@ public class EmployeeServlet extends HttpServlet {
                     error = "Họ và tên chỉ được chứa chữ cái và khoảng trắng!";
                 } else if (rawEmail != null && rawEmail.contains(" ")) {
                     error = "Email phải viết liền, không được chứa khoảng trắng!";
+                } else if (fullName.contains("  ")) {
+                        error = "Họ và tên không được chứa khoảng trắng liên tiếp!";
                 } else if (!email.toLowerCase().endsWith("@hrms.vn") || !email.matches("^[a-zA-Z0-9._%+-]+@hrms\\.vn$")) {
                     error = "Email công ty phải có định dạng @hrms.vn (ví dụ: nhanvien@hrms.vn)!";
                 } else if (rawPhone != null && rawPhone.contains(" ")) {
                     error = "Số điện thoại phải viết liền, không được chứa khoảng trắng!";
                 } else if (!phone.matches("^0[0-9]{9}$")) {
-                    error = "Số điện thoại phải gồm đúng 10 chữ số và bắt đầu bằng số 0 (ví dụ: 0912345678)!";
+                    error = "Số điện thoại không hợp lệ (Phải là 10 chữ số, bắt đầu bằng 0)!";
                 } else if (employeeService.isEmailExists(email)) {
                     error = "Email công ty '" + email + "' đã tồn tại trong hệ thống!";
                 } else if (employeeService.isPhoneExists(phone)) {
