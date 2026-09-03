@@ -593,18 +593,18 @@
 
   function validateAddEmpForm() {
     var rawName = document.getElementById('addEmpFullName') ? document.getElementById('addEmpFullName').value : '';
-    var rawEm   = document.getElementById('addEmpEmail') ? document.getElementById('addEmpEmail').value : '';
-    var rawPh   = document.getElementById('addEmpPhone') ? document.getElementById('addEmpPhone').value : '';
-    var rawDob  = document.getElementById('addEmpDob') ? document.getElementById('addEmpDob').value : '';
+    var rawEm = document.getElementById('addEmpEmail') ? document.getElementById('addEmpEmail').value : '';
+    var rawPh = document.getElementById('addEmpPhone') ? document.getElementById('addEmpPhone').value : '';
+    var rawDob = document.getElementById('addEmpDob') ? document.getElementById('addEmpDob').value : '';
 
     var nameInput = document.getElementById('addEmpFullName');
-    var nameMsg   = document.getElementById('addEmpFullNameMsg');
-    var emInput   = document.getElementById('addEmpEmail');
-    var emMsg     = document.getElementById('addEmpEmailMsg');
-    var phInput   = document.getElementById('addEmpPhone');
-    var phMsg     = document.getElementById('addEmpPhoneMsg');
-    var dobInput  = document.getElementById('addEmpDob');
-    var dobMsg    = document.getElementById('addEmpDobMsg');
+    var nameMsg = document.getElementById('addEmpFullNameMsg');
+    var emInput = document.getElementById('addEmpEmail');
+    var emMsg = document.getElementById('addEmpEmailMsg');
+    var phInput = document.getElementById('addEmpPhone');
+    var phMsg = document.getElementById('addEmpPhoneMsg');
+    var dobInput = document.getElementById('addEmpDob');
+    var dobMsg = document.getElementById('addEmpDobMsg');
     var submitBtn = document.getElementById('addEmpSubmitBtn');
 
     var em = rawEm.trim().toLowerCase();
@@ -616,10 +616,12 @@
       if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(rawName.trim())) {
         setEmpFieldStatus(nameInput, nameMsg, false, 'Họ và tên chỉ được chứa chữ cái và khoảng trắng!');
         hasError = true;
+      } else if (rawName.includes("  ")) {
+        setEmpFieldStatus(nameInput, nameMsg, false, 'Không được nhập nhiều khoảng trắng liên tiếp!');
       } else {
-        setEmpFieldStatus(nameInput, nameMsg, true, 'Họ tên hợp lệ');
-      }
-    } else {
+      setEmpFieldStatus(nameInput, nameMsg, true, 'Họ tên hợp lệ');
+    }
+  } else {
       setEmpFieldStatus(nameInput, nameMsg, null, '');
     }
 
