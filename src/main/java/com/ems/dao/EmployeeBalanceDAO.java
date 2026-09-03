@@ -77,6 +77,65 @@ public class EmployeeBalanceDAO {
         return list;
     }
 
+    public List<EmployeeBalanceDTO> getEmployeeBalancesByDepartmentId(int deptId) {
+        List<EmployeeBalanceDTO> list = new ArrayList<>();
+        String sql = "SELECT " +
+                "    u.Id AS UserId, " +
+                "    u.FullName AS EmployeeName, " +
+                "    d.Name AS DepartmentName, " +
+                "    COALESCE(lb.TotalDays, 12) AS TotalDays, " +
+                "    COALESCE(lb.UsedDays, 0) AS UsedDays, " +
+                "    COALESCE(lb.RemainingDays, 12) AS RemainingDays, " +
+                "    COALESCE(ebs.BaseSalary, 0) AS BaseSalary, " +
+                "    ( " +
+                "        SELECT COALESCE(SUM(r.Value), 0) " +
+                "        FROM Requests r " +
+                "        JOIN Accounts a " +
+                "            ON r.CreatedByAccountId = a.Id " +
+                "        WHERE a.UserId = u.Id " +
+                "          AND r.RequestTypeId = 3 " +
+                "          AND r.Status = 'Approved' " +
+                "          AND MONTH(r.StartDate) = MONTH(CURDATE()) " +
+                "          AND YEAR(r.StartDate) = YEAR(CURDATE()) " +
+                "    ) AS AdvancedThisMonth " +
+                "FROM Users u " +
+                "LEFT JOIN Departments d " +
+                "    ON u.DepartmentId = d.Id " +
+                "LEFT JOIN Accounts acc " +
+                "    ON u.Id = acc.UserId " +
+                "LEFT JOIN leavebalances lb " +
+                "    ON u.Id = lb.UserId " +
+                "    AND lb.Year = YEAR(CURDATE()) " +
+                "LEFT JOIN employmentbasesalarys ebs " +
+                "    ON u.Id = ebs.UserId " +
+                "WHERE acc.Id IS NOT NULL AND u.DepartmentId = ? " +
+                "ORDER BY u.FullName ASC";
+
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, deptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    EmployeeBalanceDTO employeeBalance = new EmployeeBalanceDTO(
+                            rs.getInt("UserId"),
+                            rs.getString("EmployeeName"),
+                            rs.getString("DepartmentName"),
+                            rs.getInt("TotalDays"),
+                            rs.getInt("UsedDays"),
+                            rs.getInt("RemainingDays"),
+                            rs.getDouble("AdvancedThisMonth"),
+                            rs.getDouble("BaseSalary")
+                    );
+                    list.add(employeeBalance);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     /**
      * Lấy thông tin số dư phép của một nhân viên
      */

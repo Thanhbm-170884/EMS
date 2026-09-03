@@ -109,7 +109,14 @@ public class RequestManagerController {
             return;
         }
 
-        List<EmployeeBalanceDTO> list = balanceDao.getAllEmployeeBalances();
+        List<EmployeeBalanceDTO> list;
+        Integer deptId = (Integer) session.getAttribute("departmentId");
+        
+        if (deptId != null && deptId > 0) {
+            list = balanceDao.getEmployeeBalancesByDepartmentId(deptId);
+        } else {
+            list = balanceDao.getAllEmployeeBalances();
+        }
 
         request.setAttribute("balances", list);
 
