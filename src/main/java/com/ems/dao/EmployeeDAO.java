@@ -63,6 +63,55 @@ public class EmployeeDAO {
         return list;
     }
 
+    public List<Map<String, Object>> getEmployeesByDepartmentId(int deptId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String query =
+            "SELECT u.Id as userId, u.EmployeeCode, u.FullName, u.EmailCompany, u.Phone, " +
+            "       u.Gender, u.DateOfBirth, u.Status as userStatus, u.DependentsCount, " +
+            "       u.DepartmentId, u.PositionId, " +
+            "       d.Name as departmentName, p.Name as positionName, p.JobLevel, " +
+            "       ebs.BaseSalary, a.Username, r.Name as roleName " +
+            "FROM users u " +
+            "LEFT JOIN departments d ON u.DepartmentId = d.Id " +
+            "LEFT JOIN positions p ON u.PositionId = p.Id " +
+            "LEFT JOIN (SELECT UserId, MAX(BaseSalary) as BaseSalary FROM employmentbasesalarys GROUP BY UserId) ebs ON ebs.UserId = u.Id " +
+            "LEFT JOIN accounts a ON a.UserId = u.Id " +
+            "LEFT JOIN accountroles ar ON ar.AccountId = a.Id " +
+            "LEFT JOIN roles r ON ar.RoleId = r.Id " +
+            "WHERE u.DepartmentId = ? " +
+            "ORDER BY LENGTH(u.EmployeeCode) ASC, u.EmployeeCode ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, deptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("userId",          rs.getInt("userId"));
+                    map.put("employeeCode",    rs.getString("EmployeeCode"));
+                    map.put("fullName",        rs.getString("FullName"));
+                    map.put("emailCompany",    rs.getString("EmailCompany"));
+                    map.put("phone",           rs.getString("Phone"));
+                    map.put("gender",          rs.getObject("Gender"));
+                    map.put("dateOfBirth",     rs.getDate("DateOfBirth"));
+                    map.put("userStatus",      rs.getBoolean("userStatus"));
+                    map.put("dependentsCount", rs.getInt("DependentsCount"));
+                    map.put("departmentId",    rs.getInt("DepartmentId"));
+                    map.put("positionId",      rs.getInt("PositionId"));
+                    map.put("departmentName",  rs.getString("departmentName"));
+                    map.put("positionName",    rs.getString("positionName"));
+                    map.put("jobLevel",        rs.getInt("JobLevel"));
+                    map.put("baseSalary",      rs.getBigDecimal("BaseSalary"));
+                    map.put("username",        rs.getString("Username"));
+                    map.put("roleName",        rs.getString("roleName"));
+                    list.add(map);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     /** Tạo mới hồ sơ nhân viên đầy đủ thông tin kèm Lương cơ bản */
     public boolean createEmployee(String fullName, String email, String phone, Boolean gender, Date dob, int departmentId, int positionId, int dependentsCount, BigDecimal baseSalary) {
         String insertUser = "INSERT INTO users (EmployeeCode, FullName, EmailCompany, Phone, Gender, DateOfBirth, DepartmentId, PositionId, DependentsCount, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";

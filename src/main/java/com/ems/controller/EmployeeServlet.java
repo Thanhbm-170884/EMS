@@ -28,13 +28,20 @@ public class EmployeeServlet extends HttpServlet {
         }
 
         String role = (String) session.getAttribute("role");
-        if (!"Admin".equalsIgnoreCase(role)) {
+        if (!"Admin".equalsIgnoreCase(role) && !"Manager".equalsIgnoreCase(role)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập chức năng này.");
             return;
         }
 
         // Lấy danh sách nhân viên đầy đủ via Service
-        List<Map<String, Object>> employeeList = employeeService.getAllEmployees();
+        List<Map<String, Object>> employeeList;
+        if ("Manager".equalsIgnoreCase(role)) {
+            Integer deptId = (Integer) session.getAttribute("departmentId");
+            if (deptId == null) deptId = -1; // Fallback
+            employeeList = employeeService.getEmployeesByDepartmentId(deptId);
+        } else {
+            employeeList = employeeService.getAllEmployees();
+        }
 
         // Thống kê via Service
         Map<String, Integer> stats = employeeService.getEmployeeStats(employeeList);
