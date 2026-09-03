@@ -22,6 +22,10 @@ public class EmployeeManageService {
         return employeeDAO.getAllEmployees();
     }
 
+    public List<Map<String, Object>> getEmployeesByDepartmentId(int deptId) {
+        return employeeDAO.getEmployeesByDepartmentId(deptId);
+    }
+
     /** Tính toán thống kê nhân sự (Tổng số nhân viên, Đang làm việc) */
     public Map<String, Integer> getEmployeeStats(List<Map<String, Object>> employeeList) {
         Map<String, Integer> stats = new HashMap<>();

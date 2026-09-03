@@ -30,6 +30,23 @@ public class UserDAO {
         return null;
     }
 
+    public Integer findDepartmentIdByUsername(String username) {
+        String query = "SELECT u.DepartmentId FROM accounts a JOIN users u ON a.UserId = u.Id WHERE a.Username = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int deptId = rs.getInt("DepartmentId");
+                    if (!rs.wasNull()) return deptId;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Xác thực tài khoản đăng nhập từ database.
      * Trả về tên vai trò (Role Name) nếu thông tin đăng nhập đúng và tài khoản đang hoạt động.
