@@ -12,7 +12,7 @@
         response.sendRedirect(request.getContextPath() + "/requests?action=pending");
         return;
     }
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     String tab = (String) request.getAttribute("tab");
     if (tab == null) tab = "Pending";
     String searchName = (String) request.getAttribute("searchName");

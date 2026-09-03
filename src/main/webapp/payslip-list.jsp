@@ -22,14 +22,14 @@
                         <%! private String buildPageUrl(Integer periodId, String search, Integer deptId, int page, int
                             pageSize) { StringBuilder sb=new StringBuilder(); sb.append("payslips?page=");
                             sb.append(page);
-                            sb.append(" &pageSize=");
+                            sb.append("&pageSize=");
                             sb.append(pageSize);
                             if (periodId != null && periodId > 0) {
-                                sb.append(" &periodId=").append(periodId);
+                                sb.append("&periodId=").append(periodId);
                             }
                             if (search != null && !search.trim().isEmpty()) {
                                 try {
-                                    sb.append(" &search=").append(java.net.URLEncoder.encode(search.trim(), " UTF-8"));
+                                    sb.append("&search=").append(java.net.URLEncoder.encode(search.trim(), "UTF-8"));
                             } catch (Exception ignored) {} } if (deptId !=null && deptId> 0) {
                             sb.append("&departmentId=").append(deptId);
                             }

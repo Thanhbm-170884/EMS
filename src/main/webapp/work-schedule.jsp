@@ -439,11 +439,12 @@ JSTL → JS data bridge
             fromDay,
             toDay,
             days,
-            start: data.start || '08:00',
-            end: data.end || '17:00',
-            bstart: data.bstart || '12:00',
-            bend: data.bend || '13:00',
+            start:   data.start   || '08:00',
+            end:     data.end     || '17:00',
+            bstart:  data.bstart  || '12:00',
+            bend:    data.bend    || '13:00',
             working: data.working !== false,
+            overrides: {},
         });
     }
 
@@ -487,19 +488,44 @@ JSTL → JS data bridge
         rule.days = getDaysInRange(rule.fromDay, rule.toDay);
 
         /* Times */
-        rule.start = el.querySelector('[data-field="start"]').value;
-        rule.end = el.querySelector('[data-field="end"]').value;
-        rule.bstart = el.querySelector('[data-field="bstart"]').value;
-        rule.bend = el.querySelector('[data-field="bend"]').value;
+        rule.start  = el.querySelector('[data-field="start"]').value;
+        rule.end    = el.querySelector('[data-field="end"]').value;
+        const bstartEl = el.querySelector('[data-field="bstart"]');
+        const bendEl   = el.querySelector('[data-field="bend"]');
+        rule.bstart = bstartEl ? bstartEl.value : '';
+        rule.bend   = bendEl   ? bendEl.value   : '';
 
         /* Working toggle */
         rule.working = el.querySelector('[data-field="working"]').checked;
+
+        /* Per-day overrides from DOM */
+        const perDayCb = el.querySelector('.per-day-toggle-cb');
+        if (perDayCb && perDayCb.checked) {
+            if (!rule.overrides) rule.overrides = {};
+            el.querySelectorAll('.per-day-row').forEach(rowEl => {
+                const dow = +rowEl.getAttribute('data-dow');
+                const s  = rowEl.querySelector('[data-role="start"]');
+                const e  = rowEl.querySelector('[data-role="end"]');
+                const bs = rowEl.querySelector('[data-role="bstart"]');
+                const be = rowEl.querySelector('[data-role="bend"]');
+                rule.overrides[dow] = {
+                    start:  s  ? s.value  : rule.start,
+                    end:    e  ? e.value   : rule.end,
+                    bstart: bs ? bs.value  : '',
+                    bend:   be ? be.value  : '',
+                };
+            });
+        } else {
+            rule.overrides = {};
+        }
     }
 
 
     function syncAndRenderPreview(id) {
         syncFromDOM(id);
         updateWorkingUI(id);
+        // Re-render per-day overrides section when days change
+        refreshDayOverrides(id);
         renderPreview();
         renderConflicts();
     }
@@ -520,9 +546,6 @@ JSTL → JS data bridge
         }
     }
 
-    /* ══════════════════════════════════════════════════════════════
-       RENDER
-       ══════════════════════════════════════════════════════════════ */
     function renderAll() {
         renderRules();
         renderPreview();
@@ -556,8 +579,129 @@ JSTL → JS data bridge
         } else if (!isWrap && badge) {
             badge.remove();
         }
+        refreshDayOverrides(id);
         renderPreview();
         renderConflicts();
+    }
+
+    /* ── Break visibility helper ── */
+    function shouldShowBreak(endVal, bstartVal) {
+        if (!endVal || !bstartVal) return true;
+        return endVal > bstartVal;
+    }
+
+    /* ── Per-day override helpers ── */
+    function getOverride(rule, dow) {
+        if (!rule.overrides) rule.overrides = {};
+        return rule.overrides[dow] || null;
+    }
+
+    function setOverride(rule, dow, data) {
+        if (!rule.overrides) rule.overrides = {};
+        rule.overrides[dow] = data;
+    }
+
+    function refreshDayOverrides(id) {
+        const rule = rules.find(r => r.id === id);
+        if (!rule) return;
+        const el = document.getElementById('rule-' + id);
+        if (!el) return;
+        const section = el.querySelector('.per-day-section');
+        if (!section) return;
+        if (!el.querySelector('.per-day-toggle-cb')?.checked) return;
+        // Re-build per-day rows
+        buildPerDayRows(rule, section.querySelector('.per-day-rows'));
+    }
+
+    function buildPerDayRows(rule, container) {
+        container.innerHTML = '';
+        const daysInRule = [...rule.days].sort((a, b) => {
+            return DAYS.findIndex(d => d.dow === a) - DAYS.findIndex(d => d.dow === b);
+        });
+        daysInRule.forEach(dow => {
+            const d = DAYS.find(x => x.dow === dow);
+            const ov = getOverride(rule, dow);
+            const start  = (ov && ov.start)  || rule.start  || '08:00';
+            const end    = (ov && ov.end)     || rule.end    || '17:00';
+            const bstart = (ov && ov.bstart)  || rule.bstart || '12:00';
+            const bend   = (ov && ov.bend)    || rule.bend   || '13:00';
+            const showBreak = shouldShowBreak(end, bstart);
+
+            const row = document.createElement('div');
+            row.className = 'per-day-row';
+            row.setAttribute('data-dow', dow);
+            row.innerHTML =
+                '<span class="per-day-label">' + d.full + '</span>' +
+                '<div class="per-day-times">' +
+                '<input type="time" class="per-day-input" data-role="start" value="' + start + '" title="Giờ bắt đầu"' +
+                ' onchange="onPerDayChange(' + rule.id + ',' + dow + ',this)">' +
+                '<span class="rule-time-sep">→</span>' +
+                '<input type="time" class="per-day-input" data-role="end" value="' + end + '" title="Giờ kết thúc"' +
+                ' onchange="onPerDayChange(' + rule.id + ',' + dow + ',this)">' +
+                '<div class="per-day-break-wrap" data-break-wrap style="display:' + (showBreak ? 'contents' : 'none') + '">' +
+                '<span class="per-day-break-sep">|</span>' +
+                '<span style="font-size:0.7rem;color:var(--slate-400);">Nghỉ:</span>' +
+                '<input type="time" class="per-day-input per-day-input-sm" data-role="bstart" value="' + (showBreak ? bstart : '') + '" title="Bắt đầu nghỉ trưa"' +
+                ' onchange="onPerDayChange(' + rule.id + ',' + dow + ',this)">' +
+                '<span class="rule-time-sep">→</span>' +
+                '<input type="time" class="per-day-input per-day-input-sm" data-role="bend" value="' + (showBreak ? bend : '') + '" title="Kết thúc nghỉ trưa"' +
+                ' onchange="onPerDayChange(' + rule.id + ',' + dow + ',this)">' +
+                '</div>' +
+                '</div>';
+            container.appendChild(row);
+        });
+    }
+
+    function onPerDayChange(ruleId, dow, inputEl) {
+        const rule = rules.find(r => r.id === ruleId);
+        if (!rule) return;
+        const rowEl = inputEl.closest('.per-day-row');
+        if (!rowEl) return;
+
+        // Sync all fields of this row into override
+        const startInp  = rowEl.querySelector('[data-role="start"]');
+        const endInp    = rowEl.querySelector('[data-role="end"]');
+        const bstartInp = rowEl.querySelector('[data-role="bstart"]');
+        const bendInp   = rowEl.querySelector('[data-role="bend"]');
+
+        const endVal    = endInp ? endInp.value : '';
+        const bstartVal = bstartInp ? bstartInp.value : '';
+        const show      = shouldShowBreak(endVal, bstartVal);
+        const breakWrap = rowEl.querySelector('[data-break-wrap]');
+        if (breakWrap) {
+            breakWrap.style.display = show ? 'contents' : 'none';
+            if (!show && bstartInp) bstartInp.value = '';
+            if (!show && bendInp)   bendInp.value   = '';
+        }
+
+        setOverride(rule, dow, {
+            start:  startInp  ? startInp.value  : '',
+            end:    endInp    ? endInp.value     : '',
+            bstart: (show && bstartInp) ? bstartInp.value  : '',
+            bend:   (show && bendInp)   ? bendInp.value    : '',
+        });
+        renderPreview();
+    }
+
+    function togglePerDay(id) {
+        const rule = rules.find(r => r.id === id);
+        if (!rule) return;
+        const el = document.getElementById('rule-' + id);
+        if (!el) return;
+        const cb = el.querySelector('.per-day-toggle-cb');
+        const rowsContainer = el.querySelector('.per-day-rows');
+        if (!cb || !rowsContainer) return;
+        if (cb.checked) {
+            // Initialize overrides from rule defaults
+            if (!rule.overrides) rule.overrides = {};
+            buildPerDayRows(rule, rowsContainer);
+            rowsContainer.style.display = '';
+        } else {
+            rule.overrides = {};
+            rowsContainer.innerHTML = '';
+            rowsContainer.style.display = 'none';
+        }
+        renderPreview();
     }
 
     function buildRuleBlock(rule, index) {
@@ -572,7 +716,6 @@ JSTL → JS data bridge
             '<option value="' + d.dow + '"' + (d.dow === rule.toDay ? ' selected' : '') + '>' + d.full + '</option>'
         ).join('');
 
-        const canDelete = rules.length > 1;
         const disAttr = rule.working ? '' : 'disabled';
 
         const fi = DAYS.findIndex(d => d.dow === rule.fromDay);
@@ -582,15 +725,19 @@ JSTL → JS data bridge
             ? '<span class="day-range-wrap-badge"><i class="fa-solid fa-rotate"></i> Qua tuần</span>'
             : '';
 
+        // Break visibility for main rule
+        const mainShowBreak = shouldShowBreak(rule.end, rule.bstart);
+        const breakHideStyle = mainShowBreak ? '' : 'display:none';
+
+        // Has per-day overrides?
+        const hasOverrides = rule.overrides && Object.keys(rule.overrides).length > 0;
+
         wrap.innerHTML =
             '<!-- Header -->' +
             '<div class="rule-header">' +
             '<span class="rule-index-badge">' +
             '<span class="rule-num">' + index + '</span> Khung giờ' +
             '</span>' +
-            // '<button type="button" class="rule-delete-btn" onclick="removeRule(' + rule.id + ')" ' + (canDelete ? '' : 'disabled') + ' aria-label="Xóa khung giờ ' + index + '">' +
-            //     '<i class="fa-solid fa-trash-can"></i> Xóa' +
-            // '</button>' +
             '</div>' +
             '<!-- Body -->' +
             '<div class="rule-body">' +
@@ -613,14 +760,14 @@ JSTL → JS data bridge
             '<span class="rule-row-label">Giờ làm</span>' +
             '<div class="rule-times">' +
             '<div class="rule-time-group">' +
-            '<input type="time" data-field="start" value="' + rule.start + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Giờ bắt đầu">' +
+            '<input type="time" data-field="start" value="' + rule.start + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ');updateMainBreakVisibility(' + rule.id + ')" aria-label="Giờ bắt đầu">' +
             '<span class="rule-time-sep">→</span>' +
-            '<input type="time" data-field="end" value="' + rule.end + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Giờ kết thúc">' +
+            '<input type="time" data-field="end" value="' + rule.end + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ');updateMainBreakVisibility(' + rule.id + ')" aria-label="Giờ kết thúc">' +
             '</div>' +
-            '<div class="rule-time-divider"></div>' +
-            '<div class="rule-time-group">' +
+            '<div class="rule-time-divider rule-break-divider" id="break-divider-' + rule.id + '" style="' + breakHideStyle + '"></div>' +
+            '<div class="rule-time-group rule-break-group" id="break-group-' + rule.id + '" style="' + breakHideStyle + '">' +
             '<span class="rule-row-label" style="min-width:auto;font-size:0.7rem;">Nghỉ trưa</span>' +
-            '<input type="time" data-field="bstart" value="' + rule.bstart + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Bắt đầu nghỉ trưa">' +
+            '<input type="time" data-field="bstart" value="' + rule.bstart + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ');updateMainBreakVisibility(' + rule.id + ')" aria-label="Bắt đầu nghỉ trưa">' +
             '<span class="rule-time-sep">→</span>' +
             '<input type="time" data-field="bend" value="' + rule.bend + '" ' + disAttr + ' oninput="syncAndRenderPreview(' + rule.id + ')" aria-label="Kết thúc nghỉ trưa">' +
             '</div>' +
@@ -634,13 +781,58 @@ JSTL → JS data bridge
             '<label for="working-checkbox-' + rule.id + '" class="rule-working-label' + (rule.working ? '' : ' off') + '" style="cursor: pointer;">' + (rule.working ? 'Ngày Làm' : 'Nghỉ') + '</label>' +
             '</div>' +
             '</div>' +
+            '<!-- Điều chỉnh riêng từng ngày -->' +
+            '<div class="rule-row per-day-section">' +
+            '<span class="rule-row-label" style="align-self:flex-start;padding-top:2px;">Giờ riêng</span>' +
+            '<div style="flex:1">' +
+            '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem;color:var(--slate-500);">' +
+            '<input type="checkbox" class="per-day-toggle-cb" ' + (hasOverrides ? 'checked' : '') + ' onchange="togglePerDay(' + rule.id + ')" style="cursor:pointer;">' +
+            'Điều chỉnh giờ riêng cho từng ngày' +
+            '</label>' +
+            '<div class="per-day-rows" style="margin-top:8px;' + (!hasOverrides ? 'display:none' : '') + '"></div>' +
+            '</div>' +
+            '</div>' +
             '</div>' +
             '<!-- Conflict warning (ẩn mặc định, JS hiện khi cần) -->' +
             '<div class="rule-conflict-warn" id="conflict-' + rule.id + '">' +
             '<i class="fa-solid fa-triangle-exclamation"></i>' +
             '<span id="conflict-msg-' + rule.id + '"></span>' +
             '</div>';
+
+        // If has overrides, populate per-day rows
+        if (hasOverrides) {
+            const perDayRows = wrap.querySelector('.per-day-rows');
+            if (perDayRows) buildPerDayRows(rule, perDayRows);
+        }
+
         return wrap;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       UPDATE MAIN BREAK VISIBILITY
+       ══════════════════════════════════════════════════════════════ */
+    function updateMainBreakVisibility(id) {
+        const rule = rules.find(r => r.id === id);
+        if (!rule) return;
+        const el = document.getElementById('rule-' + id);
+        if (!el) return;
+        const endInp    = el.querySelector('[data-field="end"]');
+        const bstartInp = el.querySelector('[data-field="bstart"]');
+        const divider   = document.getElementById('break-divider-' + id);
+        const group     = document.getElementById('break-group-'   + id);
+
+        const endVal    = endInp    ? endInp.value    : '';
+        const bstartVal = bstartInp ? bstartInp.value : '';
+        const show      = shouldShowBreak(endVal, bstartVal);
+
+        if (divider) divider.style.display = show ? '' : 'none';
+        if (group)   group.style.display   = show ? '' : 'none';
+        if (!show) {
+            if (bstartInp) bstartInp.value = '';
+            const bendInp = el.querySelector('[data-field="bend"]');
+            if (bendInp)   bendInp.value   = '';
+            if (rule) { rule.bstart = ''; rule.bend = ''; }
+        }
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -678,8 +870,10 @@ JSTL → JS data bridge
                 infoText = 'Nghỉ';
             } else {
                 state = 'state-work';
-                const s = entry.rule.start || '--:--';
-                const e = entry.rule.end || '--:--';
+                /* Ưu tiên override theo ngày */
+                const ov = (entry.rule.overrides && entry.rule.overrides[d.dow]) ? entry.rule.overrides[d.dow] : null;
+                const s = (ov ? ov.start : entry.rule.start) || '--:--';
+                const e = (ov ? ov.end   : entry.rule.end)   || '--:--';
                 infoText = s + '<br>' + e;
             }
 
@@ -767,12 +961,19 @@ JSTL → JS data bridge
             const rule = resolved[dow];
             const w = rule ? rule.working : false;
 
+            /* Per-day override: nếu rule có override cho ngày này, dùng override */
+            const ov = (rule && rule.overrides && rule.overrides[dow]) ? rule.overrides[dow] : null;
+            const start  = ov ? ov.start  : (rule && w ? rule.start  : '');
+            const end    = ov ? ov.end    : (rule && w ? rule.end    : '');
+            const bstart = ov ? ov.bstart : (rule && w ? rule.bstart : '');
+            const bend   = ov ? ov.bend   : (rule && w ? rule.bend   : '');
+
             injectHidden(form, 'dayOfWeek_' + i, dow, i);
-            injectHidden(form, 'working_' + i, w ? 'true' : '', i);
-            injectHidden(form, 'startTime_' + i, (rule && w) ? rule.start : '', i);
-            injectHidden(form, 'endTime_' + i, (rule && w) ? rule.end : '', i);
-            injectHidden(form, 'breakStart_' + i, (rule && w) ? rule.bstart : '', i);
-            injectHidden(form, 'breakEnd_' + i, (rule && w) ? rule.bend : '', i);
+            injectHidden(form, 'working_'   + i, w ? 'true' : '', i);
+            injectHidden(form, 'startTime_' + i, w ? start  : '', i);
+            injectHidden(form, 'endTime_'   + i, w ? end    : '', i);
+            injectHidden(form, 'breakStart_'+ i, w ? bstart : '', i);
+            injectHidden(form, 'breakEnd_'  + i, w ? bend   : '', i);
         });
 
         /* Đồng bộ effectiveDate */

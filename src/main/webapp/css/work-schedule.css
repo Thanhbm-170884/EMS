@@ -570,3 +570,74 @@
     justify-content: center;
 }
 
+/* ══════════════════════════════════════════════════════════
+   PER-DAY OVERRIDE ROWS
+   ══════════════════════════════════════════════════════════ */
+.per-day-section {
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+}
+
+.per-day-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.per-day-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(var(--primary-rgb, 79, 70, 229), 0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.per-day-label {
+    min-width: 72px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--slate-600);
+}
+
+.per-day-times {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.per-day-input {
+    height: 30px;
+    padding: 0 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: var(--card-bg);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.per-day-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 79, 70, 229), 0.15);
+}
+
+.per-day-input-sm {
+    width: 80px;
+}
+
+.per-day-break-wrap {
+    display: contents;
+}
+
+.per-day-break-sep {
+    color: var(--border);
+    font-size: 1rem;
+    padding: 0 2px;
+}

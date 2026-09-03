@@ -262,12 +262,7 @@
                                             <!-- Link to view payslips of this period -->
                                             <a href="payslips?periodId=<%= p.getId() %>" class="btn-action-view"
                                               title="Xem bảng lương kỳ này">
-                                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                <circle cx="12" cy="12" r="3"></circle>
-                                              </svg>
+
                                               Xem bảng lương
                                             </a>
 

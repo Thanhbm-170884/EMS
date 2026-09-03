@@ -287,13 +287,13 @@
                             <label for="leaveTypeSelect">Loại đơn <span class="required">*</span></label>
                             <select id="leaveTypeSelect" required>
                                 <option value="">-- Chọn loại đơn --</option>
-                                <option value="ANNUAL"          <%= "ANNUAL".equals(selectedTypeCode)          ? "selected" : "" %>>🏖️ Nghỉ phép năm</option>
-                                <option value="UNPAID"          <%= "UNPAID".equals(selectedTypeCode)          ? "selected" : "" %>>💸 Nghỉ không lương</option>
-                                <option value="SICK"            <%= "SICK".equals(selectedTypeCode)            ? "selected" : "" %>>🏥 Nghỉ ốm</option>
-                                <option value="MARRIAGE"        <%= "MARRIAGE".equals(selectedTypeCode)        ? "selected" : "" %>>💒 Nghỉ kết hôn</option>
-                                <option value="CHILD_MARRIAGE"  <%= "CHILD_MARRIAGE".equals(selectedTypeCode)  ? "selected" : "" %>>👨‍👧 Nghỉ con kết hôn</option>
-                                <option value="FUNERAL"         <%= "FUNERAL".equals(selectedTypeCode)         ? "selected" : "" %>>🕊️ Nghỉ tang</option>
-                                <option value="MATERNITY"       <%= "MATERNITY".equals(selectedTypeCode)       ? "selected" : "" %>>🍼 Nghỉ thai sản</option>
+                                <option value="ANNUAL"          <%= "ANNUAL".equals(selectedTypeCode)          ? "selected" : "" %>> Nghỉ phép năm</option>
+                                <option value="UNPAID"          <%= "UNPAID".equals(selectedTypeCode)          ? "selected" : "" %>> Nghỉ không lương</option>
+                                <option value="SICK"            <%= "SICK".equals(selectedTypeCode)            ? "selected" : "" %>> Nghỉ ốm</option>
+                                <option value="MARRIAGE"        <%= "MARRIAGE".equals(selectedTypeCode)        ? "selected" : "" %>> Nghỉ kết hôn</option>
+                                <option value="CHILD_MARRIAGE"  <%= "CHILD_MARRIAGE".equals(selectedTypeCode)  ? "selected" : "" %>> Nghỉ con kết hôn</option>
+                                <option value="FUNERAL"         <%= "FUNERAL".equals(selectedTypeCode)         ? "selected" : "" %>> Nghỉ tang</option>
+                                <option value="MATERNITY"       <%= "MATERNITY".equals(selectedTypeCode)       ? "selected" : "" %>> Nghỉ thai sản</option>
                             </select>
                             <span class="inline-error" id="typeError">Vui lòng chọn loại đơn.</span>
                         </div>
@@ -319,7 +319,7 @@
                             <label for="startDate">Từ ngày <span class="required">*</span></label>
                             <input id="startDate" type="date" name="startDate" required>
                             <span class="inline-error" id="startDateError">Vui lòng chọn ngày bắt đầu.</span>
-                            <span class="weekend-warning" id="startWeekendWarn">⚠️ Ngày này là cuối tuần – sẽ không được tính là ngày nghỉ làm.</span>
+                            <span class="weekend-warning" id="startWeekendWarn"> Ngày này là cuối tuần – sẽ không được tính là ngày nghỉ làm.</span>
                         </div>
 
                         <%-- ── Đến ngày ── --%>
@@ -327,7 +327,7 @@
                             <label for="endDate">Đến ngày <span class="required">*</span></label>
                             <input id="endDate" type="date" name="endDate" required>
                             <span class="inline-error" id="endDateError">Ngày kết thúc không được trước ngày bắt đầu.</span>
-                            <span class="weekend-warning" id="endWeekendWarn">⚠️ Ngày này là cuối tuần.</span>
+                            <span class="weekend-warning" id="endWeekendWarn"> Ngày này là cuối tuần.</span>
                         </div>
 
                         <%-- ── Số ngày (readonly auto-calc) ── --%>
@@ -407,43 +407,43 @@
             fileRequired: false,
             infoClass: ANNUAL_EXHAUSTED ? 'warning' : 'good',
             info: ANNUAL_EXHAUSTED
-                ? '⛔ Bạn đã sử dụng hết <strong>' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày phép năm</strong>. Vui lòng chọn loại đơn khác.'
-                : '📋 Nghỉ phép năm · Đã dùng <strong>' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày</strong>. Còn lại: <strong>' + REMAINING_DAYS + ' ngày</strong>.'
+                ? ' Bạn đã sử dụng hết <strong>' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày phép năm</strong>. Vui lòng chọn loại đơn khác.'
+                : ' Nghỉ phép năm · Đã dùng <strong>' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày</strong>. Còn lại: <strong>' + REMAINING_DAYS + ' ngày</strong>.'
         },
         UNPAID: {
             maxDays: 30,
             requireFile: false,
             fileRequired: false,
             infoClass: 'warning',
-            info: '💸 Nghỉ không lương · Tối đa <strong>30 ngày/năm</strong>. Thường áp dụng sau khi đã sử dụng hết phép năm.'
+            info: ' Nghỉ không lương · Tối đa <strong>30 ngày/năm</strong>. Thường áp dụng sau khi đã sử dụng hết phép năm.'
         },
         SICK: {
             maxDays: 60,
             requireFile: false, // required only if > 3 days (checked at runtime)
             fileRequired: false,
             infoClass: 'info',
-            info: '🏥 Nghỉ ốm · Tối đa <strong>60 ngày/năm</strong> hưởng BHXH. Nếu nghỉ trên <strong>3 ngày</strong> phải đính kèm giấy xác nhận y tế.'
+            info: ' Nghỉ ốm · Tối đa <strong>60 ngày/năm</strong> hưởng BHXH. Nếu nghỉ trên <strong>3 ngày</strong> phải đính kèm giấy xác nhận y tế.'
         },
         MARRIAGE: {
             maxDays: 3,
             requireFile: true,
             fileRequired: true,
             infoClass: 'info',
-            info: '💒 Nghỉ kết hôn · Được hưởng lương tối đa <strong>3 ngày</strong>. Phần vượt quá sẽ tính vào nghỉ không lương hoặc phép năm. <strong>Bắt buộc đính kèm giấy đăng ký kết hôn.</strong>'
+            info: ' Nghỉ kết hôn · Được hưởng lương tối đa <strong>3 ngày</strong>. Phần vượt quá sẽ tính vào nghỉ không lương hoặc phép năm. <strong>Bắt buộc đính kèm giấy đăng ký kết hôn.</strong>'
         },
         CHILD_MARRIAGE: {
             maxDays: 1,
             requireFile: true,
             fileRequired: true,
             infoClass: 'info',
-            info: '👨‍👧 Nghỉ con kết hôn · Được hưởng lương tối đa <strong>1 ngày</strong>. <strong>Bắt buộc đính kèm giấy tờ chứng minh.</strong>'
+            info: ' Nghỉ con kết hôn · Được hưởng lương tối đa <strong>1 ngày</strong>. <strong>Bắt buộc đính kèm giấy tờ chứng minh.</strong>'
         },
         FUNERAL: {
             maxDays: 3,
             requireFile: true,
             fileRequired: true,
             infoClass: 'warning',
-            info: '🕊️ Nghỉ tang · Cha/mẹ/vợ/chồng/con được hưởng lương tối đa <strong>3 ngày</strong>. <strong>Bắt buộc đính kèm giấy báo tử hoặc giấy tờ liên quan.</strong>'
+            info: ' Nghỉ tang · Cha/mẹ/vợ/chồng/con được hưởng lương tối đa <strong>3 ngày</strong>. <strong>Bắt buộc đính kèm giấy báo tử hoặc giấy tờ liên quan.</strong>'
         },
         MATERNITY: {
             maxDays: GENDER === 'male' ? 14 : 180,
@@ -451,8 +451,8 @@
             fileRequired: true,
             infoClass: GENDER === 'male' ? 'info' : 'success',
             info: GENDER === 'male'
-                ? '🍼 Nghỉ thai sản (Nam) · Tối đa <strong>5–14 ngày</strong> tùy trường hợp sinh thường/mổ/sinh đôi. <strong>Bắt buộc đính kèm giấy khai sinh/chứng sinh.</strong>'
-                : '🍼 Nghỉ thai sản (Nữ) · Tối đa <strong>6 tháng (180 ngày)</strong> trước và sau sinh. <strong>Bắt buộc đính kèm giấy khai sinh/chứng sinh.</strong>'
+                ? ' Nghỉ thai sản (Nam) · Tối đa <strong>5–14 ngày</strong> tùy trường hợp sinh thường/mổ/sinh đôi. <strong>Bắt buộc đính kèm giấy khai sinh/chứng sinh.</strong>'
+                : ' Nghỉ thai sản (Nữ) · Tối đa <strong>6 tháng (180 ngày)</strong> trước và sau sinh. <strong>Bắt buộc đính kèm giấy khai sinh/chứng sinh.</strong>'
         }
     };
 
@@ -546,7 +546,7 @@
 
         // Chặn ngay nếu chọn ANNUAL mà đã hết phép (dù chưa chọn ngày)
         if (code === 'ANNUAL' && ANNUAL_EXHAUSTED) {
-            blockSubmit('⛔ Không thể gửi: đã sử dụng hết ' + TOTAL_DAYS + ' ngày phép năm.');
+            blockSubmit(' Không thể gửi: đã sử dụng hết ' + TOTAL_DAYS + ' ngày phép năm.');
         } else {
             unblockSubmit(); // reset, calcAndSetDays sẽ block lại nếu cần
         }
@@ -625,28 +625,28 @@
         var isHardBlock = false;
         if (code === 'ANNUAL') {
             if (ANNUAL_EXHAUSTED) {
-                showError('valueError', '⛔ Bạn đã sử dụng hết ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày phép năm. Không thể gửi đơn.');
-                blockSubmit('⛔ Không thể gửi: đã hết ' + TOTAL_DAYS + ' ngày phép năm.');
+                showError('valueError', ' Bạn đã sử dụng hết ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày phép năm. Không thể gửi đơn.');
+                blockSubmit(' Không thể gửi: đã hết ' + TOTAL_DAYS + ' ngày phép năm.');
                 isHardBlock = true;
             } else if (days > REMAINING_DAYS) {
                 // REMAINING_DAYS = TOTAL_DAYS (mặc định 12) nếu chưa có record
-                showError('valueError', '⛔ Số ngày xin nghỉ (' + days + ' ngày) vượt quá phép năm còn lại (' + REMAINING_DAYS + ' ngày). Đã dùng: ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày.');
-                blockSubmit('⛔ Không thể gửi: ' + days + ' ngày > phép còn lại (' + REMAINING_DAYS + ' ngày).');
+                showError('valueError', ' Số ngày xin nghỉ (' + days + ' ngày) vượt quá phép năm còn lại (' + REMAINING_DAYS + ' ngày). Đã dùng: ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày.');
+                blockSubmit(' Không thể gửi: ' + days + ' ngày > phép còn lại (' + REMAINING_DAYS + ' ngày).');
                 isHardBlock = true;
             }
         } else if (code === 'MATERNITY') {
             if (GENDER === 'male' && days > 14) {
-                showError('valueError', '⚠️ Nam giới nghỉ thai sản tối đa 14 ngày theo quy định.');
-                blockSubmit('⛔ Không thể gửi: vượt quá 14 ngày (nam giới).');
+                showError('valueError', ' Nam giới nghỉ thai sản tối đa 14 ngày theo quy định.');
+                blockSubmit(' Không thể gửi: vượt quá 14 ngày (nam giới).');
                 isHardBlock = true;
             } else if (GENDER === 'female' && days > 180) {
-                showError('valueError', '⚠️ Nghỉ thai sản tối đa 6 tháng (180 ngày) theo quy định.');
-                blockSubmit('⛔ Không thể gửi: vượt quá 180 ngày.');
+                showError('valueError', ' Nghỉ thai sản tối đa 6 tháng (180 ngày) theo quy định.');
+                blockSubmit(' Không thể gửi: vượt quá 180 ngày.');
                 isHardBlock = true;
             }
         } else if (code === 'UNPAID' && days > 30) {
-            showError('valueError', '⚠️ Nghỉ không lương tối đa 30 ngày/năm.');
-            blockSubmit('⛔ Không thể gửi: vượt quá 30 ngày không lương/năm.');
+            showError('valueError', ' Nghỉ không lương tối đa 30 ngày/năm.');
+            blockSubmit(' Không thể gửi: vượt quá 30 ngày không lương/năm.');
             isHardBlock = true;
         }
 
@@ -666,7 +666,7 @@
                 };
                 var msg = '';
                 if (code === 'MARRIAGE' || code === 'CHILD_MARRIAGE' || code === 'FUNERAL') {
-                    msg = '⚠️ ' + typeNames[code] + ' được hưởng lương tối đa ' + cfg.maxDays + ' ngày. Phần còn lại (' + (days - cfg.maxDays) + ' ngày) sẽ tính vào nghỉ không lương hoặc phép năm.';
+                    msg = typeNames[code] + ' được hưởng lương tối đa ' + cfg.maxDays + ' ngày. Phần còn lại (' + (days - cfg.maxDays) + ' ngày) sẽ tính vào nghỉ không lương hoặc phép năm.';
                     showError('valueError', msg);
                 }
             }
@@ -716,7 +716,7 @@
         hideError('imageError');
         if (this.files && this.files.length > 0) {
             var f = this.files[0];
-            fileChosen.textContent = '✅ ' + f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
+            fileChosen.textContent = f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
             fileChosen.classList.add('show');
             fileLabelText.textContent = 'Thay đổi ảnh...';
         } else {
@@ -797,10 +797,10 @@
             // Annual leave: chặn nếu đã dùng hết phép năm
             if (code === 'ANNUAL') {
                 if (ANNUAL_EXHAUSTED) {
-                    showError('valueError', '⛔ Bạn đã sử dụng hết ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày phép năm. Không thể gửi đơn.');
+                    showError('valueError', ' Bạn đã sử dụng hết ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày phép năm. Không thể gửi đơn.');
                     hasError = true;
                 } else if (HAS_BALANCE && days > REMAINING_DAYS) {
-                    showError('valueError', '⚠️ Số ngày xin nghỉ (' + days + ' ngày) vượt quá phép còn lại (' + REMAINING_DAYS + ' ngày). Đã dùng: ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày.');
+                    showError('valueError', ' Số ngày xin nghỉ (' + days + ' ngày) vượt quá phép còn lại (' + REMAINING_DAYS + ' ngày). Đã dùng: ' + USED_DAYS + '/' + TOTAL_DAYS + ' ngày.');
                     hasError = true;
                 }
             }
@@ -816,17 +816,17 @@
             // Maternity strict block
             if (code === 'MATERNITY') {
                 if (GENDER === 'male' && days > 14) {
-                    showError('valueError', '⚠️ Nam giới nghỉ thai sản tối đa 14 ngày. Không thể gửi đơn.');
+                    showError('valueError', ' Nam giới nghỉ thai sản tối đa 14 ngày. Không thể gửi đơn.');
                     hasError = true;
                 } else if (GENDER === 'female' && days > 180) {
-                    showError('valueError', '⚠️ Nghỉ thai sản tối đa 180 ngày (6 tháng). Không thể gửi đơn.');
+                    showError('valueError', ' Nghỉ thai sản tối đa 180 ngày (6 tháng). Không thể gửi đơn.');
                     hasError = true;
                 }
             }
 
             // Unpaid leave: block if > 30
             if (code === 'UNPAID' && days > 30) {
-                showError('valueError', '⚠️ Nghỉ không lương tối đa 30 ngày/năm. Vui lòng điều chỉnh số ngày.');
+                showError('valueError', ' Nghỉ không lương tối đa 30 ngày/năm. Vui lòng điều chỉnh số ngày.');
                 hasError = true;
             }
         }

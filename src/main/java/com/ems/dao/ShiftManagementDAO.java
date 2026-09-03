@@ -59,6 +59,28 @@ public class ShiftManagementDAO {
         return 0;
     }
 
+    /**
+     * Kiểm tra tên ca đã tồn tại chưa (case-insensitive).
+     * @param name  tên cần kiểm tra
+     * @param excludeId  id ca cần loại trừ (khi update); null khi tạo mới
+     */
+    public static boolean isNameExists(String name, Integer excludeId) {
+        String sql = excludeId == null
+                ? "SELECT COUNT(*) FROM shifts WHERE LOWER(Name) = LOWER(?) AND IsDefault = 0"
+                : "SELECT COUNT(*) FROM shifts WHERE LOWER(Name) = LOWER(?) AND IsDefault = 0 AND Id <> ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            if (excludeId != null) ps.setInt(2, excludeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
     /** Tạo ca mới (IsDefault = 0) */
     public static void createShift(Shifts s) {
         String sql = "INSERT INTO shifts (Name, StartTime, EndTime, BreakStart, BreakEnd, IsActive, IsDefault, DayOfWeek) " +

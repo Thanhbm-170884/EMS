@@ -49,8 +49,17 @@
       </div>
     </c:if>
 
-    <!-- Toast success -->
-    <c:if test="${not empty successMsg}">
+    <%-- Re-populate form data when server returns an error --%>
+    <c:set var="errName"       value="${param.name}"/>
+    <c:set var="errStart"      value="${param.startTime}"/>
+    <c:set var="errEnd"        value="${param.endTime}"/>
+    <c:set var="errBreakStart" value="${param.breakStart}"/>
+    <c:set var="errBreakEnd"   value="${param.breakEnd}"/>
+    <c:set var="errAction"     value="${param.action}"/>
+    <c:set var="errId"         value="${param.id}"/>
+
+    <%-- Toast success --%>
+    <c:if test="${not empty param.success}">
       <script>window.__autoToast = true;</script>
     </c:if>
 
@@ -180,7 +189,7 @@
                 </div>
               </td>
             </tr>
-            <tr>
+            <tr id="breakRow">
               <td colspan="2" style="padding-top:4px;">
                 <label style="display:block;margin-bottom:6px;font-weight:600;">Nghỉ giữa ca <span style="color:var(--slate-400);font-weight:400;">(tùy chọn)</span></label>
                 <div class="break-range">
@@ -253,6 +262,23 @@
       p(n.getDate())+'/'+p(n.getMonth()+1)+'/'+n.getFullYear();
   })();
 
+  /* ── Break time visibility ── */
+  function updateBreakVisibility() {
+    var endVal   = document.getElementById('endTime').value;
+    var bsVal    = document.getElementById('breakStart').value;
+    var breakRow = document.getElementById('breakRow');
+    if (!breakRow) return;
+    // Ẩn giờ nghỉ nếu giờ kết thúc <= giờ bắt đầu nghỉ (hoặc nghỉ chưa nhập)
+    if (endVal && bsVal && endVal <= bsVal) {
+      breakRow.style.display = 'none';
+      // Xóa giá trị để không gửi lên server
+      document.getElementById('breakStart').value = '';
+      document.getElementById('breakEnd').value   = '';
+    } else if (endVal) {
+      breakRow.style.display = '';
+    }
+  }
+
   function openModal(mode, id, name, startTime, endTime, breakStart, breakEnd) {
     var modal = document.getElementById('shiftModal');
     var title = document.getElementById('modalTitle');
@@ -278,6 +304,7 @@
       document.getElementById('breakStart').value = '12:00';
       document.getElementById('breakEnd').value   = '13:30';
     }
+    updateBreakVisibility();
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
     document.getElementById('shiftName').focus();
@@ -289,6 +316,8 @@
   }
 
   function submitForm() {
+    var name = document.getElementById('shiftName').value.trim();
+    if (!name) { alert('Vui lòng nhập tên ca làm việc.'); return; }
     document.getElementById('shiftForm').submit();
   }
 
@@ -318,7 +347,11 @@
     if (e.key === 'Escape') { closeModal(); closeDeleteModal(); }
   });
 
-  // Auto toast
+  // Listen endTime & breakStart changes to toggle break row
+  document.getElementById('endTime').addEventListener('change', updateBreakVisibility);
+  document.getElementById('breakStart').addEventListener('change', updateBreakVisibility);
+
+  // Auto toast (now reads directly from URL param, no need for __autoToast)
   function showToast(msg) {
     if (msg) document.getElementById('toastMsg').textContent = msg;
     var t = document.getElementById('toast');
@@ -326,15 +359,33 @@
     setTimeout(function(){ t.classList.remove('show'); }, 3500);
   }
 
-  if (window.__autoToast) {
+  (function(){
     var params = new URLSearchParams(window.location.search);
     var s = params.get('success');
-    var msg = s === '1' ? 'Thêm ca làm việc thành công!'
-            : s === '2' ? 'Cập nhật ca làm việc thành công!'
-            : s === '3' ? 'Xóa ca làm việc thành công!' : '';
-    showToast(msg);
-    window.history.replaceState({}, '', window.location.pathname);
-  }
+    if (s) {
+      var msg = s === '1' ? 'Thêm ca làm việc thành công!'
+              : s === '2' ? 'Cập nhật ca làm việc thành công!'
+              : s === '3' ? 'Xóa ca làm việc thành công!' : '';
+      if (msg) {
+        showToast(msg);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  })();
+
+  <%-- Nếu server trả về lỗi → tự động mở lại modal với dữ liệu đã nhập --%>
+  <c:if test="${not empty error}">
+  (function(){
+    var mode   = '${fn:escapeXml(errAction)}' === 'update' ? 'edit' : 'add';
+    var id     = '${fn:escapeXml(errId)}';
+    var name   = '${fn:escapeXml(errName)}';
+    var start  = '${fn:escapeXml(errStart)}';
+    var end    = '${fn:escapeXml(errEnd)}';
+    var bs     = '${fn:escapeXml(errBreakStart)}';
+    var be     = '${fn:escapeXml(errBreakEnd)}';
+    openModal(mode, id, name, start, end, bs, be);
+  })();
+  </c:if>
 </script>
 </body>
 </html>

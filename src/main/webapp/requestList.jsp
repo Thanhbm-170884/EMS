@@ -15,7 +15,7 @@
     }
 
     SimpleDateFormat dateFormat =
-            new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            new SimpleDateFormat("dd/MM/yyyy");
 
     String username = (String) session.getAttribute("username");
 
@@ -100,19 +100,14 @@
     private String formatValue(double val, int typeId) {
 
         // typeId = 3: ứng lương / tiền
-        if (typeId == 3) {
-            return java.text.NumberFormat
-                    .getIntegerInstance(
-                            new java.util.Locale("vi", "VN"))
-                    .format(val)
-                    + " đ";
-        }
 
-        if (val == (long) val) {
-            return String.valueOf((long) val);
-        }
+        return java.text.NumberFormat
+                .getIntegerInstance(
+                        new java.util.Locale("vi", "VN"))
+                .format(val)
+                + " Ngày";
 
-        return String.valueOf(val);
+
     }
 %>
 
@@ -410,202 +405,202 @@
 
             <% if (requests.isEmpty()) { %>
 
-                <div class="empty-state">
+            <div class="empty-state">
 
-                    <strong>
-                        Bạn chưa gửi yêu cầu nào.
-                    </strong>
+                <strong>
+                    Bạn chưa gửi yêu cầu nào.
+                </strong>
 
-                    <p>
-                        Tạo yêu cầu mới để bắt đầu.
-                    </p>
+                <p>
+                    Tạo yêu cầu mới để bắt đầu.
+                </p>
 
-                    <a class="btn-create"
-                       href="<%= request.getContextPath() %>/requests?action=showForm">
-                        Tạo yêu cầu
-                    </a>
+                <a class="btn-create"
+                   href="<%= request.getContextPath() %>/requests?action=showForm">
+                    Tạo yêu cầu
+                </a>
 
-                </div>
+            </div>
 
             <% } else { %>
 
-                <!-- ================================
-                     TABLE
-                     ================================ -->
+            <!-- ================================
+                 TABLE
+                 ================================ -->
 
-                <div class="table-wrap">
+            <div class="table-wrap">
 
-                    <table>
+                <table>
 
-                        <thead>
+                    <thead>
 
-                            <tr>
+                    <tr>
 
-                                <th>
-                                    Tiêu đề
-                                </th>
+                        <th>
+                            Tiêu đề
+                        </th>
 
-                                <th>
-                                    Loại
-                                </th>
+                        <th>
+                            Loại
+                        </th>
 
-                                <th>
-                                    Giá trị
-                                </th>
+                        <th>
+                            Số ngày nghỉ
+                        </th>
 
-                                <th>
-                                    Người duyệt
-                                </th>
+                        <th>
+                            Người duyệt
+                        </th>
 
-                                <th>
-                                    Trạng thái
-                                </th>
+                        <th>
+                            Trạng thái
+                        </th>
 
-                                <th>
-                                </th>
+                        <th>
+                        </th>
 
-                            </tr>
+                    </tr>
 
-                        </thead>
+                    </thead>
 
-                        <tbody>
+                    <tbody>
 
-                        <% for (RequestDTO item : requests) { %>
+                    <% for (RequestDTO item : requests) { %>
 
-                            <%
-                                String status =
-                                        item.getStatus() == null
-                                                ? ""
-                                                : item.getStatus();
+                    <%
+                        String status =
+                                item.getStatus() == null
+                                        ? ""
+                                        : item.getStatus();
 
-                                String badgeClass =
-                                        "badge-pending";
+                        String badgeClass =
+                                "badge-pending";
 
-                                if ("Approved".equalsIgnoreCase(status)) {
+                        if ("Approved".equalsIgnoreCase(status)) {
 
-                                    badgeClass =
-                                            "badge-approved";
+                            badgeClass =
+                                    "badge-approved";
 
-                                } else if ("Rejected".equalsIgnoreCase(status)) {
+                        } else if ("Rejected".equalsIgnoreCase(status)) {
 
-                                    badgeClass =
-                                            "badge-rejected";
-                                }
+                            badgeClass =
+                                    "badge-rejected";
+                        }
 
-                                String startDateStr =
-                                        item.getStartDate() != null
-                                                ? dateFormat.format(item.getStartDate())
-                                                : "-";
+                        String startDateStr =
+                                item.getStartDate() != null
+                                        ? dateFormat.format(item.getStartDate())
+                                        : "-";
 
-                                String endDateStr =
-                                        item.getEndDate() != null
-                                                ? dateFormat.format(item.getEndDate())
-                                                : "-";
+                        String endDateStr =
+                                item.getEndDate() != null
+                                        ? dateFormat.format(item.getEndDate())
+                                        : "-";
 
-                                String createdAtStr =
-                                        item.getCreatedAt() != null
-                                                ? dateFormat.format(item.getCreatedAt())
-                                                : "-";
+                        String createdAtStr =
+                                item.getCreatedAt() != null
+                                        ? dateFormat.format(item.getCreatedAt())
+                                        : "-";
 
-                                String approverStr =
-                                        item.getCurrentApproverName() != null
-                                                && !item.getCurrentApproverName().isBlank()
-                                                ? item.getCurrentApproverName()
-                                                : "Chưa phân công";
+                        String approverStr =
+                                item.getCurrentApproverName() != null
+                                        && !item.getCurrentApproverName().isBlank()
+                                        ? item.getCurrentApproverName()
+                                        : "Chưa phân công";
 
-                                String statusLabel;
+                        String statusLabel;
 
-                                if ("Approved".equalsIgnoreCase(status)) {
+                        if ("Approved".equalsIgnoreCase(status)) {
 
-                                    statusLabel = "Đã duyệt";
+                            statusLabel = "Đã duyệt";
 
-                                } else if ("Rejected".equalsIgnoreCase(status)) {
+                        } else if ("Rejected".equalsIgnoreCase(status)) {
 
-                                    statusLabel = "Từ chối";
+                            statusLabel = "Từ chối";
 
-                                } else {
+                        } else {
 
-                                    statusLabel = "Chờ duyệt";
-                                }
+                            statusLabel = "Chờ duyệt";
+                        }
 
-                                String formattedValue =
-                                        formatValue(
-                                                item.getValue(),
-                                                item.getRequestTypeId()
-                                        );
-                            %>
+                        String formattedValue =
+                                formatValue(
+                                        item.getValue(),
+                                        item.getRequestTypeId()
+                                );
+                    %>
 
-                            <tr
-                                style="cursor: pointer;"
+                    <tr
+                            style="cursor: pointer;"
 
-                                onclick="showRequestDetail(this)"
+                            onclick="showRequestDetail(this)"
 
-                                data-id="<%= item.getId() %>"
+                            data-id="<%= item.getId() %>"
 
-                                data-title="<%= escapeAttr(item.getTitle()) %>"
+                            data-title="<%= escapeAttr(item.getTitle()) %>"
 
-                                data-type="<%= escapeAttr(item.getRequestTypeName()) %>"
+                            data-type="<%= escapeAttr(item.getRequestTypeName()) %>"
 
-                                data-start-date="<%= escapeAttr(startDateStr) %>"
+                            data-start-date="<%= escapeAttr(startDateStr) %>"
 
-                                data-end-date="<%= escapeAttr(endDateStr) %>"
+                            data-end-date="<%= escapeAttr(endDateStr) %>"
 
-                                data-value="<%= escapeAttr(formattedValue) %>"
+                            data-value="<%= escapeAttr(formattedValue) %>"
 
-                                data-approver="<%= escapeAttr(approverStr) %>"
+                            data-approver="<%= escapeAttr(approverStr) %>"
 
-                                data-status="<%= escapeAttr(statusLabel) %>"
+                            data-status="<%= escapeAttr(statusLabel) %>"
 
-                                data-status-class="<%= badgeClass %>"
+                            data-status-class="<%= badgeClass %>"
 
-                                data-reason="<%= escapeAttr(item.getReason()) %>"
+                            data-reason="<%= escapeAttr(item.getReason()) %>"
 
-                                data-rejection-reason="<%= escapeAttr(item.getRejectionReason()) %>"
+                            data-rejection-reason="<%= escapeAttr(item.getRejectionReason()) %>"
 
-                                data-image-url="<%= escapeAttr(item.getImageUrl()) %>"
+                            data-image-url="<%= escapeAttr(item.getImageUrl()) %>"
 
-                                data-created-at="<%= escapeAttr(createdAtStr) %>"
-                            >
+                            data-created-at="<%= escapeAttr(createdAtStr) %>"
+                    >
 
-                                <!-- TITLE -->
+                        <!-- TITLE -->
 
-                                <td>
+                        <td>
 
-                                    <div class="request-title">
+                            <div class="request-title">
 
-                                        <%= escapeHtml(item.getTitle()) %>
+                                <%= escapeHtml(item.getTitle()) %>
 
-                                    </div>
+                            </div>
 
-                                </td>
+                        </td>
 
-                                <!-- TYPE -->
+                        <!-- TYPE -->
 
-                                <td>
+                        <td>
 
-                                    <%= escapeHtml(item.getRequestTypeName()) %>
+                            <%= escapeHtml(item.getRequestTypeName()) %>
 
-                                </td>
+                        </td>
 
-                                <!-- VALUE -->
+                        <!-- VALUE -->
 
-                                <td>
+                        <td>
 
-                                    <%= formattedValue %>
+                            <%= formattedValue %>
 
-                                </td>
+                        </td>
 
-                                <!-- APPROVER -->
+                        <!-- APPROVER -->
 
-                                <td>
+                        <td>
 
-                                    <%= escapeHtml(approverStr) %>
+                            <%= escapeHtml(approverStr) %>
 
-                                </td>
+                        </td>
 
-                                <!-- STATUS -->
+                        <!-- STATUS -->
 
-                                <td>
+                        <td>
 
                                     <span class="badge <%= badgeClass %>">
 
@@ -613,116 +608,116 @@
 
                                     </span>
 
-                                    <% if (
-                                            "Rejected".equalsIgnoreCase(status)
+                            <% if (
+                                    "Rejected".equalsIgnoreCase(status)
                                             && item.getRejectionReason() != null
                                             && !item.getRejectionReason().isBlank()
-                                    ) { %>
+                            ) { %>
 
-                                        <div
-                                            style="font-size:11px;
+                            <div
+                                    style="font-size:11px;
                                                    color:#dc2626;
                                                    margin-top:4px;"
-                                            title="<%= escapeAttr(item.getRejectionReason()) %>"
-                                        >
+                                    title="<%= escapeAttr(item.getRejectionReason()) %>"
+                            >
 
-                                            Lý do:
-                                            <%= escapeHtml(item.getRejectionReason()) %>
+                                Lý do:
+                                <%= escapeHtml(item.getRejectionReason()) %>
 
-                                        </div>
+                            </div>
 
-                                    <% } %>
+                            <% } %>
 
-                                </td>
+                        </td>
 
-                                <!-- ACTION -->
+                        <!-- ACTION -->
 
-                                <td
-                                    onclick="event.stopPropagation();"
+                        <td
+                                onclick="event.stopPropagation();"
+                        >
+
+                            <a
+                                    href="javascript:void(0)"
+                                    class="btn-view"
+                                    onclick="showRequestDetail(this.closest('tr'))"
+                            >
+                                Xem
+                            </a>
+
+                            <% if ("Pending".equalsIgnoreCase(status)) { %>
+
+                            <form
+                                    class="delete-form"
+                                    method="post"
+                                    action="<%= request.getContextPath() %>/requests"
+                                    onsubmit="return confirm('Bạn có muốn hủy yêu cầu này?');"
+                            >
+
+                                <input
+                                        type="hidden"
+                                        name="action"
+                                        value="delete"
                                 >
 
-                                    <a
-                                        href="javascript:void(0)"
-                                        class="btn-view"
-                                        onclick="showRequestDetail(this.closest('tr'))"
-                                    >
-                                        Xem
-                                    </a>
+                                <input
+                                        type="hidden"
+                                        name="id"
+                                        value="<%= item.getId() %>"
+                                >
 
-                                    <% if ("Pending".equalsIgnoreCase(status)) { %>
+                                <button
+                                        class="btn-delete"
+                                        type="submit"
+                                >
+                                    Hủy
+                                </button>
 
-                                        <form
-                                            class="delete-form"
-                                            method="post"
-                                            action="<%= request.getContextPath() %>/requests"
-                                            onsubmit="return confirm('Bạn có muốn hủy yêu cầu này?');"
-                                        >
+                            </form>
 
-                                            <input
-                                                type="hidden"
-                                                name="action"
-                                                value="delete"
-                                            >
+                            <% } %>
 
-                                            <input
-                                                type="hidden"
-                                                name="id"
-                                                value="<%= item.getId() %>"
-                                            >
+                        </td>
 
-                                            <button
-                                                class="btn-delete"
-                                                type="submit"
-                                            >
-                                                Hủy
-                                            </button>
+                    </tr>
 
-                                        </form>
+                    <% } %>
 
-                                    <% } %>
+                    </tbody>
 
-                                </td>
+                </table>
 
-                            </tr>
+            </div>
 
-                        <% } %>
+            <!-- ================================
+                 PAGINATION
+                 ================================ -->
 
-                        </tbody>
+            <% if (totalPages > 1) {
 
-                    </table>
+                int winStart =
+                        Math.max(
+                                2,
+                                currentPage - 2
+                        );
 
-                </div>
+                int winEnd =
+                        Math.min(
+                                totalPages - 1,
+                                currentPage + 2
+                        );
 
-                <!-- ================================
-                     PAGINATION
-                     ================================ -->
+                boolean isFirstPage =
+                        currentPage <= 1;
 
-                <% if (totalPages > 1) {
+                boolean isLastPage =
+                        currentPage >= totalPages;
+            %>
 
-                    int winStart =
-                            Math.max(
-                                    2,
-                                    currentPage - 2
-                            );
+            <div class="hol-pagination">
 
-                    int winEnd =
-                            Math.min(
-                                    totalPages - 1,
-                                    currentPage + 2
-                            );
+                <!-- PAGE INFO -->
 
-                    boolean isFirstPage =
-                            currentPage <= 1;
-
-                    boolean isLastPage =
-                            currentPage >= totalPages;
-                %>
-
-                    <div class="hol-pagination">
-
-                        <!-- PAGE INFO -->
-
-                        <div class="hol-page-info">
+                <div class="hol-page-info">
 
                             <span>
 
@@ -740,140 +735,140 @@
 
                             </span>
 
-                        </div>
+                </div>
 
-                        <!-- PAGE BUTTONS -->
+                <!-- PAGE BUTTONS -->
 
-                        <div class="hol-page-btns">
+                <div class="hol-page-btns">
 
-                            <!-- PREVIOUS -->
+                    <!-- PREVIOUS -->
 
-                            <% if (isFirstPage) { %>
+                    <% if (isFirstPage) { %>
 
-                                <span class="hol-page-btn disabled">
+                    <span class="hol-page-btn disabled">
                                     &lt; Trước
                                 </span>
 
-                            <% } else { %>
+                    <% } else { %>
 
-                                <a
-                                    class="hol-page-btn"
-                                    href="<%= buildPageUrl(
+                    <a
+                            class="hol-page-btn"
+                            href="<%= buildPageUrl(
                                             request.getContextPath(),
                                             currentPage - 1,
                                             pageSize
                                     ) %>"
-                                >
-                                    &lt; Trước
-                                </a>
+                    >
+                        &lt; Trước
+                    </a>
 
-                            <% } %>
+                    <% } %>
 
 
-                            <!-- PAGE 1 -->
+                    <!-- PAGE 1 -->
 
-                            <a
-                                class="hol-page-btn <%= currentPage == 1 ? "active" : "" %>"
-                                href="<%= buildPageUrl(
+                    <a
+                            class="hol-page-btn <%= currentPage == 1 ? "active" : "" %>"
+                            href="<%= buildPageUrl(
                                         request.getContextPath(),
                                         1,
                                         pageSize
                                 ) %>"
-                            >
-                                1
-                            </a>
+                    >
+                        1
+                    </a>
 
 
-                            <!-- LEFT ELLIPSIS -->
+                    <!-- LEFT ELLIPSIS -->
 
-                            <% if (currentPage > 4) { %>
+                    <% if (currentPage > 4) { %>
 
-                                <span class="hol-page-ellipsis">
+                    <span class="hol-page-ellipsis">
                                     &hellip;
                                 </span>
 
-                            <% } %>
+                    <% } %>
 
 
-                            <!-- MIDDLE PAGES -->
+                    <!-- MIDDLE PAGES -->
 
-                            <% for (
-                                    int p = winStart;
-                                    p <= winEnd;
-                                    p++
-                            ) { %>
+                    <% for (
+                            int p = winStart;
+                            p <= winEnd;
+                            p++
+                    ) { %>
 
-                                <a
-                                    class="hol-page-btn <%= p == currentPage ? "active" : "" %>"
-                                    href="<%= buildPageUrl(
+                    <a
+                            class="hol-page-btn <%= p == currentPage ? "active" : "" %>"
+                            href="<%= buildPageUrl(
                                             request.getContextPath(),
                                             p,
                                             pageSize
                                     ) %>"
-                                >
-                                    <%= p %>
-                                </a>
+                    >
+                        <%= p %>
+                    </a>
 
-                            <% } %>
+                    <% } %>
 
 
-                            <!-- RIGHT ELLIPSIS -->
+                    <!-- RIGHT ELLIPSIS -->
 
-                            <% if (currentPage < totalPages - 3) { %>
+                    <% if (currentPage < totalPages - 3) { %>
 
-                                <span class="hol-page-ellipsis">
+                    <span class="hol-page-ellipsis">
                                     &hellip;
                                 </span>
 
-                            <% } %>
+                    <% } %>
 
 
-                            <!-- LAST PAGE -->
+                    <!-- LAST PAGE -->
 
-                            <% if (totalPages > 1) { %>
+                    <% if (totalPages > 1) { %>
 
-                                <a
-                                    class="hol-page-btn <%= currentPage == totalPages ? "active" : "" %>"
-                                    href="<%= buildPageUrl(
+                    <a
+                            class="hol-page-btn <%= currentPage == totalPages ? "active" : "" %>"
+                            href="<%= buildPageUrl(
                                             request.getContextPath(),
                                             totalPages,
                                             pageSize
                                     ) %>"
-                                >
-                                    <%= totalPages %>
-                                </a>
+                    >
+                        <%= totalPages %>
+                    </a>
 
-                            <% } %>
+                    <% } %>
 
 
-                            <!-- NEXT -->
+                    <!-- NEXT -->
 
-                            <% if (isLastPage) { %>
+                    <% if (isLastPage) { %>
 
-                                <span class="hol-page-btn disabled">
+                    <span class="hol-page-btn disabled">
                                     Tiếp &gt;
                                 </span>
 
-                            <% } else { %>
+                    <% } else { %>
 
-                                <a
-                                    class="hol-page-btn"
-                                    href="<%= buildPageUrl(
+                    <a
+                            class="hol-page-btn"
+                            href="<%= buildPageUrl(
                                             request.getContextPath(),
                                             currentPage + 1,
                                             pageSize
                                     ) %>"
-                                >
-                                    Tiếp &gt;
-                                </a>
+                    >
+                        Tiếp &gt;
+                    </a>
 
-                            <% } %>
+                    <% } %>
 
-                        </div>
+                </div>
 
-                    </div>
+            </div>
 
-                <% } %>
+            <% } %>
 
             <% } %>
 
@@ -893,14 +888,14 @@
      ===================================================== -->
 
 <div
-    class="modal-overlay"
-    id="requestDetailModal"
-    style="display: none;"
+        class="modal-overlay"
+        id="requestDetailModal"
+        style="display: none;"
 >
 
     <div
-        class="modal"
-        style="
+            class="modal"
+            style="
             max-width: 600px;
             display: flex;
             flex-direction: column;
@@ -914,8 +909,8 @@
             <div class="modal-header-left">
 
                 <div
-                    class="modal-header-icon"
-                    style="
+                        class="modal-header-icon"
+                        style="
                         display:flex;
                         align-items:center;
                         justify-content:center;
@@ -923,40 +918,40 @@
                 >
 
                     <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
                     >
 
                         <path
-                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
                         />
 
                         <polyline
-                            points="14 2 14 8 20 8"
+                                points="14 2 14 8 20 8"
                         />
 
                         <line
-                            x1="16"
-                            y1="13"
-                            x2="8"
-                            y2="13"
+                                x1="16"
+                                y1="13"
+                                x2="8"
+                                y2="13"
                         />
 
                         <line
-                            x1="16"
-                            y1="17"
-                            x2="8"
-                            y2="17"
+                                x1="16"
+                                y1="17"
+                                x2="8"
+                                y2="17"
                         />
 
                         <polyline
-                            points="10 9 9 9 8 9"
+                                points="10 9 9 9 8 9"
                         />
 
                     </svg>
@@ -970,8 +965,8 @@
                     </div>
 
                     <div
-                        class="modal-subtitle"
-                        id="detailModalSubtitle"
+                            class="modal-subtitle"
+                            id="detailModalSubtitle"
                     >
                         Mã đơn và thông tin gửi
                     </div>
@@ -981,9 +976,9 @@
             </div>
 
             <button
-                class="modal-close"
-                type="button"
-                onclick="closeDetailModal()"
+                    class="modal-close"
+                    type="button"
+                    onclick="closeDetailModal()"
             >
                 ✕
             </button>
@@ -994,15 +989,15 @@
         <!-- MODAL BODY -->
 
         <div
-            class="modal-body"
-            style="
+                class="modal-body"
+                style="
                 padding:20px;
                 overflow-y:auto;
             "
         >
 
             <table
-                style="
+                    style="
                     width:100%;
                     border-collapse:collapse;
                 "
@@ -1017,11 +1012,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detTitle"
+                            id="detTitle"
                     >
                         -
                     </td>
@@ -1038,11 +1033,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detType"
+                            id="detType"
                     >
                         -
                     </td>
@@ -1053,8 +1048,8 @@
                 <!-- START DATE -->
 
                 <tr
-                    id="detStartDateRow"
-                    style="
+                        id="detStartDateRow"
+                        style="
                         border-bottom:1px solid #f1f5f9;
                         display:none;
                     "
@@ -1065,11 +1060,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detStartDate"
+                            id="detStartDate"
                     >
                         -
                     </td>
@@ -1080,8 +1075,8 @@
                 <!-- END DATE -->
 
                 <tr
-                    id="detEndDateRow"
-                    style="
+                        id="detEndDateRow"
+                        style="
                         border-bottom:1px solid #f1f5f9;
                         display:none;
                     "
@@ -1092,11 +1087,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detEndDate"
+                            id="detEndDate"
                     >
                         -
                     </td>
@@ -1113,11 +1108,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detValue"
+                            id="detValue"
                     >
                         -
                     </td>
@@ -1134,15 +1129,15 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                         "
-                        id="detStatusContainer"
+                            id="detStatusContainer"
                     >
 
                         <span
-                            class="badge"
-                            id="detStatus"
+                                class="badge"
+                                id="detStatus"
                         >
                             -
                         </span>
@@ -1161,11 +1156,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detApprover"
+                            id="detApprover"
                     >
                         -
                     </td>
@@ -1182,11 +1177,11 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
-                        id="detCreatedAt"
+                            id="detCreatedAt"
                     >
                         -
                     </td>
@@ -1199,7 +1194,7 @@
                 <tr style="border-bottom:1px solid #f1f5f9;">
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             font-weight:600;
                             color:#475569;
@@ -1211,12 +1206,12 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                             white-space:pre-wrap;
                         "
-                        id="detReason"
+                            id="detReason"
                     >
                         -
                     </td>
@@ -1227,15 +1222,15 @@
                 <!-- REJECTION REASON -->
 
                 <tr
-                    id="detRejectionReasonRow"
-                    style="
+                        id="detRejectionReasonRow"
+                        style="
                         border-bottom:1px solid #f1f5f9;
                         display:none;
                     "
                 >
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             font-weight:600;
                             color:#dc2626;
@@ -1246,12 +1241,12 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#dc2626;
                             white-space:pre-wrap;
                         "
-                        id="detRejectionReason"
+                            id="detRejectionReason"
                     >
                         -
                     </td>
@@ -1262,15 +1257,15 @@
                 <!-- IMAGE -->
 
                 <tr
-                    id="detImageRow"
-                    style="
+                        id="detImageRow"
+                        style="
                         border-bottom:1px solid #f1f5f9;
                         display:none;
                     "
                 >
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             font-weight:600;
                             color:#475569;
@@ -1281,17 +1276,17 @@
                     </td>
 
                     <td
-                        style="
+                            style="
                             padding:10px 0;
                             color:#1e293b;
                         "
                     >
 
                         <a
-                            id="detImageLink"
-                            href="#"
-                            target="_blank"
-                            style="
+                                id="detImageLink"
+                                href="#"
+                                target="_blank"
+                                style="
                                 color:#2563eb;
                                 text-decoration:underline;
                                 display:block;
@@ -1302,10 +1297,10 @@
                         </a>
 
                         <img
-                            id="detImagePreview"
-                            src=""
-                            alt="Minh chứng"
-                            style="
+                                id="detImagePreview"
+                                src=""
+                                alt="Minh chứng"
+                                style="
                                 max-width:100%;
                                 max-height:200px;
                                 border-radius:8px;
@@ -1329,9 +1324,9 @@
         <div class="modal-footer">
 
             <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="closeDetailModal()"
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="closeDetailModal()"
             >
                 Đóng
             </button>

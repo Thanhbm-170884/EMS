@@ -36,6 +36,8 @@ public class ShiftManagementService {
     private void validate(Shifts s) {
         if (s.getName() == null || s.getName().isBlank())
             throw new IllegalArgumentException("Tên ca không được để trống.");
+        if (ShiftManagementDAO.isNameExists(s.getName().trim(), s.getId()))
+            throw new IllegalArgumentException("Đã tồn tại ca làm việc có tên \"" + s.getName().trim() + "\". Vui lòng chọn tên khác.");
         if (s.getStarttime() == null || s.getEndtime() == null)
             throw new IllegalArgumentException("Phải nhập giờ bắt đầu và kết thúc.");
         if (!s.getStarttime().isBefore(s.getEndtime()))
